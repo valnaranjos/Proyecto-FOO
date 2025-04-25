@@ -29,6 +29,17 @@ builder.Services.AddSwaggerGen(c =>
     }
 });
 
+// Configurar CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin() // Permite cualquier origen
+              .AllowAnyMethod() // Permite cualquier método (GET, POST, etc.)
+              .AllowAnyHeader(); // Permite cualquier encabezado
+    });
+});
+
 
 var app = builder.Build();
 
@@ -53,6 +64,7 @@ app.UseSwaggerUI(c =>
 
 
 // Middleware
+app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
