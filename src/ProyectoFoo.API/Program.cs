@@ -40,6 +40,21 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Agregar JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
+                System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
 
 var app = builder.Build();
 
@@ -66,7 +81,7 @@ app.UseSwaggerUI(c =>
 // Middleware
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
-app.UseAuthorization();
+app.UseAuthorization(); // Necesario para que JWT funcione
 app.MapControllers();
 
 app.Run();
