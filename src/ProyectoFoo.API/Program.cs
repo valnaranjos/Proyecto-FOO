@@ -1,6 +1,9 @@
-using Swashbuckle.AspNetCore.SwaggerGen;
+Ôªøusing Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using ProyectoFoo.Infrastructure.Context;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,13 +15,13 @@ builder.Services.AddEndpointsApiExplorer();
 
 // Add Swagger to the container
 
-//Activar este lÌnea en caso de querer desactivar Swagger en producciÛn
+//Activar este l√≠nea en caso de querer desactivar Swagger en producci√≥n
 //var enableSwagger = builder.Configuration.GetValue<bool>("EnableSwagger");
 
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo 
-    { Title = "GestiÛn de Pacientes API", Version = "v1" });
+    { Title = "Gesti√≥n de Pacientes API", Version = "v1" });
 
     //Include XML comments for better documentation
     var xmlFile = $"{System.AppDomain.CurrentDomain.FriendlyName}.xml";
@@ -29,13 +32,19 @@ builder.Services.AddSwaggerGen(c =>
     }
 });
 
+// Add database context
+builder.Services.AddDbContext<ApplicationContextSqlServer>(options =>
+options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
+                     ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection")))
+);
+
 // Configurar CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
         policy.AllowAnyOrigin() // Permite cualquier origen
-              .AllowAnyMethod() // Permite cualquier mÈtodo (GET, POST, etc.)
+              .AllowAnyMethod() // Permite cualquier m√©todo (GET, POST, etc.)
               .AllowAnyHeader(); // Permite cualquier encabezado
     });
 });
@@ -64,7 +73,7 @@ var app = builder.Build();
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "GestiÛn de Pacientes API");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Gesti√≥n de Pacientes API");
         c.RoutePrefix = string.Empty;
     });
 }*/
@@ -73,9 +82,27 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "GestiÛn de pacientes API");
-    c.RoutePrefix = string.Empty; // Para mostrar Swagger en la raÌz
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Gesti√≥n de pacientes API");
+    c.RoutePrefix = string.Empty; // Para mostrar Swagger en la ra√≠z
 });
+
+
+
+// Ensure database is created
+try
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationContextSqlServer>();
+        db.Database.Migrate(); // Applies pending migrations
+        Console.WriteLine("‚úÖ Conexi√≥n a la base de datos exitosa.");
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"‚ùå Error al conectar con la base de datos: {ex.Message}");
+}
+
 
 
 // Middleware
