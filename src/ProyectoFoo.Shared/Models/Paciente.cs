@@ -24,7 +24,7 @@ namespace ProyectoFoo.Shared.Models
         public string Surname { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "La fecha de nacimiento es obligatoria.")]
-        public DateTime Birthdate { get; set; }
+        public DateTimeOffset Birthdate { get; set; }
 
         [Required(ErrorMessage = "El número de identificación es obligatorio.")]
         [Range(10, int.MaxValue, ErrorMessage = "El número de identificación debe ser positivo.")]
@@ -37,11 +37,11 @@ namespace ProyectoFoo.Shared.Models
 
        
         [EmailAddress(ErrorMessage = "Correo no válido.")]
-        public string? Email { get; set; }
+        public string Email { get; set; }
 
 
         [Phone(ErrorMessage = "Número de teléfono no válido.")]
-        public string? Phone { get; set; }
+        public string Phone { get; set; }
 
         //Virtual/Presencial
         [Required(ErrorMessage = "La modalidad es obligatoria.")]
@@ -49,25 +49,46 @@ namespace ProyectoFoo.Shared.Models
         public string Modality { get; set; } = string.Empty;
 
         //Se calcula automática
-        public DateTime AdmissionDate { get; set; } = DateTime.UtcNow;
+        public DateTimeOffset AdmissionDate { get; set; } = DateTime.UtcNow;
 
 
         //No obligatorios
-        public string Diagnosis { get; set; } = string.Empty;
-        public string Institution { get; set; } = string.Empty;
+        public string? Diagnosis { get; set; }
+        public string? Institution { get; set; }
 
-        
+        // // Constructor sin parámetros (requerido por EF Core) para instanciar las entidades al leer la base de datos.
+        public Paciente()
+        {
 
-
-        public Paciente(int id, string name, string surname, DateTime birthdate, int identification, string diagnosis, string institution)
+        }
+        public Paciente(int id, string name, string surname, DateTime birthdate, int identification, string sex, string modality, string email, string phone)
         {
             Id = id;
             Name = name;
             Surname = surname;
             Birthdate = birthdate;
             Identification = identification;
+            Sex = sex;
+            Modality = modality;
+            Email = email;
+            Phone = phone;
+            AdmissionDate = DateTime.UtcNow;
+        }
+
+        public Paciente(int id, string name, string surname, DateTime birthdate, int identification, string sex, string modality, string diagnosis, string institution, string email, string phone)
+        {
+            Id = id;
+            Name = name;
+            Surname = surname;
+            Birthdate = birthdate;
+            Identification = identification;
+            Sex = sex;
+            Modality = modality;
             Diagnosis = diagnosis;
             Institution = institution;
+            Email = email;
+            Phone = phone;
+            AdmissionDate = DateTime.UtcNow;
         }
 
         [NotMapped]

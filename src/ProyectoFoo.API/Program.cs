@@ -35,7 +35,8 @@ builder.Services.AddSwaggerGen(c =>
 // Add database context
 builder.Services.AddDbContext<ApplicationContextSqlServer>(options =>
 options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-                     ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection")))
+                     ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection")),
+                     b => b.MigrationsAssembly("ProyectoFoo.Infrastructure")) // Especifica el ensamblado de migraciones
 );
 
 // Configurar CORS

@@ -118,6 +118,10 @@ ipch/
 *.VC.db
 *.VC.VC.opendb
 
+# Ignorar archivos de configuración locales
+/ApplicationContextSqlServerFactory.cs
+
+
 # Visual Studio profiler
 *.psess
 *.vsp

@@ -1,12 +1,16 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ProyectoFoo.Shared.Models;
+using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
+using System.IO;
 
 
 namespace ProyectoFoo.Infrastructure.Context
 {
     public class ApplicationContextSqlServer : DbContext
     {
-        public ApplicationContextSqlServer(DbContextOptions<ApplicationContextSqlServer> options) : base(options)
+        public ApplicationContextSqlServer(DbContextOptions<ApplicationContextSqlServer> options) 
+            : base(options)
         {
         }
 
@@ -25,6 +29,7 @@ namespace ProyectoFoo.Infrastructure.Context
         {
             base.OnConfiguring(optionsBuilder);
         }
+
 
     }
 }
