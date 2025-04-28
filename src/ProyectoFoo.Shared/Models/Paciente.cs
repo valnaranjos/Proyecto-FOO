@@ -24,7 +24,7 @@ namespace ProyectoFoo.Shared.Models
         public string Surname { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "La fecha de nacimiento es obligatoria.")]
-        public DateTimeOffset Birthdate { get; set; }
+        public DateOnly Birthdate { get; set; }
 
         [Required(ErrorMessage = "El número de identificación es obligatorio.")]
         [Range(10, int.MaxValue, ErrorMessage = "El número de identificación debe ser positivo.")]
@@ -33,14 +33,17 @@ namespace ProyectoFoo.Shared.Models
         //(F/M/O)
         [Required(ErrorMessage = "El sexo es obligatorio.")]
         [RegularExpression(@"^(F|M|O)$", ErrorMessage = "Sexo inválido. Usa F, M u O.")]
+        [StringLength(1, ErrorMessage = "El sexo debe tener 1 carácter: F/M/O")] //Ejemplo adicional
         public string Sex { get; set; } = string.Empty;
 
        
         [EmailAddress(ErrorMessage = "Correo no válido.")]
+        [StringLength(100, ErrorMessage = "El correo no puede exceder los 100 caracteres.")] // Ejemplo adicional
         public string Email { get; set; }
 
 
         [Phone(ErrorMessage = "Número de teléfono no válido.")]
+        [StringLength(20, ErrorMessage = "El número de teléfono no puede exceder los 20 caracteres.")] // Ejemplo adicional
         public string Phone { get; set; }
 
         //Virtual/Presencial
