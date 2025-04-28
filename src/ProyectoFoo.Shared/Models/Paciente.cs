@@ -62,9 +62,9 @@ namespace ProyectoFoo.Shared.Models
         // // Constructor sin parámetros (requerido por EF Core) para instanciar las entidades al leer la base de datos.
         public Paciente()
         {
-
         }
-        public Paciente(int id, string name, string surname, DateTime birthdate, int identification, string sex, string modality, string email, string phone)
+
+        public Paciente(int id, string name, string surname, DateOnly birthdate, int identification, string sex, string modality, string email, string phone)
         {
             Id = id;
             Name = name;
@@ -78,7 +78,7 @@ namespace ProyectoFoo.Shared.Models
             AdmissionDate = DateTime.UtcNow;
         }
 
-        public Paciente(int id, string name, string surname, DateTime birthdate, int identification, string sex, string modality, string diagnosis, string institution, string email, string phone)
+        public Paciente(int id, string name, string surname, DateOnly birthdate, int identification, string sex, string modality, string diagnosis, string institution, string email, string phone)
         {
             Id = id;
             Name = name;

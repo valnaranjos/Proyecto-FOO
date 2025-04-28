@@ -6,12 +6,11 @@ using ProyectoFoo.Shared.Models;
 using ProyectoFoo.Infrastructure.Context;
 using ServiceStack.Text.Json;
 using MySqlConnector;
+using ProyectoFoo.API.Models;
+
 
 namespace ProyectoFOO.API.Controllers
 {
-
-
-
     /// <summary>
     /// Controlador API para manejar operaciones sobre pacientes.
     /// </summary>
@@ -57,7 +56,7 @@ namespace ProyectoFOO.API.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(ModelState); // Devuelve un error 400 con los detalles de la validación
             }
 
             try
@@ -112,68 +111,78 @@ namespace ProyectoFOO.API.Controllers
         }
 
         /// <summary>
-        /// Reemplaza completamente los datos de un paciente existente.
+        /// Actualiza parcialmente los datos de un paciente existente.
         /// </summary>
         /// <param name="id">ID del paciente a actualizar.</param>
-        /// <param name="pacienteActualizado">Nuevo estado del paciente.</param>
-        /// <returns>Respuesta HTTP indicando el éxito o error de la actualización.</returns>
+        /// <param name="updatePatientDto">Objeto JSON con los campos a actualizar.</param>
+        /// <returns>Respuesta HTTP indicando el éxito o error de la actualización. En caso de éxito, devuelve el paciente actualizado.</returns>
         /// <remarks>
-        /// Este endpoint reemplaza toda la información del paciente.
-        /// Es importante enviar todos los campos completos, incluyendo el ID en el cuerpo.
+        /// Este endpoint permite actualizar solo los campos proporcionados en el cuerpo de la solicitud.
+        /// El ID del paciente se debe especificar en la URL.
         ///
         /// Ejemplo de solicitud:
         ///
         ///     PUT /api/1
         ///     {
+        ///         "name": "Nuevo Nombre",
+        ///         "phone": "987654321"
+        ///     }
+        ///
+        /// Ejemplo de respuesta (200 OK):
+        ///
+        ///     {
         ///         "id": 1,
-        ///         "name": "Juan",
+        ///         "name": "Nuevo Nombre",
         ///         "surname": "Pérez",
-        ///         "birthdate": "2015-04-10T00:00:00",
+        ///         "birthdate": "2015-04-10",
         ///         "identification": 12345,
         ///         "diagnosis": "TDAH",
         ///         "institution": "Escuela 23",
-        ///         "age": 9,
         ///         "sex": "Masculino",
         ///         "email": "juan.perez@mail.com",
-        ///         "phone": "099123456",
+        ///         "phone": "987654321",
         ///         "modality": "Presencial",
-        ///         "admissionDate": "2023-03-01T10:00:00"
+        ///         "admissionDate": "2023-03-01T10:00:00Z"
         ///     }
         /// </remarks>
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdatePaciente(int id, [FromBody] Paciente pacienteActualizado)
+        public async Task<IActionResult> UpdatePaciente(int id, [FromBody] UpdatePatientDto updatePatient)
         {
 
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
-            if (id != pacienteActualizado.Id)
-            {
-                return BadRequest("El ID del paciente en la URL no coincide con el ID del cuerpo de la solicitud.");
-            }
-
             var pacienteExistente = await _context.Pacientes.FindAsync(id);
+
             if (pacienteExistente == null)
             {
                 return NotFound("Paciente no encontrado.");
             }
 
-            // Aquí se podría realizar la lógica para actualizar los campos específicos
-            pacienteExistente.Name = pacienteActualizado.Name;
-            pacienteExistente.Surname = pacienteActualizado.Surname;
-            pacienteExistente.Birthdate = pacienteActualizado.Birthdate;
-            pacienteExistente.Identification = pacienteActualizado.Identification;
-            pacienteExistente.Diagnosis = pacienteActualizado.Diagnosis;
-            pacienteExistente.Institution = pacienteActualizado.Institution;
+
+            // Actualizar solo las propiedades que tienen un valor en el DTO
+            if (updatePatient.Name != null) pacienteExistente.Name = updatePatient.Name;
+            if (updatePatient.Surname != null) pacienteExistente.Surname = updatePatient.Surname;
+            if (updatePatient.Birthdate.HasValue) pacienteExistente.Birthdate = updatePatient.Birthdate.Value;
+            if (updatePatient.Identification.HasValue) pacienteExistente.Identification = updatePatient.Identification.Value;
+            if (updatePatient.Sex != null) pacienteExistente.Sex = updatePatient.Sex;
+            if (updatePatient.Email != null) pacienteExistente.Email = updatePatient.Email;
+            if (updatePatient.Phone != null) pacienteExistente.Phone = updatePatient.Phone;
+            if (updatePatient.Modality != null) pacienteExistente.Modality = updatePatient.Modality;
+            if (updatePatient.Diagnosis != null) pacienteExistente.Diagnosis = updatePatient.Diagnosis;
+            if (updatePatient.Institution != null) pacienteExistente.Institution = updatePatient.Institution;
 
             try
             {
                 await _context.SaveChangesAsync();
-                return NoContent(); // Devuelve un código 204 si la actualización es exitosa
+                var pacienteActualizado = await _context.Pacientes.FindAsync(id); // Volver a obtener para incluir posibles cambios de la base de datos
+                return Ok(pacienteActualizado); // Devolver el paciente actualizado con un código 200.
             }
-
+            catch (DbUpdateConcurrencyException)
+            {
+                return StatusCode(StatusCodes.Status409Conflict, "Los datos del paciente han sido modificados por otro usuario.");
+            }
             catch (Exception ex)
             {
                 return BadRequest($"Error al actualizar el paciente: {ex.Message}");
