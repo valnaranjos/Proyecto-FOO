@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using ProyectoFoo.Shared.Models;
 using ProyectoFoo.Infrastructure.Context;
 using ServiceStack.Text.Json;
+using MySqlConnector;
 
 namespace ProyectoFOO.API.Controllers
 {
@@ -59,26 +60,25 @@ namespace ProyectoFOO.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (nuevoPaciente == null)
-            {
-                return BadRequest("El paciente no puede ser nulo.");
-            }
-
-            // Si no se envió fecha de ingreso, se asigna automáticamente
-            if (nuevoPaciente.AdmissionDate == default)
-            {
-                nuevoPaciente.AdmissionDate = DateTime.UtcNow;
-            }
-
             try
             {
                 _context.Pacientes.Add(nuevoPaciente);
                 await _context.SaveChangesAsync();
                 return CreatedAtAction(nameof(GetPacienteById), new { id = nuevoPaciente.Id }, nuevoPaciente);
             }
+            catch (DbUpdateException ex) // Captura excepciones relacionadas con la base de datos
+            {
+                if (ex.InnerException is MySqlException mySqlException && mySqlException.Number == 1062) // 1062 es el código de error para violación de unicidad en MySQL
+                {
+                    return Conflict($"Ya existe un paciente con la identificación '{nuevoPaciente.Identification}'.");
+                }
+
+                // Otras excepciones de la base de datos
+                return BadRequest($"Error al crear el paciente: {ex.Message}");
+            }
             catch (Exception ex)
             {
-                return BadRequest($"Error al crear el paciente: {ex.Message}");
+                return BadRequest($"Error inesperado al crear el paciente: {ex.Message}");
             }
         }
 
