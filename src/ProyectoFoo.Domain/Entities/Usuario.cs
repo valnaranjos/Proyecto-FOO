@@ -14,21 +14,22 @@ namespace ProyectoFoo.Domain.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Required]
-        [StringLength(20)]
-        public string Identificacion { get; set; } = string.Empty;
+        [Required(ErrorMessage = "El número de identificación es obligatorio.")]
+        [Range(10, int.MaxValue, ErrorMessage = "El número de identificación debe ser positivo.")]
+        public int Identification { get; set; }
 
-        [Required]
-        [StringLength(100)]
+        [Required(ErrorMessage = "El nombre es obligatorio.")]
+        [StringLength(50, ErrorMessage = "El nombre no puede exceder los 50 caracteres.")]
+        [RegularExpression(@"^[a-zA-ZÁÉÍÓÚáéíóúÑñ\s]+$", ErrorMessage = "El nombre solo puede contener letras y espacios.")]
         public string Name { get; set; } = string.Empty;
 
-        [Required]
-        [StringLength(100)]
+        [Required(ErrorMessage = "El apellido es obligatorio.")]
+        [StringLength(50, ErrorMessage = "El nombre no puede exceder los 50 caracteres.")]
+        [RegularExpression(@"^[a-zA-ZÁÉÍÓÚáéíóúÑñ\s]+$", ErrorMessage = "El apellido solo puede contener letras y espacios.")]
         public string Apellido { get; set; } = string.Empty;
 
-        [Required]
-        [EmailAddress]
-        [StringLength(255)]
+        [EmailAddress(ErrorMessage = "Correo no válido.")]
+        [StringLength(100, ErrorMessage = "El correo no puede exceder los 100 caracteres.")]
         public string Email { get; set; }
 
         [Required]

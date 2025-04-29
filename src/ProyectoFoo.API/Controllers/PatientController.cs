@@ -2,12 +2,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using System.ComponentModel.DataAnnotations;
-using ProyectoFoo.Shared.Models;
 using ProyectoFoo.Infrastructure.Context;
 using ServiceStack.Text.Json;
 using MySqlConnector;
 using ProyectoFoo.Application.Features.PatientFeature.MapperProfiles;
 using Microsoft.AspNetCore.Authorization;
+using ProyectoFoo.Domain.Entities;
 
 
 namespace ProyectoFOO.API.Controllers

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProyectoFoo.Shared.Models
+namespace ProyectoFoo.Domain.Entities
 {
     public class Paciente
     {

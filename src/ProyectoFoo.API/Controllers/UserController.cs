@@ -34,7 +34,7 @@ namespace ProyectoFoo.API.Controllers
             // Crear un nuevo usuario
             var newUser = new Usuario()
             {
-                Identificacion = model.Identification,
+                Identification = model.Identification,
                 Name = model.Name,
                 Apellido = model.Surname,
                 Email = model.Email,
