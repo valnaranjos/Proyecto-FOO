@@ -3,6 +3,7 @@ using ProyectoFoo.Shared.Models;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using System.IO;
+using ProyectoFoo.Domain.Entities;
 
 
 namespace ProyectoFoo.Infrastructure.Context

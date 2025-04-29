@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ProyectoFoo.Infrastructure.Context;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using ProyectoFoo.Infrastructure.ServiceExtensions;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,33 @@ builder.Services.AddSwaggerGen(c =>
     {
         c.IncludeXmlComments(xmlPath);
     }
+
+    // Configuración de seguridad para JWT Bearer
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "Introduce el token JWT Bearer (ej. 'Bearer eyJ...').",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    // Aplica la seguridad a todos los endpoints (opcional, puedes configurarlo por controlador/acción)
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
 });
 
 // Add database context
@@ -64,9 +92,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
-                System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-        };
-    });
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };    });
 
 var app = builder.Build();
 
@@ -111,6 +138,7 @@ catch (Exception ex)
 // Middleware
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
+app.UseAuthentication(); // Agrega el middleware de autenticación0uij
 app.UseAuthorization(); // Necesario para que JWT funcione
 app.MapControllers();
 

@@ -6,7 +6,8 @@ using ProyectoFoo.Shared.Models;
 using ProyectoFoo.Infrastructure.Context;
 using ServiceStack.Text.Json;
 using MySqlConnector;
-using ProyectoFoo.API.Models;
+using ProyectoFoo.Application.Features.PatientFeature.MapperProfiles;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace ProyectoFOO.API.Controllers
@@ -14,6 +15,7 @@ namespace ProyectoFOO.API.Controllers
     /// <summary>
     /// Controlador API para manejar operaciones sobre pacientes.
     /// </summary>
+    [Authorize] // Requiere autenticación para todas las acciones en este controlador
     [Route("api/[controller]")]
     [ApiController]
     public class PatientController : ControllerBase
@@ -188,69 +190,6 @@ namespace ProyectoFOO.API.Controllers
                 return BadRequest($"Error al actualizar el paciente: {ex.Message}");
             }
         }
-
-        /*
-        /// <summary>
-        /// Actualiza parcialmente la informacion de un paciente existente.
-        /// </summary>
-        /// <param name="id">ID del paciente a actualizar.</param>
-        /// <param name="camposActualizados">Campos a modificar.</param>
-        /// <returns>Paciente actualizado o mensaje de error.</returns>
-        /// <remarks>
-        /// Este endpoint permite actualizar solo los campos deseados.
-        /// No es necesario enviar el objeto completo.
-        ///
-        /// Ejemplo de solicitud:
-        ///
-        ///     PATCH /api/1
-        ///     {
-        ///         "phone": "099888777",
-        ///         "diagnosis": "Ansiedad leve"
-        ///     }
-        /// </remarks>
-        [HttpPatch("{id}")]
-        public async Task<IActionResult> PatchPaciente(int id, [FromBody] JsonElement camposActualizados)
-        {
-            var pacienteExistente = await _context.Pacientes.FindAsync(id);
-            if (pacienteExistente == null)
-            {
-                return NotFound("Paciente no encontrado.");
-            }
-
-            try
-            {
-                // Deserializar parcialmente los datos al objeto existente
-                var pacienteJson = JsonSerializer.Serialize(pacienteExistente);
-                var docOriginal = JsonDocument.Parse(pacienteJson);
-                var objMerged = JsonUtils.MergeJson(docOriginal.RootElement, camposActualizados);
-
-                var pacienteModificado = JsonSerializer.Deserialize<Paciente>(objMerged.ToString());
-
-                // Verificar si pacienteModificado es nulo antes de pasar a ValidationContext
-                if (pacienteModificado == null)
-                {
-                    return BadRequest("No se pudo deserializar los datos del paciente.");
-                }
-
-                // Validación manual del modelo PATCH
-                var context = new ValidationContext(pacienteModificado, serviceProvider: null, items: null);
-                var results = new List<ValidationResult>();
-
-                if (!Validator.TryValidateObject(pacienteModificado, context, results, true))
-                {
-                    return BadRequest(results);
-                }
-
-                _context.Entry(pacienteExistente).CurrentValues.SetValues(pacienteModificado);
-                await _context.SaveChangesAsync();
-
-                return Ok(pacienteExistente);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"Error al actualizar parcialmente el paciente: {ex.Message}");
-            }
-        }*/
 
 
         /// <summary>

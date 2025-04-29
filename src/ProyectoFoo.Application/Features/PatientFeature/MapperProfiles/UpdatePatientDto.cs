@@ -1,5 +1,6 @@
-﻿namespace ProyectoFoo.API.Models
+﻿namespace ProyectoFoo.Application.Features.PatientFeature.MapperProfiles
 {
+
     public class UpdatePatientDto
     {
         public string? Name { get; set; }
