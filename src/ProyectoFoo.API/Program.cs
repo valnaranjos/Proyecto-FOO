@@ -4,6 +4,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ProyectoFoo.Infrastructure.Context;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using ProyectoFoo.Infrastructure.ServiceExtensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Agregar servicios
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddInfrastructureServices(); // Llama al método de extensión de Infraestructura
 
 
 // Add Swagger to the container
