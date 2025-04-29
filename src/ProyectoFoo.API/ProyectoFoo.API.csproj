@@ -9,7 +9,7 @@
   <ItemGroup>
 	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.4" />
 	  <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.4" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -20,8 +20,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ProyectoFoo.Application\ProyectoFoo.Application.csproj" />
+    <ProjectReference Include="..\ProyectoFoo.Domain\ProyectoFoo.Domain.csproj" />
     <ProjectReference Include="..\ProyectoFoo.Infrastructure\ProyectoFoo.Infrastructure.csproj" />
     <ProjectReference Include="..\ProyectoFoo.Shared\ProyectoFoo.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Middleware\" />
+    <Folder Include="Models\Dtos\" />
+    <Folder Include="Services\Identity\" />
   </ItemGroup>
 
 </Project>
