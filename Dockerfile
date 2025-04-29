@@ -30,8 +30,6 @@ COPY . .
 # Establecer el directorio de trabajo
 WORKDIR "/src/src/ProyectoFoo.API"
 
-# Aplicar migraciones si corresponde
-RUN dotnet ef database update
 
 # Build y publicación
 RUN dotnet publish "ProyectoFoo.API.csproj" \
