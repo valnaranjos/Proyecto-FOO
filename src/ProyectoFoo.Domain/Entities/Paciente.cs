@@ -13,43 +13,31 @@ namespace ProyectoFoo.Domain.Entities
     {
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "El nombre es obligatorio.")]
-        [StringLength(50, ErrorMessage = "El nombre no puede exceder los 50 caracteres.")]
-        [RegularExpression(@"^[a-zA-ZÁÉÍÓÚáéíóúÑñ\s]+$", ErrorMessage = "El nombre solo puede contener letras y espacios.")]
-        public string Name { get; set; } = string.Empty;
+       
+        public string Name { get; set; }
 
-        [Required(ErrorMessage = "El apellido es obligatorio.")]
-        [StringLength(50, ErrorMessage = "El apellido no puede exceder los 50 caracteres.")]
-        [RegularExpression(@"^[a-zA-ZÁÉÍÓÚáéíóúÑñ\s]+$", ErrorMessage = "El apellido solo puede contener letras y espacios.")]
-        public string Surname { get; set; } = string.Empty;
+        
+        public string Surname { get; set; }
 
-        [Required(ErrorMessage = "La fecha de nacimiento es obligatoria.")]
-        public DateOnly Birthdate { get; set; }
 
-        [Required(ErrorMessage = "El número de identificación es obligatorio.")]
-        [Range(10, int.MaxValue, ErrorMessage = "El número de identificación debe ser positivo.")]
+        public DateTime Birthdate { get; set; }
+
+        
         public int Identification { get; set; }
 
-        //(F/M/O)
-        [Required(ErrorMessage = "El sexo es obligatorio.")]
-        [RegularExpression(@"^(F|M|O)$", ErrorMessage = "Sexo inválido. Usa F, M u O.")]
-        [StringLength(1, ErrorMessage = "El sexo debe tener 1 carácter: F/M/O")] //Ejemplo adicional
-        public string Sex { get; set; } = string.Empty;
+       
+        public string Sex { get; set; }
 
        
-        [EmailAddress(ErrorMessage = "Correo no válido.")]
-        [StringLength(100, ErrorMessage = "El correo no puede exceder los 100 caracteres.")] // Ejemplo adicional
-        public string Email { get; set; }
+       
+        public string? Email { get; set; }
 
 
-        [Phone(ErrorMessage = "Número de teléfono no válido.")]
-        [StringLength(20, ErrorMessage = "El número de teléfono no puede exceder los 20 caracteres.")] // Ejemplo adicional
-        public string Phone { get; set; }
 
-        //Virtual/Presencial
-        [Required(ErrorMessage = "La modalidad es obligatoria.")]
-        [RegularExpression(@"^(Presencial|Virtual)$", ErrorMessage = "Las opciones son 'Presencial' o 'Virtual'.")]
-        public string Modality { get; set; } = string.Empty;
+        public string? Phone { get; set; }
+
+
+        public string Modality { get; set; }
 
         //Se calcula automática
         public DateTimeOffset AdmissionDate { get; set; } = DateTime.UtcNow;
@@ -62,23 +50,26 @@ namespace ProyectoFoo.Domain.Entities
         // // Constructor sin parámetros (requerido por EF Core) para instanciar las entidades al leer la base de datos.
         public Paciente()
         {
+            Name = string.Empty;
+            Surname = string.Empty;
+            Sex = string.Empty;
+            Modality = string.Empty;
         }
 
-        public Paciente(int id, string name, string surname, DateOnly birthdate, int identification, string sex, string modality, string email, string phone)
+        public Paciente( string name, string surname, DateTime birthdate, int identification, string sex, string modality, string email, string phone)
         {
-            Id = id;
-            Name = name;
-            Surname = surname;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Surname = surname ?? throw new ArgumentNullException(nameof(surname));
             Birthdate = birthdate;
             Identification = identification;
-            Sex = sex;
-            Modality = modality;
+            Sex = sex ?? throw new ArgumentNullException(nameof(sex)); ;
+            Modality = modality ?? throw new ArgumentNullException(nameof(modality));
             Email = email;
             Phone = phone;
             AdmissionDate = DateTime.UtcNow;
         }
 
-        public Paciente(int id, string name, string surname, DateOnly birthdate, int identification, string sex, string modality, string diagnosis, string institution, string email, string phone)
+        public Paciente(int id, string name, string surname, DateTime birthdate, int identification, string sex, string modality, string diagnosis, string institution, string email, string phone)
         {
             Id = id;
             Name = name;

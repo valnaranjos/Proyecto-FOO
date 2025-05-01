@@ -25,10 +25,4 @@
     <ProjectReference Include="..\ProyectoFoo.Shared\ProyectoFoo.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Middleware\" />
-    <Folder Include="Models\Dtos\" />
-    <Folder Include="Services\Identity\" />
-  </ItemGroup>
-
 </Project>
