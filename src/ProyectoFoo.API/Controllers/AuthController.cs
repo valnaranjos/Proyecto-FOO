@@ -1,66 +1,51 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using ProyectoFoo.Application.Contracts.Persistence;
-using Microsoft.Extensions.Configuration;
-using ProyectoFoo.Shared.Models;
-using ProyectoFoo.Domain.Entities;
+using ProyectoFoo.Domain.Services;
 using ProyectoFoo.API.Models.Authentication;
 
 namespace ProyectoFoo.API.Controllers
 {
+    /// <summary>
+    /// Autentica a un usuario y devuelve un token JWT si las credenciales son válidas.
+    /// </summary>
+    /// <param name="model">Objeto JSON que contiene el correo electrónico y la contraseña del usuario.</param>
+    /// <returns>
+    /// Si las credenciales son correctas, devuelve un código de estado 200 OK con el token JWT.
+    /// Si las credenciales son incorrectas, devuelve un código de estado 401 Unauthorized.
+    /// </returns>
+    /// <response code="200">Credenciales válidas. Devuelve el token JWT.</response>
+    /// <response code="401">Credenciales inválidas.</response>
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
     {
         private readonly IUserRepository _usuarioRepository;
-        private readonly IConfiguration _configuration;
+        private readonly ITokenService _tokenService;
 
-        public AuthController(IUserRepository usuarioRepository, IConfiguration configuration)
+        public AuthController(IUserRepository usuarioRepository, ITokenService tokenService)
         {
-            _usuarioRepository = usuarioRepository;
-            _configuration = configuration;
+            _usuarioRepository = usuarioRepository ?? throw new ArgumentNullException(nameof(usuarioRepository));
+            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto model)
         {
-            var usuario = await _usuarioRepository.GetUsuarioPorEmail(model.Email);
+            var usuario = await _usuarioRepository.GetByEmailAsync(model.Email);
 
-            if (usuario != null && usuario.VerificarContrasena(model.Password))
+            if (usuario == null || !usuario.VerificarContrasena(model.Password))
             {
-                usuario.ActualizarUltimoAcceso();
-                await _usuarioRepository.UpdateUsuario(usuario); // Actualizar la fecha del último acceso
-
-                var token = GenerateJwtToken(usuario);
-                return Ok(new { Token = token });
+                return Unauthorized("Credenciales inválidas.");
             }
 
-            return Unauthorized("Credenciales inválidas.");
-        }
+            // Generar el token utilizando el TokenService
+            var token = _tokenService.GenerateToken(usuario);
 
-        private string GenerateJwtToken(Usuario usuario)
-        {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            // Actualizar la fecha del último acceso
+            usuario.ActualizarUltimoAcceso();
+            await _usuarioRepository.UpdateAsync(usuario);
 
-            var claims = new[] {
-                new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
-                new Claim(ClaimTypes.Name, usuario.Name),
-                new Claim(ClaimTypes.Email, usuario.Email),
-                // Aquí se pueden agregar claims para roles en el futuro???
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddHours(8), // Define la duración del token (8 horas como turno?)
-                signingCredentials: credentials);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
+            return Ok(new { Token = token });
+        }       
     }    
 }

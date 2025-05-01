@@ -1,9 +1,6 @@
 ﻿using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Domain.Entities;
 using ProyectoFoo.Infrastructure.Context;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace ProyectoFoo.Infrastructure.Persistence
 {
@@ -14,6 +11,7 @@ namespace ProyectoFoo.Infrastructure.Persistence
         // Constructor que recibe el DbContext y lo pasa a la base
         public PatientRepository(ApplicationContextSqlServer dbContext) : base(dbContext)
         {
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
         //Como hereda de BaseRepository, no es necesario implementar los métodos de la interfaz IPatientRepository

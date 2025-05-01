@@ -21,6 +21,7 @@ namespace ProyectoFOO.API.Controllers
     //[Authorize] // Requiere autenticación para todas las acciones en este controlador
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PatientController : ControllerBase
     {
 

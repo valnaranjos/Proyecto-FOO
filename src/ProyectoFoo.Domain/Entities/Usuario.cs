@@ -1,10 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-using BCrypt.Net;
-using System.Security.Cryptography;
-using System.Text;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace ProyectoFoo.Domain.Entities
 {
@@ -39,7 +35,11 @@ namespace ProyectoFoo.Domain.Entities
 
 
         // Constructor sin parámetros para Entity Framework
-        public Usuario() { }
+        public Usuario() 
+        {
+            Email = string.Empty;
+            PasswordHash = string.Empty;
+        }
         public Usuario(int id, string nombre, string correo, string contrasena)
         {
             Id = id;

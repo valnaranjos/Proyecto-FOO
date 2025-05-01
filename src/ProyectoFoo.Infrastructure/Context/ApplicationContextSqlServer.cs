@@ -21,6 +21,7 @@ namespace ProyectoFoo.Infrastructure.Context
         //Modelo a crear
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            //Aquí se puede mappear las entidades a la base de datos a gusto...
             base.OnModelCreating(modelBuilder);
         }
 

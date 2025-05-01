@@ -2,10 +2,9 @@
 
 namespace ProyectoFoo.Application.Contracts.Persistence
 {
-    public interface IUserRepository
+    public interface IUserRepository : IAsyncRepository<Usuario>
     {
-        Task<Usuario?> GetUsuarioPorEmail(string email);
-        Task UpdateUsuario(Usuario usuario);
-        Task AddUsuario(Usuario usuario);
+        Task<Usuario?> GetByEmailAsync(string email);
+        Task<bool> ExistsAsync(int identification);
     }
 }
