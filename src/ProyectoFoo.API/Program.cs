@@ -24,14 +24,17 @@ var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
 
 if (string.IsNullOrEmpty(secretKey))
 {
-    // Manejo de error si la variable de entorno no está configurada (puedes personalizar esto)
+    // Manejo de error si la variable de entorno no está configurada (podría personalizar esto)
     var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
     var logger = loggerFactory.CreateLogger("Program");
     logger.LogError("La variable de entorno JWT_SECRET_KEY no está configurada. La aplicación no puede iniciar correctamente.");
     throw new InvalidOperationException("JWT_SECRET_KEY no configurada.");
 }
-
-builder.Services.AddSingleton<ITokenService, TokenService>(sp => new TokenService(secretKey, sp.GetRequiredService<IConfiguration>()));
+else
+{
+    // Registra el TokenService como singleton, pasando la clave secreta desde la variable de entorno.
+    builder.Services.AddSingleton<ITokenService, TokenService>(sp => new TokenService(secretKey, sp.GetRequiredService<IConfiguration>()));
+}
 
 // Add Swagger to the container
 //Activar este línea en caso de querer desactivar Swagger en producción

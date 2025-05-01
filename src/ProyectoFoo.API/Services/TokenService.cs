@@ -7,11 +7,19 @@ using System.Text;
 
 namespace ProyectoFoo.API.Services
 {
+    /// <summary>
+    /// Servicio responsable de generar tokens de autenticación JWT.
+    /// </summary>
     public class TokenService : ITokenService
     {
         private readonly string _secretKey;
         private readonly IConfiguration _configuration;
 
+        /// <summary>
+        /// Constructor del TokenService.
+        /// </summary>
+        /// <param name="secretKey">Clave secreta utilizada para firmar los tokens JWT.</param>
+        /// <param name="configuration">Configuración de la aplicación (para leer la clave secreta).</param>
         public TokenService(string secretKey, IConfiguration configuration) // Modifica el constructor
         {
             _secretKey = secretKey ?? throw new ArgumentNullException(nameof(secretKey));
@@ -20,6 +28,12 @@ namespace ProyectoFoo.API.Services
             Console.WriteLine($"TokenService Secret Key (Length: {_secretKey.Length}): {_secretKey}");
         }
 
+
+        /// <summary>
+        /// Genera un token JWT para el usuario proporcionado.
+        /// </summary>
+        /// <param name="user">El usuario para el que se generará el token.</param>
+        /// <returns>Una cadena que representa el token JWT.</returns>
         public string GenerateToken(Usuario user)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));

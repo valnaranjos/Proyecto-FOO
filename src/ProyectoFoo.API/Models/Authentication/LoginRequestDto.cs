@@ -2,6 +2,9 @@
 
 namespace ProyectoFoo.API.Models.Authentication
 {
+    /// <summary>
+    /// Objeto de transferencia de datos (DTO) para la solicitud de inicio de sesión.
+    /// </summary>
     public class LoginRequestDto
     {
         [Required(ErrorMessage = "El correo electrónico es obligatorio.")]

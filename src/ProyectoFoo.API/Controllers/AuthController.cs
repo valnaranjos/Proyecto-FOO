@@ -28,6 +28,16 @@ namespace ProyectoFoo.API.Controllers
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
         }
 
+        /// <summary>
+        /// Autentica a un usuario y devuelve un token JWT si las credenciales son válidas.
+        /// </summary>
+        /// <param name="model">Objeto JSON que contiene el correo electrónico y la contraseña del usuario.</param>
+        /// <returns>
+        /// Si las credenciales son correctas, devuelve un código de estado 200 OK con el token JWT.
+        /// Si las credenciales son incorrectas, devuelve un código de estado 401 Unauthorized.
+        /// </returns>
+        /// <response code="200">Credenciales válidas. Devuelve el token JWT.</response>
+        /// <response code="401">Credenciales inválidas.</response>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto model)
         {
