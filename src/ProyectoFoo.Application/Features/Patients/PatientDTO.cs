@@ -11,9 +11,12 @@ namespace ProyectoFoo.Application.Features.Patients
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Surname { get; set; } = string.Empty;
+
         public DateTime Birthdate { get; set; }
         public int Identification { get; set; }
-        public string Sex { get; set; } = string.Empty;
+        
+        
+        public SexType Sex { get; set; } = SexType.Masculino;
         public string Modality { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;

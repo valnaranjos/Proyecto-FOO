@@ -28,6 +28,14 @@ namespace ProyectoFoo.Domain.Entities
        
         public string Sex { get; set; }
 
+        
+        public enum SexType
+        {
+        Femenino,
+        Masculino,
+        Otro
+        }
+
        
        
         public string? Email { get; set; }
