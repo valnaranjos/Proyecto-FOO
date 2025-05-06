@@ -26,7 +26,5 @@ namespace ProyectoFoo.Application.Features.Patients
         [Phone(ErrorMessage = "Formato de número de teléfono no válido.")]
         public string? Phone { get; set; }
 
-        public string? Diagnosis { get; set; }
-        public string? Institution { get; set; }
     }
 }

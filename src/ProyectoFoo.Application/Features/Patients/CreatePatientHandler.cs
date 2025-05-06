@@ -30,8 +30,6 @@ namespace ProyectoFoo.Application.Features.Patients
                 Modality = request.Modality,
                 Email = request.Email,
                 Phone = request.Phone,
-                Diagnosis = request.Diagnosis,
-                Institution = request.Institution
             };
 
             var newPaciente = await _pacienteRepository.AddAsync(paciente);

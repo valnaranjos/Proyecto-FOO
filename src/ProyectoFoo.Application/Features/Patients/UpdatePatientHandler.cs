@@ -37,8 +37,6 @@ namespace ProyectoFoo.Application.Features.Patients
             if (request.Email != null) patientToUpdate.Email = request.Email;
             if (request.Phone != null) patientToUpdate.Phone = request.Phone;
             if (request.Modality != null) patientToUpdate.Modality = request.Modality;
-            if (request.Diagnosis != null) patientToUpdate.Diagnosis = request.Diagnosis;
-            if (request.Institution != null) patientToUpdate.Institution = request.Institution;
 
             await _pacienteRepository.UpdateAsync(patientToUpdate);
 
