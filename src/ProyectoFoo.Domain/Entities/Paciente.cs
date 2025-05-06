@@ -42,10 +42,9 @@ namespace ProyectoFoo.Domain.Entities
         //Se calcula automática
         public DateTimeOffset AdmissionDate { get; set; } = DateTime.UtcNow;
 
+        public int Age { get; set; }
 
-        //No obligatorios
-        public string? Diagnosis { get; set; }
-        public string? Institution { get; set; }
+
 
         // // Constructor sin parámetros (requerido por EF Core) para instanciar las entidades al leer la base de datos.
         public Paciente()
@@ -67,9 +66,10 @@ namespace ProyectoFoo.Domain.Entities
             Email = email;
             Phone = phone;
             AdmissionDate = DateTime.UtcNow;
+            Age = birthdate.Year - DateTime.UtcNow.Year;
         }
 
-        public Paciente(int id, string name, string surname, DateTime birthdate, int identification, string sex, string modality, string diagnosis, string institution, string email, string phone)
+        public Paciente(int id, string name, string surname, DateTime birthdate, int identification, string sex, string modality, string diagnosis,string email, string phone)
         {
             Id = id;
             Name = name;
@@ -78,15 +78,13 @@ namespace ProyectoFoo.Domain.Entities
             Identification = identification;
             Sex = sex;
             Modality = modality;
-            Diagnosis = diagnosis;
-            Institution = institution;
+            Age = birthdate.Year - DateTime.UtcNow.Year;
+           
             Email = email;
             Phone = phone;
             AdmissionDate = DateTime.UtcNow;
         }
 
-        [NotMapped]
-        public int Age => DateTime.Today.Year - Birthdate.Year - (DateTime.Today.DayOfYear < Birthdate.DayOfYear ? 1 : 0);
 
     }
 }
