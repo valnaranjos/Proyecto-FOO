@@ -22,7 +22,7 @@ namespace ProyectoFoo.Application.Features.Patients
         public int Identification { get; set; }
 
         [Required(ErrorMessage = "El sexo es obligatorio.")]
-        public string Sex { get; set; } = string.Empty;
+        public SexType Sex { get; set; } = SexType.Masculino;
 
         [Required(ErrorMessage = "La modalidad es obligatoria.")]
         public string Modality { get; set; } = string.Empty;
@@ -35,8 +35,6 @@ namespace ProyectoFoo.Application.Features.Patients
         [Phone(ErrorMessage = "Formato de número de teléfono no válido.")]
         public string Phone { get; set; } = string.Empty;
 
-        public string? Diagnosis { get; set; }
-        public string? Institution { get; set; }
 
     }
 }
