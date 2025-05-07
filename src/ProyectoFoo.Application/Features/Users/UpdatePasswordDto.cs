@@ -7,16 +7,29 @@ using System.Threading.Tasks;
 
 namespace ProyectoFoo.Shared
 {
+    /// <summary>
+    /// DTO para recibir la información necesaria para actualizar la contraseña de un usuario.
+    /// </summary>
     public class UpdatePasswordDto
     {
+        /// <summary>
+        /// La contraseña actual del usuario, necesaria para verificar antes de permitir el cambio.
+        /// </summary>
         [Required]
         [DataType(DataType.Password)]
-        public required  string CurrentPassword { get; set; }
+        public required string CurrentPassword { get; set; }
 
+
+        /// <summary>
+        /// La nueva contraseña que el usuario desea establecer.
+        /// </summary>
         [Required]
         [DataType(DataType.Password)]
-        public required  string NewPassword { get; set; }
+        public required string NewPassword { get; set; }
 
+        /// <summary>
+        /// La confirmación de la nueva contraseña, debe coincidir con <see cref="NewPassword"/>.
+        /// </summary>
         [Required]
         [DataType(DataType.Password)]
         [MinLength(8, ErrorMessage = "La contraseña debe tener al menos 8 caracteres.")]

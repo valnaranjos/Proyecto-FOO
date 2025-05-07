@@ -143,6 +143,12 @@ namespace ProyectoFoo.API.Controllers
             }
         }
 
+        /// <summary>
+        /// Endpoint para que un usuario autenticado solicite cambiar su dirección de correo electrónico.
+        /// Genera y envía un código de verificación a la nueva dirección.
+        /// </summary>
+        /// <param name="changeEmailRequest">Un DTO que contiene la nueva dirección de correo electrónico.</param>
+        /// <returns>Un IActionResult que indica el resultado de la solicitud.</returns>
         [HttpPut("me/change-email")] //Endpoint para actualizar únicamente la contraseña 
         [Authorize]
         public async Task<IActionResult> RequestEmailChange([FromBody] ChangeEmailRequestDto changeEmailRequest)
@@ -181,7 +187,12 @@ namespace ProyectoFoo.API.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Endpoint para que un usuario autenticado confirme el cambio de su dirección de correo electrónico
+        /// proporcionando el código de verificación recibido.
+        /// </summary>
+        /// <param name="confirmEmailChange">Un DTO que contiene el código de verificación.</param>
+        /// <returns>Un IActionResult que indica el resultado de la confirmación.</returns>
         [HttpPost("me/confirm-email-change")]
         [Authorize]
         public async Task<IActionResult> ConfirmEmailChange([FromBody] ConfirmEmailChangeDto confirmEmailChange)
