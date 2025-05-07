@@ -23,19 +23,18 @@ namespace ProyectoFoo.Application.Features.Patients
 
             if (patient != null)
             {
-                var patientDto = new PatientDTO
-                {
-                    Id = patient.Id,
-                    Name = patient.Name,
-                    Surname = patient.Surname,
-                    Birthdate = patient.Birthdate,
-                    Identification = patient.Identification,
-                    Sex = patient.Sex.ToString(),
-                    Modality = patient.Modality,
-                    Email = patient.Email ?? string.Empty, //Como email no puede ser nulo, se asigna un empty si está vacío 
-                    Phone = patient.Phone ?? string.Empty,
-                    // que otras propiedades tendra paciente para mapping?
-                };
+            var patientDto = new PatientDTO
+            
+               Id = patient.Id,
+               Name = patient.Name,
+               Surname = patient.Surname,
+               Birthdate = patient.Birthdate,
+               Identification = patient.Identification,
+               Sex = Enum.TryParse<SexType>(patient.Sex, out var sex) ? sex : SexType.Otros,
+               Modality = patient.Modality,
+               Email = patient.Email ?? string.Empty,
+               Phone = patient.Phone ?? string.Empty,
+            };
 
                 return new GetPatientByIdResponse
                 {

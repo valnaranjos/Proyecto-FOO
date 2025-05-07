@@ -25,16 +25,16 @@ namespace ProyectoFoo.Application.Features.Patients
             {
                 var patientsDto = allPatients.Select(patient => new PatientDTO
                 {
-                    Id = patient.Id,
-                    Name = patient.Name,
-                    Surname = patient.Surname,
-                    Birthdate = patient.Birthdate,
-                    Identification = patient.Identification,
-                    Sex = patient.Sex.ToString(),
-                    Modality = patient.Modality,
-                    Email = patient.Email ?? string.Empty,
-                    Phone = patient.Phone ?? string.Empty,
-                    // Mapea aquí otras propiedades que necesites
+                Id = patient.Id,
+                Name = patient.Name,
+                Surname = patient.Surname,
+                Birthdate = patient.Birthdate,
+                Identification = patient.Identification,
+                Sex = Enum.TryParse<SexType>(patient.Sex, out var sex) ? sex : SexType.Otros,
+                Modality = patient.Modality,
+                Email = patient.Email ?? string.Empty,
+                Phone = patient.Phone ?? string.Empty,
+                 // Mapea aquí otras propiedades que necesites
                 }).ToList();
 
                 return new GetAllPatientsResponse
