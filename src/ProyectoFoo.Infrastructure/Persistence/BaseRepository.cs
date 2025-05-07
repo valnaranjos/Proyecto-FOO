@@ -1,8 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Infrastructure.Context;
 using System.Threading.Tasks;
 
-namespace ProyectoFoo.Application.Contracts.Persistence
+namespace ProyectoFoo.Infrastructure.Persistence
 {
     public class BaseRepository<T> : IAsyncRepository<T> where T : class
     {

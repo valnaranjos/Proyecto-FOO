@@ -6,5 +6,7 @@ namespace ProyectoFoo.Application.Contracts.Persistence
     {
         Task<Usuario?> GetByEmailAsync(string email);
         Task<bool> ExistsAsync(int identification);
+        Task UpdateUsuario(Usuario usuario);
+        Task<Usuario?> GetUserById(int id);
     }
 }

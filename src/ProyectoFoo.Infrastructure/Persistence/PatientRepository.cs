@@ -6,7 +6,7 @@ namespace ProyectoFoo.Infrastructure.Persistence
 {
     public class PatientRepository : BaseRepository<Paciente>, IPatientRepository
     {
-        private readonly ApplicationContextSqlServer _dbContext;
+        private new readonly ApplicationContextSqlServer _dbContext;
 
         // Constructor que recibe el DbContext y lo pasa a la base
         public PatientRepository(ApplicationContextSqlServer dbContext) : base(dbContext)

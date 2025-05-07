@@ -17,7 +17,7 @@ namespace ProyectoFoo.Application.Features.Users
         [Required(ErrorMessage = "El apellido es obligatorio.")]
         [StringLength(50, ErrorMessage = "El apellido no puede exceder los 50 caracteres.")]
         [RegularExpression(@"^[a-zA-ZÁÉÍÓÚáéíóúÑñ\s]+$", ErrorMessage = "El apellido solo puede contener letras y espacios.")]
-        public string Apellido { get; set; } = string.Empty;
+        public string Surname { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El correo electrónico es obligatorio.")]
         [EmailAddress(ErrorMessage = "Correo no válido.")]
