@@ -30,7 +30,7 @@ namespace ProyectoFoo.Application.Features.Patients
                     Surname = patient.Surname,
                     Birthdate = patient.Birthdate,
                     Identification = patient.Identification,
-                    Sex = patient.Sex.toString(),
+                    Sex = patient.Sex.ToString(),
                     Modality = patient.Modality,
                     Email = patient.Email ?? string.Empty,
                     Phone = patient.Phone ?? string.Empty,
