@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ProyectoFoo.Infrastructure.Context;
-using ProyectoFoo.Application.ServiceExtensions;
+using ProyectoFoo.Application.ServiceExtension;
 using ProyectoFoo.Infrastructure.ServiceExtensions;
 using ProyectoFoo.API.Services;
 using System.Text;

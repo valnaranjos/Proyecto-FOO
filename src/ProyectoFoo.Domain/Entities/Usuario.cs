@@ -22,7 +22,7 @@ namespace ProyectoFoo.Domain.Entities
         [Required(ErrorMessage = "El apellido es obligatorio.")]
         [StringLength(50, ErrorMessage = "El nombre no puede exceder los 50 caracteres.")]
         [RegularExpression(@"^[a-zA-ZÁÉÍÓÚáéíóúÑñ\s]+$", ErrorMessage = "El apellido solo puede contener letras y espacios.")]
-        public string Apellido { get; set; } = string.Empty;
+        public string Surname { get; set; } = string.Empty;
 
         [EmailAddress(ErrorMessage = "Correo no válido.")]
         [StringLength(100, ErrorMessage = "El correo no puede exceder los 100 caracteres.")]

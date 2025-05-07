@@ -44,7 +44,7 @@ namespace ProyectoFoo.Application.Features.Users
                 contrasena: request.Password // La contraseña se hashea en el constructor de Usuario
                 )
             {
-                Apellido = request.Apellido,
+                Surname = request.Surname,
                 Identification = request.Identification
             };
 
