@@ -23,18 +23,21 @@ namespace ProyectoFoo.Application.Features.Patients
 
             if (patient != null)
             {
-            var patientDto = new PatientDTO
-            
-               Id = patient.Id,
-               Name = patient.Name,
-               Surname = patient.Surname,
-               Birthdate = patient.Birthdate,
-               Identification = patient.Identification,
-               Sex = Enum.TryParse<SexType>(patient.Sex, out var sex) ? sex : SexType.Otros,
-               Modality = patient.Modality,
-               Email = patient.Email ?? string.Empty,
-               Phone = patient.Phone ?? string.Empty,
-            };
+SexType parsedSex;
+bool success = Enum.TryParse<SexType>(patient.Sex, out parsedSex);
+
+var patientDto = new PatientDTO
+{
+    Id = patient.Id,
+    Name = patient.Name,
+    Surname = patient.Surname,
+    Birthdate = patient.Birthdate,
+    Identification = patient.Identification,
+    Sex = success ? parsedSex : SexType.Otros,
+    Modality = patient.Modality,
+    Email = patient.Email ?? string.Empty,
+    Phone = patient.Phone ?? string.Empty,
+};
 
                 return new GetPatientByIdResponse
                 {
