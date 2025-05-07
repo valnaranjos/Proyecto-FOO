@@ -142,5 +142,90 @@ namespace ProyectoFoo.API.Controllers
                 return StatusCode(500, "Ocurrió un error al cambiar la contraseña. Inténtalo de nuevo más tarde.");
             }
         }
-     }
+
+        [HttpPut("me/change-email")] //Endpoint para actualizar únicamente la contraseña 
+        [Authorize]
+        public async Task<IActionResult> RequestEmailChange([FromBody] ChangeEmailRequestDto changeEmailRequest)
+        {
+            // 1. Obtener el ID del usuario autenticado
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int currentUserId))
+            {
+                return Unauthorized();
+            }
+
+            // 2. Validar el DTO
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                // 3. Llamar al servicio para solicitar el cambio de correo
+                var success = await _userService.RequestEmailChangeAsync(currentUserId, changeEmailRequest.NewEmail);
+
+                if (success)
+                {
+                    return Ok("Se ha enviado un código de verificación a tu nueva dirección de correo electrónico.");
+                }
+                else
+                {
+                    return BadRequest("Error al solicitar el cambio de correo electrónico. Inténtalo de nuevo más tarde.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error al solicitar el cambio de correo electrónico del usuario con ID {currentUserId}: {ex}");
+                return StatusCode(500, "Ocurrió un error al solicitar el cambio de correo electrónico.");
+            }
+        }
+
+
+        [HttpPost("me/confirm-email-change")]
+        [Authorize]
+        public async Task<IActionResult> ConfirmEmailChange([FromBody] ConfirmEmailChangeDto confirmEmailChange)
+        {
+            // 1. Obtener el ID del usuario autenticado
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int currentUserId))
+            {
+                return Unauthorized();
+            }
+
+            // 2. Validar el DTO
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // 3. Obtener la nueva dirección de correo electrónico (podrías pasarla aquí o recuperarla de un almacenamiento temporal)
+            // Por simplicidad, vamos a requerirla nuevamente.
+            var newEmail = Request.Query["newEmail"].ToString();
+            if (string.IsNullOrEmpty(newEmail))
+            {
+                return BadRequest("La nueva dirección de correo electrónico es requerida para la confirmación.");
+            }
+
+            try
+            {
+                // 4. Llamar al servicio para confirmar el cambio de correo
+                var success = await _userService.ConfirmEmailChangeAsync(currentUserId, newEmail, confirmEmailChange.VerificationCode);
+
+                if (success)
+                {
+                    return Ok("Tu dirección de correo electrónico ha sido actualizada exitosamente.");
+                }
+                else
+                {
+                    return BadRequest("El código de verificación es inválido o ha expirado. Inténtalo de nuevo.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error al confirmar el cambio de correo electrónico del usuario con ID {currentUserId}: {ex}");
+                return StatusCode(500, "Ocurrió un error al confirmar el cambio de correo electrónico.");
+            }
+        }
+    }
 }

@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ProyectoFoo.Application.Features.Users
+{
+    public class ChangeEmailRequestDto
+    {
+        [Required(ErrorMessage = "El correo electrónico es requerido.")]
+        [EmailAddress(ErrorMessage = "Correo no válido.")]
+        [StringLength(100, ErrorMessage = "El correo no puede exceder los 100 caracteres.")]
+        public required string NewEmail { get; set; }
+    }
+}
