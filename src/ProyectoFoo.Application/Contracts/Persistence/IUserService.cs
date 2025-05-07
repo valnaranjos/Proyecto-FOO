@@ -1,5 +1,6 @@
 ﻿using ProyectoFoo.Domain.Entities;
 using ProyectoFoo.Shared;
+using System.Threading.Tasks;
 
 namespace ProyectoFoo.Application.Contracts.Persistence
 {
@@ -8,6 +9,6 @@ namespace ProyectoFoo.Application.Contracts.Persistence
         Task<Usuario> GetUserByIdAsync(int id);
         Task<Usuario> UpdateUserAsync(int id, UpdateUserDto updateUser);
 
-        //Task<IActionResult> UpdateUserPasswordAsync(int userId, UpdatePasswordDto updatePassword);
+        Task<bool> UpdateUserPasswordAsync(int id, UpdatePasswordDto updatePassword);
     }
 }

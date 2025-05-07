@@ -43,7 +43,7 @@ namespace ProyectoFoo.API.Controllers
         {
             var usuario = await _usuarioRepository.GetByEmailAsync(model.Email);
 
-            if (usuario == null || !usuario.VerificarContrasena(model.Password))
+            if (usuario == null || !usuario.VerifyPassword(model.Password))
             {
                 return Unauthorized("Credenciales inválidas.");
             }
@@ -52,7 +52,7 @@ namespace ProyectoFoo.API.Controllers
             var token = _tokenService.GenerateToken(usuario);
 
             // Actualizar la fecha del último acceso
-            usuario.ActualizarUltimoAcceso();
+            usuario.ActualizeLastAcces();
             await _usuarioRepository.UpdateAsync(usuario);
 
             return Ok(new { Token = token });
