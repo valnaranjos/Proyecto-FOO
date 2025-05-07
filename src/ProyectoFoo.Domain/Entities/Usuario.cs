@@ -51,13 +51,13 @@ namespace ProyectoFoo.Domain.Entities
         }
 
         // Método para verificar la contraseña comparando el hash
-        public bool VerificarContrasena(string contrasena)
+        public bool VerifyPassword(string contrasena)
         {
             return BCrypt.Net.BCrypt.Verify(contrasena, PasswordHash);
         }
 
         //Método para actualizar el ultimo acceso.
-        public void ActualizarUltimoAcceso()
+        public void ActualizeLastAcces()
         {
             LastAccesDate = DateTime.Now;
         }

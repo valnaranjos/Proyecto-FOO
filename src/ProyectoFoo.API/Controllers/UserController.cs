@@ -90,9 +90,8 @@ namespace ProyectoFoo.API.Controllers
 
                 if (updatedUser == null)
                 {
-                    string message = $"No se encontró el usuario con ID {currentUserId} para actualizar.";
-                    _logger.LogWarning(message);
-                    return NotFound(); // El usuario con ese ID no se encontró
+                    _logger.LogWarning("No se encontró el usuario con ID {currentUserId} para actualizar.", currentUserId);
+                   return NotFound(); // El usuario con ese ID no se encontró
                 }
 
                 // 3. Devolver una respuesta exitosa con los datos actualizados
@@ -100,13 +99,12 @@ namespace ProyectoFoo.API.Controllers
             }
             catch (Exception ex)
             {
-                string message = $"Error al actualizar el usuario con ID {currentUserId}: {ex}";
-                _logger.LogError(message);
+                _logger.LogError("Error al actualizar el usuario con ID {UserId}: {Error}", currentUserId, ex);
                 return StatusCode(500, "Ocurrió un error al actualizar el perfil. Inténtalo de nuevo más tarde.");
             }
         }
 
-        /*
+        
         [HttpPut("me/password")] //Endpoint para actualizar únicamente la contraseña 
         [Authorize]
         public async Task<IActionResult> UpdateCurrentUserPassword([FromBody] UpdatePasswordDto updatePassword)
@@ -115,6 +113,7 @@ namespace ProyectoFoo.API.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int currentUserId))
             {
+                _logger.LogWarning("No se pudo obtener el ID del usuario desde el token para cambiar la contraseña.");
                 return Unauthorized();
             }
 
@@ -123,22 +122,25 @@ namespace ProyectoFoo.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            // 2. Llamar al servicio para actualizar la contraseña
-            var result = await _userService.UpdateUserPasswordAsync(currentUserId, updatePassword);
+            try
+            {
+                // 3. Llamar al servicio para actualizar la contraseña
+                var result = await _userService.UpdateUserPasswordAsync(currentUserId, updatePassword);
 
-            if (result is BadRequestObjectResult badRequestResult)
-            {
-                return badRequestResult; // Devuelve errores específicos (ej., contraseña actual incorrecta)
+                if (result)
+                {
+                    return StatusCode(200, "Cambiaste tu contraseña existosamente");
+                }
+                else
+                {
+                    return BadRequest("Error al cambiar la contraseña. Verifica tu contraseña actual.");
+                }
             }
-            else if (result is StatusCodeResult statusCodeResult && statusCodeResult.StatusCode == 500)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Ocurrió un error al actualizar la contraseña. Inténtalo de nuevo más tarde.");
+                _logger.LogError("Error al cambiar la contraseña del usuario con ID {UserId}: {Error}", currentUserId, ex);
+                return StatusCode(500, "Ocurrió un error al cambiar la contraseña. Inténtalo de nuevo más tarde.");
             }
-            else
-            {
-                return NoContent(); // Contraseña actualizada exitosamente
-            }
-        }*/
-
+        }
      }
 }

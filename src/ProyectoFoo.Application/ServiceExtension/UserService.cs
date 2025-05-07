@@ -48,7 +48,37 @@ namespace ProyectoFoo.Application.ServiceExtension
             await _usuarioRepository.UpdateUsuario(existingUser); // Actualiza la BD
 
             return existingUser;
+        }
 
-        }        
+        public async Task<bool> UpdateUserPasswordAsync(int id, UpdatePasswordDto updatePassword)
+        {
+            // 1. Buscar el usuario en la base de datos por su ID
+            var existingUser = await _usuarioRepository.GetUserById(id);
+
+            if (existingUser == null)
+            {
+                return false; // El usuario no existe
+            }
+
+            // 2. Verificar la contraseña actual
+            if (!existingUser.VerifyPassword(updatePassword.CurrentPassword))
+            {
+                return false; // La contraseña actual es incorrecta
+            }
+
+            // 3. Hashear la nueva contraseña
+            string newPasswordHash = existingUser.HashPassword(updatePassword.NewPassword);
+
+            // 4. Establecer el nuevo hash de la contraseña en la entidad del usuario
+
+            existingUser.SetPasswordHash(newPasswordHash);
+
+            // 5. Actualizar el usuario en la base de datos
+            await _usuarioRepository.UpdateUsuario(existingUser);
+
+            return true; // La contraseña se actualizó exitosamente
+
+
+        }
     }
 }
