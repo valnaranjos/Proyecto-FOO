@@ -33,7 +33,8 @@ namespace ProyectoFoo.Application.Features.Patients
             if (request.Surname != null) patientToUpdate.Surname = request.Surname;
             if (request.Birthdate.HasValue) patientToUpdate.Birthdate = request.Birthdate.Value;
             if (request.Identification.HasValue) patientToUpdate.Identification = request.Identification.Value;
-            if (request.Sex != null) patientToUpdate.Sex = request.Sex;
+            if (request.Sex != null) 
+              patientToUpdate.Sex = request.Sex.ToString();
             if (request.Email != null) patientToUpdate.Email = request.Email;
             if (request.Phone != null) patientToUpdate.Phone = request.Phone;
             if (request.Modality != null) patientToUpdate.Modality = request.Modality;
