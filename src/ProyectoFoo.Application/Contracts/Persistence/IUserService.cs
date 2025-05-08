@@ -49,5 +49,8 @@ namespace ProyectoFoo.Application.Contracts.Persistence
         /// <param name="verificationCode">El código de verificación proporcionado por el usuario.</param>
         /// <returns>Una tarea que representa la operación asíncrona y devuelve true si el cambio de correo se confirmó correctamente, false en caso contrario.</returns>
         Task<bool> ConfirmEmailChangeAsync(int userId, string newEmail, string verificationCode);
+
+
+        Task<bool> MarkUserAsVerifiedAsync(int userId);
     }
 }

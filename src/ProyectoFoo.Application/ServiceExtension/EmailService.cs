@@ -37,7 +37,7 @@ namespace ProyectoFoo.Application.ServiceExtension
 
                 _logger.LogInformation("Correo electrónico enviado exitosamente a {recipientEmail}", recipientEmail);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 _logger.LogError("Error al enviar el correo electrónico a {recipientEmail}", recipientEmail);
                 throw; // Re-lanza la excepción para que el UserService pueda manejarla

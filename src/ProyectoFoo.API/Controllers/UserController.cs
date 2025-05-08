@@ -12,6 +12,9 @@ using ProyectoFoo.API.Services;
 
 namespace ProyectoFoo.API.Controllers
 {
+    /// <summary>
+    /// Controlador para la gestión de usuarios.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -73,6 +76,33 @@ namespace ProyectoFoo.API.Controllers
             }
         }
 
+        /// <summary>
+        /// Verifica el registro de un usuario mediante un código de verificación.
+        /// </summary>
+        /// <param name="command">Comando con el correo electrónico y el código de verificación.</param>
+        /// <returns>Una respuesta que indica el resultado de la verificación.</returns>
+        [HttpPost("verify-registration")]
+        public async Task<IActionResult> VerifyRegistration([FromBody] VerifyRegistrationCommand command)
+        {
+            var response = await _mediator.Send(command);
+            if (response.Success)
+            {
+                return Ok(new { response.Message, response.Token });
+            }
+            return BadRequest(response.Message);
+        }
+
+        /// <summary>
+        /// Actualiza el perfil del usuario autenticado actual.
+        /// </summary>
+        /// <remarks>
+        /// Permite al usuario modificar sus propios datos de perfil, como nombre, apellido, etc.  
+        /// Requiere que el usuario esté autenticado (proporcione un token JWT válido).
+        /// </remarks>
+        /// <returns>
+        /// Retorna un código 200 (OK) si la actualización es exitosa.  
+        /// Retorna un código de error apropiado (por ejemplo, 400 Bad Request) si la solicitud no es válida o si ocurre un error durante la actualización.
+        /// </returns>
 
         [HttpPut("me")] // Usamos "me" para indicar que el usuario actual actualiza su propio perfil
         [Authorize] // Requiere que el usuario esté autenticado
@@ -112,7 +142,16 @@ namespace ProyectoFoo.API.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Actualiza la contraseña del usuario autenticado actual.
+        /// </summary>
+        /// <remarks>
+        /// Permite al usuario cambiar su contraseña. Requiere que el usuario esté autenticado.
+        /// </remarks>
+        /// <returns>
+        ///  Retorna un código 200 (OK) si la actualización es exitosa.
+        ///  Retorna un código de error apropiado si la solicitud no es válida.
+        /// </returns>
         [HttpPut("me/password")] //Endpoint para actualizar únicamente la contraseña 
         [Authorize]
         public async Task<IActionResult> UpdateCurrentUserPassword([FromBody] UpdatePasswordDto updatePassword)
@@ -190,7 +229,7 @@ namespace ProyectoFoo.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error al solicitar el cambio de correo electrónico del usuario con ID {currentUserId}: {ex}");
+                _logger.LogError("Error al solicitar el cambio de correo electrónico del usuario con ID {currentUserId}: {ex}", currentUserId, ex);
                 return StatusCode(500, "Ocurrió un error al solicitar el cambio de correo electrónico.");
             }
         }
@@ -234,7 +273,7 @@ namespace ProyectoFoo.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error al confirmar el cambio de correo electrónico del usuario con ID {currentUserId}: {ex}");
+                _logger.LogError("Error al confirmar el cambio de correo electrónico del usuario con ID {currentUserId}: {ex}", currentUserId, ex);
                 return StatusCode(500, "Ocurrió un error al confirmar el cambio de correo electrónico.");
             }
         }
