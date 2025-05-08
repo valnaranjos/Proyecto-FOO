@@ -22,6 +22,7 @@ namespace ProyectoFoo.API.Services
         /// <param name="configuration">Configuración de la aplicación (para leer la clave secreta).</param>
         public TokenService(string secretKey, IConfiguration configuration) // Modifica el constructor
         {
+
             _secretKey = secretKey ?? throw new ArgumentNullException(nameof(secretKey));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             // Código de depuración temporal

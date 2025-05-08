@@ -17,6 +17,7 @@ namespace ProyectoFoo.Application.ServiceExtension
         private readonly IEmailService _emailService; // Servicio de correo email para verificar
         private readonly ILogger<UserService> _logger;
 
+
         //Almacenamiento temporal en memoria para códigos de verificación, 15 min de espera
         private static ConcurrentDictionary<(int, string), (string Code, DateTime Expiry)> _emailVerificationCodes = new();
         private const int VerificationCodeExpiryMinutes = 15;
@@ -31,6 +32,18 @@ namespace ProyectoFoo.Application.ServiceExtension
         public async Task<Usuario> GetUserByIdAsync(int id)
         {
             return await _usuarioRepository.GetUserById(id);
+        }
+
+        public async Task<bool> MarkUserAsVerifiedAsync(int userId)
+        {
+            var user = await _usuarioRepository.GetUserById(userId);
+            if (user != null)
+            {
+                //user.IsVerified = true;
+                await _usuarioRepository.UpdateUsuario(user);
+                return true;
+            }
+            return false;
         }
 
         public async Task<Usuario> UpdateUserAsync(int id, UpdateUserDto updateUser)

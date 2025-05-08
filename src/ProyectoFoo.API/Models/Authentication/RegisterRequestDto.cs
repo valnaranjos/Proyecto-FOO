@@ -30,5 +30,8 @@ namespace ProyectoFoo.API.Models.Authentication
         [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&+\-])[A-Za-z\d@$!%*?&+\-]{8,}$",
          ErrorMessage = "La Contraseña debe contener al menos una minúscula, una mayúscula, un número y un carácter especial.")]
         public string Password { get; set; } = string.Empty;
+
+        //Campo para validar la autenticación de dos pasos.
+        public bool IsVerified { get; set; } = false;
     }
 }

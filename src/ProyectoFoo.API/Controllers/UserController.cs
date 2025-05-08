@@ -6,10 +6,15 @@ using System.Security.Claims;
 using ProyectoFoo.Shared;
 using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Application.ServiceExtension;
+using ProyectoFoo.Domain.Services;
+using ProyectoFoo.API.Services;
 
 
 namespace ProyectoFoo.API.Controllers
 {
+    /// <summary>
+    /// Controlador para la gestión de usuarios.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -17,12 +22,17 @@ namespace ProyectoFoo.API.Controllers
         private readonly IMediator _mediator;
         private readonly IUserService _userService;
         private readonly ILogger<UserController> _logger;
+        private readonly IEmailService _emailService;
+        //private readonly IVerificationCodeRepository _verificationCodeRepository;
+        private readonly ITokenService _tokenService;
 
-        public UserController(IMediator mediator, ILogger<UserController> logger, IUserService userService)
+        public UserController(IMediator mediator, ILogger<UserController> logger, IUserService userService, IEmailService emailService, ITokenService tokenService)
         {
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _emailService = emailService;
+            _tokenService = tokenService;
         }
 
         /// <summary>
@@ -66,6 +76,34 @@ namespace ProyectoFoo.API.Controllers
             }
         }
 
+        /// <summary>
+        /// Verifica el registro de un usuario mediante un código de verificación.
+        /// </summary>
+        /// <param name="command">Comando con el correo electrónico y el código de verificación.</param>
+        /// <returns>Una respuesta que indica el resultado de la verificación.</returns>
+        [HttpPost("verify-registration")]
+        public async Task<IActionResult> VerifyRegistration([FromBody] VerifyRegistrationCommand command)
+        {
+            var response = await _mediator.Send(command);
+            if (response.Success)
+            {
+                return Ok(new { response.Message, response.Token });
+            }
+            return BadRequest(response.Message);
+        }
+
+        /// <summary>
+        /// Actualiza el perfil del usuario autenticado actual.
+        /// </summary>
+        /// <remarks>
+        /// Permite al usuario modificar sus propios datos de perfil, como nombre, apellido, etc.  
+        /// Requiere que el usuario esté autenticado (proporcione un token JWT válido).
+        /// </remarks>
+        /// <returns>
+        /// Retorna un código 200 (OK) si la actualización es exitosa.  
+        /// Retorna un código de error apropiado (por ejemplo, 400 Bad Request) si la solicitud no es válida o si ocurre un error durante la actualización.
+        /// </returns>
+
         [HttpPut("me")] // Usamos "me" para indicar que el usuario actual actualiza su propio perfil
         [Authorize] // Requiere que el usuario esté autenticado
         public async Task<IActionResult> UpdateCurrentUser([FromBody] UpdateUserDto updateUser)
@@ -91,7 +129,7 @@ namespace ProyectoFoo.API.Controllers
                 if (updatedUser == null)
                 {
                     _logger.LogWarning("No se encontró el usuario con ID {currentUserId} para actualizar.", currentUserId);
-                   return NotFound(); // El usuario con ese ID no se encontró
+                    return NotFound(); // El usuario con ese ID no se encontró
                 }
 
                 // 3. Devolver una respuesta exitosa con los datos actualizados
@@ -104,7 +142,16 @@ namespace ProyectoFoo.API.Controllers
             }
         }
 
-        
+        /// <summary>
+        /// Actualiza la contraseña del usuario autenticado actual.
+        /// </summary>
+        /// <remarks>
+        /// Permite al usuario cambiar su contraseña. Requiere que el usuario esté autenticado.
+        /// </remarks>
+        /// <returns>
+        ///  Retorna un código 200 (OK) si la actualización es exitosa.
+        ///  Retorna un código de error apropiado si la solicitud no es válida.
+        /// </returns>
         [HttpPut("me/password")] //Endpoint para actualizar únicamente la contraseña 
         [Authorize]
         public async Task<IActionResult> UpdateCurrentUserPassword([FromBody] UpdatePasswordDto updatePassword)
@@ -182,7 +229,7 @@ namespace ProyectoFoo.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error al solicitar el cambio de correo electrónico del usuario con ID {currentUserId}: {ex}");
+                _logger.LogError("Error al solicitar el cambio de correo electrónico del usuario con ID {currentUserId}: {ex}", currentUserId, ex);
                 return StatusCode(500, "Ocurrió un error al solicitar el cambio de correo electrónico.");
             }
         }
@@ -210,18 +257,10 @@ namespace ProyectoFoo.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            // 3. Obtener la nueva dirección de correo electrónico (podrías pasarla aquí o recuperarla de un almacenamiento temporal)
-            // Por simplicidad, vamos a requerirla nuevamente.
-            var newEmail = Request.Query["newEmail"].ToString();
-            if (string.IsNullOrEmpty(newEmail))
-            {
-                return BadRequest("La nueva dirección de correo electrónico es requerida para la confirmación.");
-            }
-
             try
             {
-                // 4. Llamar al servicio para confirmar el cambio de correo
-                var success = await _userService.ConfirmEmailChangeAsync(currentUserId, newEmail, confirmEmailChange.VerificationCode);
+                // 3. Llamar al servicio para confirmar el cambio de correo, usando la NewEmail del DTO
+                var success = await _userService.ConfirmEmailChangeAsync(currentUserId, confirmEmailChange.NewEmail, confirmEmailChange.VerificationCode);
 
                 if (success)
                 {
@@ -234,7 +273,7 @@ namespace ProyectoFoo.API.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error al confirmar el cambio de correo electrónico del usuario con ID {currentUserId}: {ex}");
+                _logger.LogError("Error al confirmar el cambio de correo electrónico del usuario con ID {currentUserId}: {ex}", currentUserId, ex);
                 return StatusCode(500, "Ocurrió un error al confirmar el cambio de correo electrónico.");
             }
         }
