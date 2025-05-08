@@ -17,5 +17,10 @@ namespace ProyectoFoo.Application.Features.Users
         /// </summary>
         [Required(ErrorMessage = "El código de verificación es requerido.")]
         public required string VerificationCode { get; set; }
+
+
+        [Required(ErrorMessage = "La nueva dirección de correo electrónico es obligatoria.")]
+        [EmailAddress(ErrorMessage = "Formato de correo electrónico no válido.")]
+        public string NewEmail { get; set; } = string.Empty;
     }
 }

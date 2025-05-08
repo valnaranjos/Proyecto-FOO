@@ -6,6 +6,8 @@ using System.Security.Claims;
 using ProyectoFoo.Shared;
 using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Application.ServiceExtension;
+using ProyectoFoo.Domain.Services;
+using ProyectoFoo.API.Services;
 
 
 namespace ProyectoFoo.API.Controllers
@@ -17,12 +19,17 @@ namespace ProyectoFoo.API.Controllers
         private readonly IMediator _mediator;
         private readonly IUserService _userService;
         private readonly ILogger<UserController> _logger;
+        private readonly IEmailService _emailService;
+        //private readonly IVerificationCodeRepository _verificationCodeRepository;
+        private readonly ITokenService _tokenService;
 
-        public UserController(IMediator mediator, ILogger<UserController> logger, IUserService userService)
+        public UserController(IMediator mediator, ILogger<UserController> logger, IUserService userService, IEmailService emailService, ITokenService tokenService)
         {
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _emailService = emailService;
+            _tokenService = tokenService;
         }
 
         /// <summary>
@@ -66,6 +73,7 @@ namespace ProyectoFoo.API.Controllers
             }
         }
 
+
         [HttpPut("me")] // Usamos "me" para indicar que el usuario actual actualiza su propio perfil
         [Authorize] // Requiere que el usuario esté autenticado
         public async Task<IActionResult> UpdateCurrentUser([FromBody] UpdateUserDto updateUser)
@@ -91,7 +99,7 @@ namespace ProyectoFoo.API.Controllers
                 if (updatedUser == null)
                 {
                     _logger.LogWarning("No se encontró el usuario con ID {currentUserId} para actualizar.", currentUserId);
-                   return NotFound(); // El usuario con ese ID no se encontró
+                    return NotFound(); // El usuario con ese ID no se encontró
                 }
 
                 // 3. Devolver una respuesta exitosa con los datos actualizados
@@ -104,7 +112,7 @@ namespace ProyectoFoo.API.Controllers
             }
         }
 
-        
+
         [HttpPut("me/password")] //Endpoint para actualizar únicamente la contraseña 
         [Authorize]
         public async Task<IActionResult> UpdateCurrentUserPassword([FromBody] UpdatePasswordDto updatePassword)
@@ -210,18 +218,10 @@ namespace ProyectoFoo.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            // 3. Obtener la nueva dirección de correo electrónico (podrías pasarla aquí o recuperarla de un almacenamiento temporal)
-            // Por simplicidad, vamos a requerirla nuevamente.
-            var newEmail = Request.Query["newEmail"].ToString();
-            if (string.IsNullOrEmpty(newEmail))
-            {
-                return BadRequest("La nueva dirección de correo electrónico es requerida para la confirmación.");
-            }
-
             try
             {
-                // 4. Llamar al servicio para confirmar el cambio de correo
-                var success = await _userService.ConfirmEmailChangeAsync(currentUserId, newEmail, confirmEmailChange.VerificationCode);
+                // 3. Llamar al servicio para confirmar el cambio de correo, usando la NewEmail del DTO
+                var success = await _userService.ConfirmEmailChangeAsync(currentUserId, confirmEmailChange.NewEmail, confirmEmailChange.VerificationCode);
 
                 if (success)
                 {
