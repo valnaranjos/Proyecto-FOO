@@ -1,12 +1,9 @@
 ﻿using MediatR;
 using ProyectoFoo.Application.Contracts.Persistence;
+using ProyectoFoo.Domain.Common.Enums;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using ProyectoFoo.Application.Common.Enums;
-
 
 namespace ProyectoFoo.Application.Features.Patients
 {
@@ -25,21 +22,21 @@ namespace ProyectoFoo.Application.Features.Patients
 
             if (patient != null)
             {
-            SexType parsedSex;
-            bool success = Enum.TryParse<SexType>(patient.Sex, out parsedSex);
-            
-            var patientDto = new PatientDTO
-            {
-               Id = patient.Id,
-               Name = patient.Name,
-               Surname = patient.Surname,
-               Birthdate = patient.Birthdate,
-               Identification = patient.Identification,
-               Sex = success ? parsedSex : SexType.Otros,
-               Modality = patient.Modality,
-               Email = patient.Email ?? string.Empty,
-               Phone = patient.Phone ?? string.Empty,
-            };
+                var patientDto = new PatientDTO
+                {
+                    Id = patient.Id,
+                    Name = patient.Name,
+                    Surname = patient.Surname,
+                    Birthdate = patient.Birthdate,
+                    Identification = patient.Identification,
+                    Sex = patient.Sex,
+                    Modality = patient.Modality,
+                    Email = patient.Email ?? string.Empty,
+                    Phone = patient.Phone ?? string.Empty,
+                    Age = patient.Age,
+                    AdmissionDate = patient.AdmissionDate,
+                    RangoEtario = patient.RangoEtario
+                };
 
                 return new GetPatientByIdResponse
                 {

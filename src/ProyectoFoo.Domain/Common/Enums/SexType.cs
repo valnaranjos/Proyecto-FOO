@@ -1,4 +1,4 @@
-namespace ProyectoFoo.Application.Common.Enums
+namespace ProyectoFoo.Domain.Common.Enums
 {
     public enum SexType
     {

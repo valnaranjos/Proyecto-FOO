@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ProyectoFoo.Application.Common.Enums;
+using ProyectoFoo.Domain.Common.Enums;
 
 namespace ProyectoFoo.Application.Features.Patients
 {

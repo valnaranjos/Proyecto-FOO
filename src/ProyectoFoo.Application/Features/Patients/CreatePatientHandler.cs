@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using ProyectoFoo.Application.Common.Enums;
+using ProyectoFoo.Domain.Common.Enums;
 namespace ProyectoFoo.Application.Features.Patients
 {
     public class CreatePatientHandler : IRequestHandler<CreatePatientCommand, CreatePatientResponse>
@@ -27,7 +27,7 @@ namespace ProyectoFoo.Application.Features.Patients
                 Surname = request.Surname,
                 Birthdate = request.Birthdate,
                 Identification = request.Identification,
-                Sex = request.Sex.ToString(),
+                Sex = request.Sex,
                 Modality = request.Modality,
                 Email = request.Email,
                 Phone = request.Phone,

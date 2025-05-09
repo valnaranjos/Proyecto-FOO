@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using ProyectoFoo.Domain.Common.Enums;
 
 namespace ProyectoFoo.Domain.Entities
 {
@@ -22,13 +23,6 @@ namespace ProyectoFoo.Domain.Entities
         [Required]
         public SexType Sex { get; set; }
 
-        public enum SexType
-        {
-            Femenino,
-            Masculino,
-            Otro
-        }
-
         public string? Email { get; set; }
 
         public string? Phone { get; set; }
@@ -47,7 +41,7 @@ namespace ProyectoFoo.Domain.Entities
         {
             Name = string.Empty;
             Surname = string.Empty;
-            Sex = string.Empty;
+            Sex = SexType.Masculino;
             Modality = string.Empty;
         }
 
@@ -57,7 +51,7 @@ namespace ProyectoFoo.Domain.Entities
             Surname = surname ?? throw new ArgumentNullException(nameof(surname));
             Birthdate = birthdate;
             Identification = identification;
-            Sex = sex ?? throw new ArgumentNullException(nameof(sex));
+            Sex = ParseSex(sex); 
             Modality = modality ?? throw new ArgumentNullException(nameof(modality));
             Email = email;
             Phone = phone;
@@ -73,7 +67,7 @@ namespace ProyectoFoo.Domain.Entities
             Surname = surname ?? throw new ArgumentNullException(nameof(surname));
             Birthdate = birthdate;
             Identification = identification;
-            Sex = sex ?? throw new ArgumentNullException(nameof(sex));
+            Sex = ParseSex(sex);
             Modality = modality ?? throw new ArgumentNullException(nameof(modality));
             Email = email;
             Phone = phone;
@@ -94,6 +88,13 @@ namespace ProyectoFoo.Domain.Entities
                 RangoEtario = "Adolescente";
             else
                 RangoEtario = "Adulto";
+        }
+
+        private SexType ParseSex(string sex)
+        {
+            if (Enum.TryParse<SexType>(sex, true, out var result))
+                return result;
+            throw new ArgumentException($"Valor de sexo inválido: {sex}");
         }
     }
 }

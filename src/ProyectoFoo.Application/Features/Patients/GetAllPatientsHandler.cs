@@ -5,7 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ProyectoFoo.Application.Common.Enums;
+using ProyectoFoo.Domain.Common.Enums;
+
 
 
 namespace ProyectoFoo.Application.Features.Patients
@@ -32,7 +33,7 @@ namespace ProyectoFoo.Application.Features.Patients
                 Surname = patient.Surname,
                 Birthdate = patient.Birthdate,
                 Identification = patient.Identification,
-                Sex = Enum.TryParse<SexType>(patient.Sex, out var sex) ? sex : SexType.Otros,
+                Sex = patient.Sex,
                 Modality = patient.Modality,
                 Email = patient.Email ?? string.Empty,
                 Phone = patient.Phone ?? string.Empty,
