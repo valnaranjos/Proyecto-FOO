@@ -24,6 +24,10 @@ namespace ProyectoFoo.Application.Features.Users
         [StringLength(100, ErrorMessage = "El correo no puede exceder los 100 caracteres.")]
         public string Email { get; set; } = string.Empty;
 
+        /*[Phone(ErrorMessage = "Número de teléfono no válido.")]
+        [Range(15, int.MaxValue, ErrorMessage = "El número de identificación debe ser positivo.")]
+        public long Phone { get; set; } */
+
         [Required(ErrorMessage = "La contraseña es obligatoria.")]
         [MinLength(8, ErrorMessage = "La contraseña debe tener al menos 8 caracteres.")]
         [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,}$",

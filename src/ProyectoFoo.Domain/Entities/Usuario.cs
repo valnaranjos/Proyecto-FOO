@@ -28,10 +28,15 @@ namespace ProyectoFoo.Domain.Entities
         [StringLength(100, ErrorMessage = "El correo no puede exceder los 100 caracteres.")]
         public string Email { get; set; }
 
+        //[Phone(ErrorMessage ="Número de teléfono no válido.")]
+        //[Range(15, int.MaxValue, ErrorMessage = "El número de identificación debe ser positivo.")]
+        //public int Phone { get; set; }
+
         [Required]
         public string PasswordHash { get; private set; }
         public DateTime CreatedDate { get; set; }
         public DateTime LastAccesDate { get; set; }
+        public bool IsVerified { get; set; }
 
 
         // Constructor sin parámetros para Entity Framework
@@ -40,11 +45,12 @@ namespace ProyectoFoo.Domain.Entities
             Email = string.Empty;
             PasswordHash = string.Empty;
         }
-        public Usuario(int id, string nombre, string correo, string contrasena)
+        public Usuario(int id, string nombre, string correo, string contrasena) //int phone)
         {
             Id = id;
             Name = nombre;
             Email = correo;
+            //Phone = phone;
             PasswordHash = HashPassword(contrasena); // Guardamos el hash de la contraseña
             CreatedDate = DateTime.Now;
             LastAccesDate = DateTime.Now;
