@@ -25,6 +25,7 @@ namespace ProyectoFoo.Application.Features.Patients
             {
                 Name = request.Name,
                 Surname = request.Surname,
+                TypeOfIdentification = request.TypeOfIdentification,
                 Birthdate = request.Birthdate,
                 Identification = request.Identification,
                 Sex = request.Sex,

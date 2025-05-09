@@ -18,15 +18,18 @@ namespace ProyectoFoo.Application.Features.Patients
         public string Surname { get; set; } = string.Empty;
 
         public DateTime Birthdate { get; set; }
+        
+        [Required]
+        public string TypeOfIdentification {get; set;}
 
         [Required(ErrorMessage = "El número de identificación es obligatorio.")]
-        public int Identification { get; set; }
+        public string Identification { get; set; }
 
         [Required(ErrorMessage = "El sexo es obligatorio.")]
         public SexType Sex { get; set; } = SexType.Masculino;
 
         [Required(ErrorMessage = "La modalidad es obligatoria.")]
-        public string Modality { get; set; } = string.Empty;
+        public ModalityType Modality { get; set; } = ModalityType.Presencial;
 
         [Required(ErrorMessage = "El correo electrónico es obligatorio.")] // Ahora Email es obligatorio
         [EmailAddress(ErrorMessage = "Formato de correo electrónico no válido.")]

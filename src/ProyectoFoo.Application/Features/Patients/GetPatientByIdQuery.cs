@@ -11,6 +11,8 @@ namespace ProyectoFoo.Application.Features.Patients
     {
         public int PatientId { get; set; }
 
+        public string? TypeOfIdentification { get; set; }
+
         public GetPatientByIdQuery(int patientId)
         {
             PatientId = patientId;

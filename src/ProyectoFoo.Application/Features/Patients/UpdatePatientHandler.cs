@@ -29,12 +29,16 @@ namespace ProyectoFoo.Application.Features.Patients
             }
 
             // Actualizar solo las propiedades que tienen un valor en la request
-            if (request.Name != null) patientToUpdate.Name = request.Name;
-            if (request.Surname != null) patientToUpdate.Surname = request.Surname;
+            if (!string.IsNullOrEmpty(request.Name)) patientToUpdate.Name = request.Name;
+            if (!string.IsNullOrEmpty(request.Surname)) patientToUpdate.Surname = request.Surname;
+
             if (request.Birthdate.HasValue) patientToUpdate.Birthdate = request.Birthdate.Value;
-            if (request.Identification.HasValue) patientToUpdate.Identification = request.Identification.Value;
-            if (request.Email != null) patientToUpdate.Email = request.Email;
-            if (request.Phone != null) patientToUpdate.Phone = request.Phone;
+            if (!string.IsNullOrEmpty(request.Identification)) patientToUpdate.Identification = request.Identification;
+            if (!string.IsNullOrEmpty(request.TypeOfIdentification)) patientToUpdate.TypeOfIdentification = request.TypeOfIdentification;
+
+            if (!string.IsNullOrEmpty(request.Email)) patientToUpdate.Email = request.Email;
+            if (!string.IsNullOrEmpty(request.Phone)) patientToUpdate.Phone = request.Phone;
+
             if (request.Modality != null) patientToUpdate.Modality = request.Modality;
 
             await _pacienteRepository.UpdateAsync(patientToUpdate);

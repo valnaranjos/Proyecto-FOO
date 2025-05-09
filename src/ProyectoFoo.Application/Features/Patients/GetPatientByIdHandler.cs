@@ -29,6 +29,8 @@ namespace ProyectoFoo.Application.Features.Patients
                     Surname = patient.Surname,
                     Birthdate = patient.Birthdate,
                     Identification = patient.Identification,
+
+                    TypeOfIdentification = request.TypeOfIdentification,
                     Sex = patient.Sex,
                     Modality = patient.Modality,
                     Email = patient.Email ?? string.Empty,
