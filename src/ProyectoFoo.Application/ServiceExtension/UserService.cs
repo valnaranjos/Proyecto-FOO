@@ -15,18 +15,15 @@ namespace ProyectoFoo.Application.ServiceExtension
     {
         private readonly IUserRepository _usuarioRepository;
         private readonly IEmailService _emailService; // Servicio de correo email para verificar
+        private readonly IVerificationCodeService _verificationCodeService;
         private readonly ILogger<UserService> _logger;
 
-
-        //Almacenamiento temporal en memoria para códigos de verificación, 15 min de espera
-        private static ConcurrentDictionary<(int, string), (string Code, DateTime Expiry)> _emailVerificationCodes = new();
-        private const int VerificationCodeExpiryMinutes = 15;
-
-        public UserService(IUserRepository usuarioRepository, IEmailService emailService, ILogger<UserService> logger)
+        public UserService(IUserRepository usuarioRepository, IEmailService emailService, IVerificationCodeService verificationCodeService, ILogger<UserService> logger)
         {
-            _usuarioRepository = usuarioRepository;
-            _emailService = emailService;
-            _logger = logger;
+            _usuarioRepository = usuarioRepository ?? throw new ArgumentNullException(nameof(usuarioRepository));
+            _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
+            _verificationCodeService = verificationCodeService ?? throw new ArgumentNullException(nameof(verificationCodeService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<Usuario> GetUserByIdAsync(int id)
@@ -39,7 +36,7 @@ namespace ProyectoFoo.Application.ServiceExtension
             var user = await _usuarioRepository.GetUserById(userId);
             if (user != null)
             {
-                //user.IsVerified = true;
+                user.IsVerified = true;
                 await _usuarioRepository.UpdateUsuario(user);
                 return true;
             }
@@ -107,16 +104,12 @@ namespace ProyectoFoo.Application.ServiceExtension
                 return false;
             }
 
-            // Generar código de verificación único
-            string verificationCode = Guid.NewGuid().ToString()[..8].ToUpper();
-
-            // Almacenar temporalmente el código
-            var expiryTime = DateTime.UtcNow.AddMinutes(VerificationCodeExpiryMinutes);
-            _emailVerificationCodes.AddOrUpdate((userId, newEmail), (verificationCode, expiryTime), (key, oldValue) => (verificationCode, expiryTime));
+            // Generar código de verificación
+            string verificationCode = _verificationCodeService.GenerateCode(userId, "email-change");
 
             // Enviar correo electrónico con el código
             string subject = "Verificación de cambio de correo electrónico";
-            string body = $"Tu código de verificación para cambiar tu correo electrónico es: {verificationCode}. Este código expirará en {VerificationCodeExpiryMinutes} minutos.";
+            string body = $"Tu código de verificación para cambiar tu correo electrónico es: {verificationCode}.Este código expirará en 15 minutos.";
 
             try
             {
@@ -126,37 +119,33 @@ namespace ProyectoFoo.Application.ServiceExtension
             catch (Exception ex)
             {
                 _logger.LogError("Error al enviar el correo de verificación a {newEmail}: {ex}", newEmail, ex);
-                // Limpiar el código temporal en caso de fallo de envío
-                _emailVerificationCodes.TryRemove((userId, newEmail), out var _);
+                _verificationCodeService.RemoveCode(userId, "email-change");
                 return false;
             }
         }
 
         public async Task<bool> ConfirmEmailChangeAsync(int userId, string newEmail, string verificationCode)
         {
-            if (_emailVerificationCodes.TryGetValue((userId, newEmail), out var storedCodeInfo))
+            // Validar el código de verificación
+            if (!_verificationCodeService.ValidateCode(userId, "email-change", verificationCode))
             {
-                if (storedCodeInfo.Code == verificationCode && storedCodeInfo.Expiry > DateTime.UtcNow)
-                {
-                    var existingUser = await _usuarioRepository.GetUserById(userId);
-                    if (existingUser != null)
-                    {
-                        existingUser.Email = newEmail;
-                        await _usuarioRepository.UpdateUsuario(existingUser);
-                        _emailVerificationCodes.TryRemove((userId, newEmail), out var _); // Limpiar el código
-                        return true;
-                    }
-                    return false; // Usuario no encontrado
-                }
-                else
-                {
-                    return false; // Código inválido o expirado
-                }
+                return false; // Código inválido o expirado
             }
-            else
+
+            var existingUser = await _usuarioRepository.GetUserById(userId);
+            if (existingUser == null)
             {
-                return false; // No se encontró solicitud de cambio para este usuario y correo
+                return false; // Usuario no encontrado
             }
+
+            // Actualizar el correo electrónico del usuario
+            existingUser.Email = newEmail;
+            await _usuarioRepository.UpdateUsuario(existingUser);
+
+            // Eliminar el código de verificación usado
+            _verificationCodeService.RemoveCode(userId, "email-change");
+
+            return true;
         }
     }
 }

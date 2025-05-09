@@ -15,7 +15,7 @@ namespace ProyectoFoo.Application.Features.Users
         public string? Message { get; set; }
 
         /// <summary>
-        /// Token JWT generado para el usuario verificado (si la verificación fue exitosa).
+        /// Token JWT generado tras la verificación exitosa.
         /// </summary>
         public string? Token { get; set; }
     }

@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
 using ProyectoFoo.Application.Contracts.Persistence;
+using ProyectoFoo.Application.ServiceExtension;
 using ProyectoFoo.Domain.Entities;
 
 namespace ProyectoFoo.Application.Features.Users
@@ -11,7 +12,7 @@ namespace ProyectoFoo.Application.Features.Users
     public class CreateUserHandler : IRequestHandler<CreateUserCommand, CreateUserResponse>
     {
         private readonly IUserRepository _usuarioRepository;
-        private readonly IVerificationCodeRepository _verificationCodeRepository;
+        private readonly IVerificationCodeService _verificationCodeService;
         private readonly IEmailService _emailService;
         private readonly ILogger<CreateUserHandler> _logger;
 
@@ -23,12 +24,13 @@ namespace ProyectoFoo.Application.Features.Users
         /// <param name="emailService">Servicio para el envío de correos electrónicos.</param>
         /// <param name="verificationCodeRepository">Repositorio para la entidad VerificationCode.</param>
         ///  <param name="logger">Servicio de logging.</param>
-        public CreateUserHandler(IUserRepository usuarioRepository, IEmailService emailService, IVerificationCodeRepository verificationCodeRepository, ILogger<CreateUserHandler> logger)
+        public CreateUserHandler(IUserRepository usuarioRepository, IEmailService emailService,
+           IVerificationCodeService verificationCodeService, ILogger<CreateUserHandler> logger)
         {
             _usuarioRepository = usuarioRepository ?? throw new ArgumentNullException(nameof(usuarioRepository));
             _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
-            _verificationCodeRepository = verificationCodeRepository;
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger)); 
+            _verificationCodeService = verificationCodeService ?? throw new ArgumentNullException(nameof(verificationCodeService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -46,18 +48,11 @@ namespace ProyectoFoo.Application.Features.Users
                 if (!existingUserWithEmail.IsVerified)
                 {
                     // El usuario existe pero no está verificado, generar un nuevo código
-
-                    // Generar nuevo código de verificación
-                    string verificationCode = Guid.NewGuid().ToString()[..8].ToUpper();
-                    var expiryTime = DateTime.UtcNow.AddMinutes(15);
-
-                    //Importante: Eliminar códigos de verificación anteriores para este usuario y propósito ***
-                    await _verificationCodeRepository.RemoveVerificationCodes(existingUserWithEmail.Id, "registration");
-                    await _verificationCodeRepository.AddVerificationCode(existingUserWithEmail.Id, verificationCode, "registration", expiryTime);
+                    string newVerificationCode = _verificationCodeService.GenerateCode(existingUserWithEmail.Id, "registration");
 
                     // Enviar correo electrónico de verificación
-                    string subject = "Reenvío de verificación de registro"; // Asunto más claro
-                    string body = $"Se ha reenviado el código de verificación para tu cuenta en Proyecto Foo. Por favor, utiliza el siguiente código para verificar tu cuenta: {verificationCode}. Este código expirará en 15 minutos.";
+                    string subject = "Reenvío de verificación de registro";
+                    string body = $"Tu código de verificación es: {newVerificationCode}. Este código expirará en 15 minutos.";
 
                     try
                     {
@@ -68,8 +63,7 @@ namespace ProyectoFoo.Application.Features.Users
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Error al reenviar el correo de verificación al usuario con ID {existingUserWithEmail.Id} y correo {existingUserWithEmail.Email}.", existingUserWithEmail.Id, existingUserWithEmail.Email);
-                       
-                        return new CreateUserResponse { Success = false, Message = "Ocurrió un error al reenviar el correo de verificación. Por favor, inténtalo de nuevo más tarde." }; //Mensaje mas especifico
+                        return new CreateUserResponse { Success = false, Message = "Ocurrió un error al reenviar el correo de verificación. Por favor, inténtalo de nuevo más tarde." };
                     }
                 }
                 else
@@ -105,26 +99,21 @@ namespace ProyectoFoo.Application.Features.Users
             }
 
             // Generar código de verificación
-            string verificationCodeNuevo = Guid.NewGuid().ToString()[..8].ToUpper();
-            var expiryTimeNuevo = DateTime.UtcNow.AddMinutes(15);
-
-            // Almacenar el código de verificación
-            await _verificationCodeRepository.AddVerificationCode(createdUser.Id, verificationCodeNuevo, "registration", expiryTimeNuevo);
-
-            // Enviar correo electrónico de verificación
-            string subjectNuevo = "Verificación de registro";
-            string bodyNuevo = $"Gracias por registrarte en Proyecto Foo. Por favor, utiliza el siguiente código para verificar tu cuenta: {verificationCodeNuevo}. Este código expirará en 15 minutos.";
+            string verificationCode = _verificationCodeService.GenerateCode(createdUser.Id, "registration");
 
             try
             {
-                await _emailService.SendEmailAsync(createdUser.Email, subjectNuevo, bodyNuevo);
+                // Enviar correo electrónico de verificación
+                string subject = "Verificación de registro";
+                string body = $"Tu código de verificación es: {verificationCode}. Este código expirará en 15 minutos.";
+                await _emailService.SendEmailAsync(createdUser.Email, subject, body);
                 _logger.LogInformation("Correo de verificación enviado a {email}", createdUser.Email);
                 return new CreateUserResponse { Success = true, Message = "Cuenta creada. Por favor, verifica tu correo electrónico." };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al enviar el correo de verificación al usuario con ID {createdUser.Id} y correo {createdUser.Email}.", createdUser.Id, createdUser.Email);
-                // Considerar revertir la creación del usuario
+                // Revertir la creación del usuario
                 try
                 {
                     await _usuarioRepository.DeleteAsync(createdUser);
