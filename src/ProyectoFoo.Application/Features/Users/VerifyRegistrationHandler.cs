@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
 using ProyectoFoo.Application.Contracts.Persistence;
+using ProyectoFoo.Application.ServiceExtension;
 using ProyectoFoo.Domain.Services;
 using System;
 using System.Collections.Generic;
@@ -14,14 +15,14 @@ namespace ProyectoFoo.Application.Features.Users
     public class VerifyRegistrationHandler : IRequestHandler<VerifyRegistrationCommand, VerifyRegistrationResponse>
     {
         private readonly IUserRepository _userRepository;
-        private readonly IVerificationCodeRepository _verificationCodeRepository;
+        private readonly IVerificationCodeService _verificationCodeService;
         private readonly ITokenService _tokenService;
         private readonly ILogger<VerifyRegistrationHandler> _logger;
 
-        public VerifyRegistrationHandler(IUserRepository userRepository, IVerificationCodeRepository verificationCodeRepository, ITokenService tokenService, ILogger<VerifyRegistrationHandler> logger)
+        public VerifyRegistrationHandler(IUserRepository userRepository, IVerificationCodeService verificationCodeService, ITokenService tokenService, ILogger<VerifyRegistrationHandler> logger)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _verificationCodeRepository = verificationCodeRepository ?? throw new ArgumentNullException(nameof(verificationCodeRepository));
+            _verificationCodeService = verificationCodeService ?? throw new ArgumentNullException(nameof(verificationCodeService));
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -33,25 +34,58 @@ namespace ProyectoFoo.Application.Features.Users
         /// <param name="cancellationToken">Token de cancelación.</param>
         public async Task<VerifyRegistrationResponse> Handle(VerifyRegistrationCommand request, CancellationToken cancellationToken)
         {
-            var user = await _userRepository.GetByEmailAsync(request.Email);
-            if (user == null)
+            try
             {
-                return new VerifyRegistrationResponse { Success = false, Message = "Correo electrónico no encontrado." };
+                // Buscar al usuario por correo electrónico
+                var user = await _userRepository.GetByEmailAsync(request.Email);
+                if (user == null)
+                {
+                    _logger.LogWarning("No se encontró un usuario con el correo {Email}.", request.Email);
+                    return new VerifyRegistrationResponse
+                    {
+                        Success = false,
+                        Message = "No se encontró un usuario con el correo proporcionado."
+                    };
+                }
+
+                // Validar el código de verificación
+                if (!_verificationCodeService.ValidateCode(user.Id, "registration", request.VerificationCode))
+                {
+                    _logger.LogWarning("Código de verificación inválido o expirado para el usuario con correo {Email}.", request.Email);
+                    return new VerifyRegistrationResponse
+                    {
+                        Success = false,
+                        Message = "El código de verificación es inválido o ha expirado."
+                    };
+                }
+
+                // Marcar al usuario como verificado
+                user.IsVerified = true;
+                await _userRepository.UpdateUsuario(user);
+
+                // Eliminar el código de verificación usado
+                _verificationCodeService.RemoveCode(user.Id, "registration");
+
+                // Generar un token JWT
+                var token = _tokenService.GenerateToken(user);
+
+                _logger.LogInformation("Usuario con correo {Email} verificado exitosamente.", request.Email);
+                return new VerifyRegistrationResponse
+                {
+                    Success = true,
+                    Message = "Usuario verificado exitosamente.",
+                    Token = token
+                };
             }
-
-            var (storedCode, expiry) = await _verificationCodeRepository.GetVerificationCode(user.Id, request.VerificationCode, "registration");
-
-            if (storedCode == null)
+            catch (Exception ex)
             {
-                return new VerifyRegistrationResponse { Success = false, Message = "Código de verificación inválido o expirado." };
+                _logger.LogError(ex, "Ocurrió un error al verificar el registro para el correo {Email}.", request.Email);
+                return new VerifyRegistrationResponse
+                {
+                    Success = false,
+                    Message = "Ocurrió un error al procesar la solicitud. Inténtalo de nuevo más tarde."
+                };
             }
-
-            user.IsVerified = true;
-            await _userRepository.UpdateUsuario(user);
-            await _verificationCodeRepository.RemoveVerificationCode(user.Id, request.VerificationCode, "registration");
-
-            var token = _tokenService.GenerateToken(user);
-            return new VerifyRegistrationResponse { Success = true, Message = "Cuenta verificada exitosamente.", Token = token };
         }
     }
 }

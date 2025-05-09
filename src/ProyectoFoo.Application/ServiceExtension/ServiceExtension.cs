@@ -14,6 +14,7 @@ namespace ProyectoFoo.Application.ServiceExtension
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddSingleton<IVerificationCodeService, VerificationCodeService>();
             // Agg otras configuraciones específicas de la CAPA APPLICATION
             return services;
         }

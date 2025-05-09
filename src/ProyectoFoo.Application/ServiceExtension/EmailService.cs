@@ -12,6 +12,7 @@ namespace ProyectoFoo.Application.ServiceExtension
         private readonly IConfiguration _configuration;
         private readonly ILogger<EmailService> _logger;
 
+
         public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
         {
             _configuration = configuration;
@@ -36,6 +37,7 @@ namespace ProyectoFoo.Application.ServiceExtension
                 await smtpClient.SendMailAsync(mailMessage);
 
                 _logger.LogInformation("Correo electrónico enviado exitosamente a {recipientEmail}", recipientEmail);
+                _logger.LogInformation("Código de verificación enviado al correo {Email}: {Code}", recipientEmail, body);
             }
             catch (Exception)
             {
