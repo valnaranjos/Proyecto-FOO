@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ProyectoFoo.Domain.Common.Enums;
+using ProyectoFoo.Application.ServiceExtension;
+using ProyectoFoo.Domain.Entities;
 
 
 
@@ -26,20 +28,45 @@ namespace ProyectoFoo.Application.Features.Patients
 
             if (allPatients != null && allPatients.Any())
             {
-                var patientsDto = allPatients.Select(patient => new PatientDTO
+                var patientsDto = allPatients.Select(patientEntity =>
                 {
-                Id = patient.Id,
-                Name = patient.Name,
-                Surname = patient.Surname,
-                Birthdate = patient.Birthdate,
+                    // Crear una instancia de Paciente para poder usar sus métodos
+                    var paciente = new Paciente
+                    {
+                        Id = patientEntity.Id,
+                        Name = patientEntity.Name,
+                        Surname = patientEntity.Surname,
+                        Birthdate = patientEntity.Birthdate,
+                        TypeOfIdentification = patientEntity.TypeOfIdentification,
+                        Identification = patientEntity.Identification,
+                        Sex = patientEntity.Sex,
+                        Modality = patientEntity.Modality,
+                        Email = patientEntity.Email ?? string.Empty,
+                        Phone = patientEntity.Phone ?? string.Empty,
+                        Nationality = patientEntity.Nationality,
+                        AdmissionDate = patientEntity.AdmissionDate // Asegúrate de mapear AdmissionDate si la usas en los cálculos
+                    };
 
-                TypeOfIdentification = request.TypeOfIdentification,
-                Identification = patient.Identification,
-                Sex = patient.Sex,
-                Modality = patient.Modality,
-                Email = patient.Email ?? string.Empty,
-                Phone = patient.Phone ?? string.Empty,
-                 // Mapea aquí otras propiedades que necesites
+                    // Calcular la edad y el rango usando los métodos de la entidad
+                    paciente.Age = paciente.CalculateAge(paciente.Birthdate);
+                    paciente.AgeRange = paciente.CalculateAgeRange(paciente.Age);
+
+                    return new PatientDTO
+                    {
+                        Id = paciente.Id,
+                        Name = paciente.Name.CapitalizeFirstLetter(),
+                        Surname = paciente.Surname.CapitalizeFirstLetter(),
+                        Birthdate = paciente.Birthdate,
+                        TypeOfIdentification = paciente.TypeOfIdentification.ToUpper(),
+                        Identification = paciente.Identification,
+                        Sex = paciente.Sex,
+                        Modality = paciente.Modality,
+                        Email = paciente.Email,
+                        Phone = paciente.Phone,
+                        Age = paciente.Age,
+                        RangoEtario = paciente.AgeRange, // Usar el valor calculado por la entidad
+                        Nationality = paciente.Nationality.CapitalizeFirstLetter()
+                    };
                 }).ToList();
 
                 return new GetAllPatientsResponse

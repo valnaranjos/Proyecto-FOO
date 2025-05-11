@@ -8,12 +8,17 @@ using ProyectoFoo.Infrastructure.ServiceExtensions;
 using ProyectoFoo.API.Services;
 using System.Text;
 using ProyectoFoo.Domain.Services;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 // Agregar servicios
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddInfrastructureServices(); // Extensión para la capa de Infraestructure
 builder.Services.AddApplicationServices(); // Extensión para la capa de Application

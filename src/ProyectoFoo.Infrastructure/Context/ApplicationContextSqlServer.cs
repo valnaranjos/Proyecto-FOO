@@ -26,6 +26,13 @@ namespace ProyectoFoo.Infrastructure.Context
 
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Paciente>(entity =>
+            {
+                entity.Property(e => e.Email)
+                      .HasColumnType("varchar(100)")
+                      .UseCollation("utf8_general_ci");  //Case-INSENSITIVE para busquedas por email.
+            });
+
             modelBuilder.Entity<VerificationCode>()
             .HasKey(vc => new { vc.UserId, vc.Code, vc.Purpose }); // Clave primaria compuesta del codigo de verificación (necesaria, ya que no tiene ID como las otras entidades)
 

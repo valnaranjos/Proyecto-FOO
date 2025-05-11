@@ -30,14 +30,14 @@ namespace ProyectoFoo.Application.Features.Patients
                     Birthdate = patient.Birthdate,
                     Identification = patient.Identification,
 
-                    TypeOfIdentification = request.TypeOfIdentification,
+                    TypeOfIdentification = request.TypeOfIdentification ?? string.Empty,
                     Sex = patient.Sex,
                     Modality = patient.Modality,
                     Email = patient.Email ?? string.Empty,
                     Phone = patient.Phone ?? string.Empty,
                     Age = patient.Age,
                     AdmissionDate = patient.AdmissionDate,
-                    RangoEtario = patient.RangoEtario
+                    RangoEtario = patient.AgeRange
                 };
 
                 return new GetPatientByIdResponse

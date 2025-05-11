@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProyectoFoo.Infrastructure.Context;
 
@@ -10,9 +11,11 @@ using ProyectoFoo.Infrastructure.Context;
 namespace ProyectoFoo.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationContextSqlServer))]
-    partial class ApplicationContextSqlServerModelSnapshot : ModelSnapshot
+    [Migration("20250509201728_ChangeEmailColumnInPatientToCI")]
+    partial class ChangeEmailColumnInPatientToCI
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,37 +34,28 @@ namespace ProyectoFoo.Infrastructure.Migrations
                     b.Property<int>("Age")
                         .HasColumnType("int");
 
-                    b.Property<string>("AgeRange")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
                     b.Property<DateTime>("Birthdate")
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("varchar(100)")
                         .UseCollation("utf8_general_ci");
 
-                    b.Property<string>("Identification")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
-
-                    b.Property<int>("Modality")
+                    b.Property<int>("Identification")
                         .HasColumnType("int");
+
+                    b.Property<string>("Modality")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.Property<string>("Nationality")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Phone")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("RangoEtario")
                         .IsRequired()
                         .HasColumnType("longtext");
 
@@ -70,13 +64,7 @@ namespace ProyectoFoo.Infrastructure.Migrations
 
                     b.Property<string>("Surname")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.Property<string>("TypeOfIdentification")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 
@@ -106,6 +94,10 @@ namespace ProyectoFoo.Infrastructure.Migrations
                     b.Property<DateTime>("LastAccesDate")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<string>("Nacionality")
+                        .HasMaxLength(15)
+                        .HasColumnType("varchar(15)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -115,8 +107,15 @@ namespace ProyectoFoo.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<long?>("Phone")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("Surname")
                         .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.Property<string>("Title")
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 

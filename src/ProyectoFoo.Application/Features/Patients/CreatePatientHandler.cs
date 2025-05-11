@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Domain.Entities;
+using ProyectoFoo.Application.ServiceExtension;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,24 +24,58 @@ namespace ProyectoFoo.Application.Features.Patients
         {
             var paciente = new Paciente
             {
-                Name = request.Name,
-                Surname = request.Surname,
-                TypeOfIdentification = request.TypeOfIdentification,
+                Name = request.Name.CapitalizeFirstLetter(),
+                Surname = request.Surname.CapitalizeFirstLetter(),
                 Birthdate = request.Birthdate,
+                TypeOfIdentification = request.TypeOfIdentification.ToUpper(),                
                 Identification = request.Identification,
                 Sex = request.Sex,
-                Modality = request.Modality,
                 Email = request.Email,
                 Phone = request.Phone,
+                Nationality = request.Nationality.CapitalizeFirstLetter(),
+                //AdmissionDate = request.AdmissionDate  no está en el Dto, se pone?
             };
 
-            var newPaciente = await _pacienteRepository.AddAsync(paciente);
+            paciente.Age = paciente.CalculateAge(paciente.Birthdate);
+            paciente.AgeRange = paciente.CalculateAgeRange(paciente.Age);
 
-            return new CreatePatientResponse
+            try
             {
-                PatientId = newPaciente.Id,
-                Success = true
-            };
+                var newPaciente = await _pacienteRepository.AddAsync(paciente);
+
+                var patientDto = new PatientDTO
+                {
+                    Id = newPaciente.Id,
+                    Name = newPaciente.Name,
+                    Surname = newPaciente.Surname,
+                    Birthdate = newPaciente.Birthdate,
+                    TypeOfIdentification = newPaciente.TypeOfIdentification,
+                    Identification = newPaciente.Identification,
+                    Sex = newPaciente.Sex,
+                    Modality = newPaciente.Modality,
+                    Email = newPaciente.Email,
+                    Phone = newPaciente.Phone,
+                    Age = newPaciente.Age,
+                    AdmissionDate = newPaciente.AdmissionDate,
+                    RangoEtario = newPaciente.AgeRange
+                };
+
+                return new CreatePatientResponse
+                {
+                    PatientId = patientDto.Id,
+                    PatientDto = patientDto,
+                    Success = true,
+                    Message = "Paciente creado exitosamente.",
+                };
+            }
+            catch (Exception ex)
+            {
+                return new CreatePatientResponse
+                {
+                    Success = false,
+                    Message = "Hubo un error al crear el paciente: " + ex.Message
+                };
+            }
         }
     }
 }
