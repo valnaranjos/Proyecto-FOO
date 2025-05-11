@@ -22,12 +22,12 @@ namespace ProyectoFoo.Application.Features.Patients
 
         public SexType Sex { get; set; } = SexType.Masculino;
 
-        public ModalityType Modality { get; set; } = ModalityType.Presencial;
-
         [EmailAddress(ErrorMessage = "Formato de correo electrónico no válido.")]
         public string? Email { get; set; }
 
         [Phone(ErrorMessage = "Formato de número de teléfono no válido.")]
         public string? Phone { get; set; }
+
+        public string Nationality { get; set; } = string.Empty;
     }
 }

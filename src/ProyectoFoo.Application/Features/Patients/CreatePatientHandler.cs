@@ -57,6 +57,7 @@ namespace ProyectoFoo.Application.Features.Patients
                     Phone = newPaciente.Phone,
                     Age = newPaciente.Age,
                     AdmissionDate = newPaciente.AdmissionDate,
+                    Nationality = newPaciente.Nationality,
                     RangoEtario = newPaciente.AgeRange
                 };
 

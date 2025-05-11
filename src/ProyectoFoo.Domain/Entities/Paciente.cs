@@ -58,6 +58,8 @@ namespace ProyectoFoo.Domain.Entities
 
         public string AgeRange { get; set; } = string.Empty;
 
+        public bool IsEnabled { get; set; } = true;
+
         public Paciente()
         {
             Name = string.Empty;

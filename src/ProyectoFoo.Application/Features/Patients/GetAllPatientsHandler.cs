@@ -25,10 +25,11 @@ namespace ProyectoFoo.Application.Features.Patients
         public async Task<GetAllPatientsResponse> Handle(GetAllPatientsQuery request, CancellationToken cancellationToken)
         {
             var allPatients = await _pacienteRepository.GetAllAsync();
+            var enabledPatients = allPatients.Where(p => p.IsEnabled).ToList();
 
-            if (allPatients != null && allPatients.Any())
+            if (enabledPatients != null && enabledPatients.Any())
             {
-                var patientsDto = allPatients.Select(patientEntity =>
+                var patientsDto = enabledPatients.Select(patientEntity =>
                 {
                     // Crear una instancia de Paciente para poder usar sus métodos
                     var paciente = new Paciente

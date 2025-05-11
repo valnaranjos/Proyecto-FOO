@@ -39,15 +39,17 @@ namespace ProyectoFoo.Application.Features.Patients
             if (!string.IsNullOrEmpty(request.Email)) patientToUpdate.Email = request.Email;
             if (!string.IsNullOrEmpty(request.Phone)) patientToUpdate.Phone = request.Phone;
 
-            if (request.Modality != null) patientToUpdate.Modality = request.Modality;
+            if (request.Nationality != null) patientToUpdate.Nationality = request.Nationality;
 
-            await _pacienteRepository.UpdateAsync(patientToUpdate);
-
-            return new UpdatePatientResponse
+            try
             {
-                PatientId = patientToUpdate.Id,
-                Success = true
-            };
+                await _pacienteRepository.UpdateAsync(patientToUpdate);
+                return new UpdatePatientResponse { Success = true, Message = "Paciente actualizado exitosamente." };
+            }
+            catch (Exception ex)
+            {
+                return new UpdatePatientResponse { Success = false, Message = $"Error al actualizar el paciente: {ex.Message}" };
+            }
         }
     }
 }

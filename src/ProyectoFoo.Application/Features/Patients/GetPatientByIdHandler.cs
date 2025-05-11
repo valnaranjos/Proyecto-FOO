@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using ProyectoFoo.Application.Contracts.Persistence;
+using ProyectoFoo.Application.ServiceExtension;
 using ProyectoFoo.Domain.Common.Enums;
 using System;
 using System.Threading;
@@ -25,19 +26,20 @@ namespace ProyectoFoo.Application.Features.Patients
                 var patientDto = new PatientDTO
                 {
                     Id = patient.Id,
-                    Name = patient.Name,
-                    Surname = patient.Surname,
+                    Name = patient.Name.CapitalizeFirstLetter(),
+                    Surname = patient.Surname.CapitalizeFirstLetter(),
                     Birthdate = patient.Birthdate,
                     Identification = patient.Identification,
 
-                    TypeOfIdentification = request.TypeOfIdentification ?? string.Empty,
+                    TypeOfIdentification = patient.TypeOfIdentification.ToUpper() ?? string.Empty,
                     Sex = patient.Sex,
                     Modality = patient.Modality,
                     Email = patient.Email ?? string.Empty,
                     Phone = patient.Phone ?? string.Empty,
-                    Age = patient.Age,
+                    Age = patient.CalculateAge(patient.Birthdate),
+                    RangoEtario = patient.CalculateAgeRange(patient.Age),
+                    Nationality = patient.Nationality.CapitalizeFirstLetter(),
                     AdmissionDate = patient.AdmissionDate,
-                    RangoEtario = patient.AgeRange
                 };
 
                 return new GetPatientByIdResponse

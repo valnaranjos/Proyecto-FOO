@@ -11,6 +11,8 @@ using ProyectoFoo.API.Models.Dtos;
 using MediatR;
 using ProyectoFoo.Application.Features.Patients;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using ProyectoFoo.Application.Contracts.Persistence;
+using ProyectoFoo.Application.ServiceExtension;
 
 
 namespace ProyectoFOO.API.Controllers
@@ -18,7 +20,7 @@ namespace ProyectoFOO.API.Controllers
     /// <summary>
     /// Controlador API para manejar operaciones sobre pacientes.
     /// </summary>
-    //[Authorize] // Requiere autenticación para todas las acciones en este controlador
+    [Authorize] // Requiere autenticación para todas las acciones en este controlador
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
@@ -26,10 +28,12 @@ namespace ProyectoFOO.API.Controllers
     {
 
         private readonly IMediator _mediator;
+        private readonly IPatientService _patientService;
 
-        public PatientController(IMediator mediator)
+        public PatientController(IMediator mediator, IPatientService patientService)
         {
             _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+            _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
         }
 
 
@@ -291,9 +295,8 @@ namespace ProyectoFOO.API.Controllers
         ///     }
         /// </remarks>
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdatePaciente(int id, [FromBody] UpdatePatientCommand command)
+        public async Task<IActionResult> UpdatePatient(int id, [FromBody] UpdatePatientCommand command)
         {
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -307,16 +310,12 @@ namespace ProyectoFOO.API.Controllers
 
                 if (response.Success)
                 {
-                    return NoContent(); // Código 204 para indicar una actualización exitosa sin devolver el recurso
+                    return Ok(new { message = $"Paciente con Id #{id} fue actualizado con éxito." });
                 }
                 else
                 {
                     return NotFound(response.Message);
                 }
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return StatusCode(StatusCodes.Status409Conflict, "Los datos del paciente han sido modificados por otro usuario.");
             }
             catch (Exception ex)
             {
@@ -354,7 +353,7 @@ namespace ProyectoFOO.API.Controllers
         ///     }
         /// </remarks>
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeletePaciente(int id)
+        public async Task<IActionResult> DeletePatient(int id)
         {
             var command = new DeletePatientCommand { PatientId = id };
 
@@ -377,5 +376,53 @@ namespace ProyectoFOO.API.Controllers
             }
         }
 
+
+        [HttpPut("pacientes/{id}/archive")]
+        public async Task<ActionResult<ArchivePatientResponse>> ArchivePaciente(int id)
+        {
+            var command = new ArchivePatientCommand(id);
+            var response = await _mediator.Send(command);
+
+            if (response.Success)
+            {
+                return Ok(new { message = response.Message });
+            }
+            else
+            {
+                return NotFound(response.Message);
+            }
+        }
+
+        /// <summary>
+        /// Busca un paciente por su correo electrónico.
+        /// </summary>
+        /// <param name="email">Correo electrónico del paciente.</param>
+        /// <returns>Paciente si se encuentra, 404 si no se encuentra.</returns>
+        [HttpGet("search-by-email")]
+        public async Task<IActionResult> GetPatientByEmail(string email)
+        {
+            var paciente = await _patientService.GetPatientByEmailAsync(email);
+            if (paciente == null)
+            {
+                return NotFound($"Paciente con email {email} no encontrado.");
+            }
+            return Ok(paciente);
+        }
+
+        /// <summary>
+        /// Filtra los pacientes por modalidad.
+        /// </summary>
+        /// <param name="modality">Modalidad del paciente.</param>
+        /// <returns>Lista de pacientes filtrados por modalidad.</returns>
+        [HttpGet("filter-by-modality")]
+        public async Task<IActionResult> GetPatientByModality(string modality)
+        {
+            var patients = await _patientService.GetPacientesByModalityAsync(modality);
+            if (patients == null || patients.Count == 0)
+            {
+                return NotFound("No se encontraron pacientes con esa modalidad.");
+            }
+            return Ok(patients);
+        }
     }
 }
