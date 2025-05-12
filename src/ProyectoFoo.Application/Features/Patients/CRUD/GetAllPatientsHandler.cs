@@ -29,45 +29,35 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
 
             if (enabledPatients != null && enabledPatients.Count != 0)
             {
-                var patientsDto = enabledPatients.Select(patientEntity =>
-                {
-                    // Crear una instancia de Paciente para poder usar sus métodos
-                    var paciente = new Paciente
-                    {
-                        Id = patientEntity.Id,
-                        Name = patientEntity.Name,
-                        Surname = patientEntity.Surname,
-                        Birthdate = patientEntity.Birthdate,
-                        TypeOfIdentification = patientEntity.TypeOfIdentification,
-                        Identification = patientEntity.Identification,
-                        Sex = patientEntity.Sex,
-                        Modality = patientEntity.Modality,
-                        Email = patientEntity.Email ?? string.Empty,
-                        Phone = patientEntity.Phone ?? string.Empty,
-                        Nationality = patientEntity.Nationality,
-                        AdmissionDate = patientEntity.AdmissionDate // Asegúrate de mapear AdmissionDate si la usas en los cálculos
-                    };
-
-                    // Calcular la edad y el rango usando los métodos de la entidad
-                    paciente.Age = paciente.CalculateAge(paciente.Birthdate);
-                    paciente.AgeRange = paciente.CalculateAgeRange(paciente.Age);
-
-                    return new PatientDTO
-                    {
-                        Id = paciente.Id,
-                        Name = paciente.Name.CapitalizeFirstLetter(),
-                        Surname = paciente.Surname.CapitalizeFirstLetter(),
-                        Birthdate = paciente.Birthdate,
-                        TypeOfIdentification = paciente.TypeOfIdentification.ToUpper(),
-                        Identification = paciente.Identification,
-                        Sex = paciente.Sex,
-                        Modality = paciente.Modality,
-                        Email = paciente.Email,
-                        Phone = paciente.Phone,
-                        Age = paciente.Age,
-                        RangoEtario = paciente.AgeRange, // Usar el valor calculado por la entidad
-                        Nationality = paciente.Nationality.CapitalizeFirstLetter()
-                    };
+                var patientsDto = enabledPatients.Select(patient => new PatientDTO
+               {
+                    Id = patient.Id,
+                    Name = patient.Name.CapitalizeFirstLetter(),
+                    Surname = patient.Surname.CapitalizeFirstLetter(),
+                    Birthdate = patient.Birthdate,
+                    Nationality = patient.Nationality.CapitalizeFirstLetter(),
+                    TypeOfIdentification = patient.TypeOfIdentification.ToUpper(),
+                    Identification = patient.Identification,
+                    Sex = patient.Sex,
+                    Email = patient.Email,
+                    Phone = patient.Phone,
+                    AdmissionDate = patient.AdmissionDate,
+                    Age = patient.CalculateAge(patient.Birthdate),
+                    RangoEtario = patient.CalculateAgeRange(patient.Age),                    
+                    PrincipalMotive = patient.PrincipalMotive,
+                    ActualSymptoms = patient.ActualSymptoms,
+                    RecentEvents = patient.RecentEvents,
+                    PreviousDiagnosis = patient.PreviousDiagnosis,
+                    ProfesionalObservations = patient.ProfesionalObservations,
+                    KeyWords = patient.KeyWords,
+                    FailedActs = patient.FailedActs,
+                    Interconsulation = patient.Interconsulation,
+                    PatientEvolution = patient.PatientEvolution,
+                    SessionDay = patient.SessionDay,
+                    Modality = patient.Modality,
+                    SessionDuration = patient.SessionDuration,
+                    SessionFrequency = patient.SessionFrequency,
+                    PreferedContact = patient.PreferedContact,
                 }).ToList();
 
                 return new GetAllPatientsResponse

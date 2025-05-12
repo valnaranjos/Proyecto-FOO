@@ -23,7 +23,7 @@ namespace ProyectoFoo.Application.Features.Patients.Filters
         {
             var patients = await _pacienteRepository.GetByAgeRangeAsync(request.AgeRange);
 
-            if (patients != null && patients.Any())
+            if (patients != null && patients.Count != 0)
             {
                 var patientsDto = patients.Select(patient => new PatientDTO
                 {
@@ -31,16 +31,30 @@ namespace ProyectoFoo.Application.Features.Patients.Filters
                     Name = patient.Name.CapitalizeFirstLetter(),
                     Surname = patient.Surname.CapitalizeFirstLetter(),
                     Birthdate = patient.Birthdate,
-                    Identification = patient.Identification,
-                    TypeOfIdentification = patient.TypeOfIdentification?.ToUpper() ?? string.Empty,
-                    Sex = patient.Sex,
-                    Modality = patient.Modality,
-                    Email = patient.Email ?? string.Empty,
-                    Phone = patient.Phone ?? string.Empty,
-                    Age = patient.CalculateAge(patient.Birthdate),
-                    RangoEtario = patient.AgeRange, // Ya es string en la entidad
                     Nationality = patient.Nationality.CapitalizeFirstLetter(),
+                    TypeOfIdentification = patient.TypeOfIdentification.ToUpper(),
+                    Identification = patient.Identification,
+                    Sex = patient.Sex,
+                    Email = patient.Email,
+                    Phone = patient.Phone,
                     AdmissionDate = patient.AdmissionDate,
+                    Age = patient.CalculateAge(patient.Birthdate),
+                    RangoEtario = patient.CalculateAgeRange(patient.Age),
+
+                    PrincipalMotive = patient.PrincipalMotive,
+                    ActualSymptoms = patient.ActualSymptoms,
+                    RecentEvents = patient.RecentEvents,
+                    PreviousDiagnosis = patient.PreviousDiagnosis,
+                    ProfesionalObservations = patient.ProfesionalObservations,
+                    KeyWords = patient.KeyWords,
+                    FailedActs = patient.FailedActs,
+                    Interconsulation = patient.Interconsulation,
+                    PatientEvolution = patient.PatientEvolution,
+                    SessionDay = patient.SessionDay,
+                    Modality = patient.Modality,
+                    SessionDuration = patient.SessionDuration,
+                    SessionFrequency = patient.SessionFrequency,
+                    PreferedContact = patient.PreferedContact,
                 }).ToList();
 
                 return new GetPatientsByAgeRangeResponse

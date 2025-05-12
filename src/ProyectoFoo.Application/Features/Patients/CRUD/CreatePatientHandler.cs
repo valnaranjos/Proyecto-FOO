@@ -85,7 +85,8 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
                     SessionDay = newPaciente.SessionDay,
                     SessionDuration = newPaciente.SessionDuration,
                     SessionFrequency = newPaciente.SessionFrequency,
-                    PreferedContact = newPaciente.PreferedContact
+                    PreferedContact = newPaciente.PreferedContact,
+
                 };
 
                 return new CreatePatientResponse

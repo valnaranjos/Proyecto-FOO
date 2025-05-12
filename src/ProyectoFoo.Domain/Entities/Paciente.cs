@@ -114,6 +114,7 @@ namespace ProyectoFoo.Domain.Entities
             TypeOfIdentification = string.Empty;
             Email = string.Empty;
             Phone = string.Empty;
+            IsEnabled = true;
         }
         public string CalculateAgeRange(int age)
         {
