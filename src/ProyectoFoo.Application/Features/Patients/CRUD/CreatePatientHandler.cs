@@ -33,9 +33,23 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
                 Email = request.Email,
                 Phone = request.Phone,
                 Nationality = request.Nationality.CapitalizeFirstLetter(),
-                //AdmissionDate = request.AdmissionDate  no está en el Dto, se pone?
+                PrincipalMotive = request.PrincipalMotive,
+                ActualSymptoms = request.ActualSymptoms,
+                RecentEvents = request.RecentEvents,
+                PreviousDiagnosis = request.PreviousDiagnosis,
+                ProfesionalObservations = request.ProfesionalObservations,
+                KeyWords = request.KeyWords,
+                FailedActs = request.FailedActs,
+                Interconsulation = request.Interconsulation,
+                PatientEvolution = request.PatientEvolution,
+                SessionDay = request.SessionDay,
+                Modality = request.Modality,
+                SessionDuration = request.SessionDuration,
+                SessionFrequency = request.SessionFrequency,
+                PreferedContact = request.PreferedContact,
             };
 
+            paciente.AdmissionDate = DateTime.UtcNow;
             paciente.Age = paciente.CalculateAge(paciente.Birthdate);
             paciente.AgeRange = paciente.CalculateAgeRange(paciente.Age);
 
@@ -58,7 +72,20 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
                     Age = newPaciente.Age,
                     AdmissionDate = newPaciente.AdmissionDate,
                     Nationality = newPaciente.Nationality,
-                    RangoEtario = newPaciente.AgeRange
+                    RangoEtario = newPaciente.AgeRange,
+                    PrincipalMotive = newPaciente.PrincipalMotive,
+                    ActualSymptoms = newPaciente.ActualSymptoms,
+                    RecentEvents = newPaciente.RecentEvents,
+                    PreviousDiagnosis = newPaciente.PreviousDiagnosis,
+                    ProfesionalObservations = newPaciente.ProfesionalObservations,
+                    KeyWords = newPaciente.KeyWords,
+                    FailedActs = newPaciente.FailedActs,
+                    Interconsulation = newPaciente.Interconsulation,
+                    PatientEvolution = newPaciente.PatientEvolution,
+                    SessionDay = newPaciente.SessionDay,
+                    SessionDuration = newPaciente.SessionDuration,
+                    SessionFrequency = newPaciente.SessionFrequency,
+                    PreferedContact = newPaciente.PreferedContact
                 };
 
                 return new CreatePatientResponse

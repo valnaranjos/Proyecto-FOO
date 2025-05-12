@@ -5,6 +5,7 @@ using ProyectoFoo.API.Models.Authentication;
 using MediatR;
 using Microsoft.AspNetCore.Components.Forms;
 using ProyectoFoo.Application.Features.Login;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ProyectoFoo.API.Controllers
 {
@@ -100,6 +101,19 @@ namespace ProyectoFoo.API.Controllers
             }
 
             return Ok("Contraseña restablecida exitosamente.");
+        }
+
+        /// <summary>
+        /// Endpoint para cerrar la sesión del usuario.
+        /// </summary>
+        /// <returns>Respuesta HTTP indicando el éxito del cierre de sesión.</returns>
+        [Authorize] // Requiere que el usuario esté autenticado para acceder a este endpoint
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            // La responsabilidad de dejar de usar el token recae en el frontend.
+
+            return Ok(new { message = "Sesión cerrada exitosamente." });
         }
     }    
 }
