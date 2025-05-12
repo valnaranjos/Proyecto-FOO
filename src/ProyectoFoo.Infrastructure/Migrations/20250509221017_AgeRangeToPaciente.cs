@@ -10,10 +10,11 @@ namespace ProyectoFoo.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameColumn(
-                name: "RangoEtario",
-                table: "Pacientes",
-                newName: "AgeRange");
+            migrationBuilder.AddColumn<string>(
+              name: "AgeRange",
+              table: "Pacientes",
+              type: "varchar(100)",
+              nullable: true);
 
             migrationBuilder.AlterColumn<string>(
                 name: "Surname",
