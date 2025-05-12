@@ -6,6 +6,7 @@ namespace ProyectoFoo.Domain.Entities
 {
     public class Usuario
     {
+        //OBLIGATORIOS
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
@@ -37,10 +38,10 @@ namespace ProyectoFoo.Domain.Entities
         [RegularExpression(@"^[a-zA-Z¡…Õ”⁄·ÈÌÛ˙—Ò\s]+$", ErrorMessage = "El tÌtulo puede contener letras y espacios.")]
         public string? Title { get; set; } = string.Empty;
 
-
-
         [Required]
         public string PasswordHash { get; private set; }
+
+        //CALCULADOS POR EL SISTEMA
         public DateTime CreatedDate { get; set; }
         public DateTime LastAccesDate { get; set; }
         public bool IsVerified { get; set; }
@@ -65,6 +66,8 @@ namespace ProyectoFoo.Domain.Entities
             CreatedDate = DateTime.Now;
             LastAccesDate = DateTime.Now;
         }
+
+        //Constructor con telefono y especialidad (titulo), ya que son opcionales.
         public Usuario(int id, int identification, string nombre, string surname, string correo, string contrasena, long phone, string title)
         {
             Id = id;
