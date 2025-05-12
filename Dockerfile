@@ -27,11 +27,11 @@ RUN dotnet restore "src/ProyectoFoo.API/ProyectoFoo.API.csproj"
 # Copiar el resto de los archivos
 COPY . .
 
-# Cambiar al directorio del proyecto
-WORKDIR "/src/src/ProyectoFoo.API"
+# Cambiar al directorio base del proyecto para la publicación
+WORKDIR /src
 
 # Publicar la aplicación
-RUN dotnet publish "ProyectoFoo.API.csproj" \
+RUN dotnet publish "src/ProyectoFoo.API/ProyectoFoo.API.csproj" \
     -c $BUILD_CONFIGURATION \
     -r linux-x64 \
     --self-contained true \
