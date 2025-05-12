@@ -90,7 +90,11 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<ApplicationContextSqlServer>(options =>
 options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
                      ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection")),
-                     b => b.MigrationsAssembly("ProyectoFoo.Infrastructure")) // Especifica el ensamblado de migraciones
+                      b =>
+                      {
+                          b.MigrationsAssembly("ProyectoFoo.Infrastructure");
+                          b.EnableStringComparisonTranslations();
+                      })
 );
 
 // Configurar CORS
@@ -146,12 +150,10 @@ app.UseSwaggerUI(c =>
 // Ensure database is created
 try
 {
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationContextSqlServer>();
-        db.Database.Migrate(); // Applies pending migrations
-        Console.WriteLine("✅ Conexión a la base de datos exitosa.");
-    }
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationContextSqlServer>();
+    db.Database.Migrate(); // Applies pending migrations
+    Console.WriteLine("✅ Conexión a la base de datos exitosa.");
 }
 catch (Exception ex)
 {

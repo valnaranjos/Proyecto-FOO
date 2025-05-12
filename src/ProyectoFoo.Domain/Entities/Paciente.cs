@@ -110,18 +110,5 @@ namespace ProyectoFoo.Domain.Entities
             return Age;      
         }
 
-        private SexType ParseSex(string sex)
-        {
-            if (Enum.TryParse<SexType>(sex, true, out var result))
-                return result;
-            throw new ArgumentException($"Valor de sexo inválido: {sex}");
-        }
-
-        private ModalityType ParseModality(string modality)
-        {
-            if (Enum.TryParse<ModalityType>(modality, true, out var result))
-                return result;
-            throw new ArgumentException($"Valor de modalidad inválido: {modality}");
-        }
     }
 }
