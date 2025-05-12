@@ -13,12 +13,12 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
     {
         [Required(ErrorMessage = "El nombre es obligatorio.")]
         [StringLength(50, ErrorMessage = "El nombre de usuario no puede exceder los 50 caracteres.")]
-        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "El  nombre de usuario solo puede contener letras y espacios.")]
+        [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El nombre solo permite letras, acentos, la 'ñ' y espacios.")]
         public string Name { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El apellido es obligatorio.")]
         [StringLength(50, ErrorMessage = "El apellido del usuario no puede exceder los 50 caracteres.")]
-        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "El  apellido del usuario solo puede contener letras y espacios.")]
+        [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El Apellido solo permite letras, acentos, la 'ñ' y espacios.")]
         public string Surname { get; set; } = string.Empty;
 
 
@@ -52,5 +52,43 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
         [Required(ErrorMessage = "El número de teléfono es obligatorio.")]
         [Phone(ErrorMessage = "Formato de número de teléfono no válido.")]
         public string Phone { get; set; } = string.Empty;
+
+
+        //OPCIONALES
+
+        //Motivo de consulta
+
+        public string? PrincipalMotive { get; set; }
+
+        public string? ActualSymptoms { get; set; }
+
+        public string? RecentEvents { get; set; }
+
+        public string? PreviousDiagnosis { get; set; }
+
+
+        //Historia clinica
+
+        public string? ProfesionalObservations { get; set; }
+        public string? KeyWords { get; set; }
+
+        public string? FailedActs { get; set; }
+
+        public string? Interconsulation { get; set; }
+
+        public string? PatientEvolution { get; set; }
+
+
+
+        //Organizacion y seguimiento
+
+        public DateTime? SessionDay { get; set; }
+
+        public ModalityType? Modality { get; set; }
+        public int? SessionDuration { get; set; }
+
+        public string? SessionFrequency { get; set; }
+
+        public string? PreferedContact { get; set; }
     }
 }
