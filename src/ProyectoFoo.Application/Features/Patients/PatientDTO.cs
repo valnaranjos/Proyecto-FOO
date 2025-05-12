@@ -22,8 +22,7 @@ namespace ProyectoFoo.Application.Features.Patients
         public string Identification { get; set; } = string.Empty;
 
         public SexType Sex { get; set; } = SexType.Masculino;
-
-        public ModalityType Modality { get; set; }
+        
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
 
@@ -32,5 +31,44 @@ namespace ProyectoFoo.Application.Features.Patients
         public string RangoEtario { get; set; } = string.Empty;
 
         public string Nationality { get; set; } = string.Empty;
+
+
+        //OPCIONALES
+
+        //Motivo de consulta
+
+        public string? PrincipalMotive { get; set; }
+
+        public string? ActualSymptoms { get; set; }
+
+        public string? RecentEvents { get; set; }
+
+        public string? PreviousDiagnosis { get; set; }
+
+
+        //Historia clinica
+
+        public string? ProfesionalObservations { get; set; }
+        public string? KeyWords { get; set; }
+
+        public string? FailedActs { get; set; }
+
+        public string? Interconsulation { get; set; }
+
+        public string? PatientEvolution { get; set; }
+
+
+
+
+        //Organizacion y seguimiento
+
+        public DateTime? SessionDay { get; set; }
+
+        public ModalityType? Modality { get; set; }
+        public int? SessionDuration { get; set; }
+
+        public string? SessionFrequency { get; set; }
+
+        public string? PreferedContact { get; set; }
     }
 }
