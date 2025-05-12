@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Domain.Common.Enums;
 using ProyectoFoo.Domain.Entities;
@@ -38,9 +39,13 @@ namespace ProyectoFoo.Infrastructure.Persistence
 
         public async Task<List<Paciente>> GetByNationalityAsync(string nationality)
         {
-            return await _dbContext.Pacientes
-                .Where(p => p.Nationality.Equals(nationality, StringComparison.CurrentCultureIgnoreCase))
-                .ToListAsync();
+            //string searchNationality = nationality.Trim().ToLower();
+            //var patients = _dbContext.Pacientes
+            //  .Where(p => p.Nationality.ToLower() == searchNationality.ToLower()).ToList();
+
+            string nacionalidadBuscada = nationality.Trim();
+            var pacientes = _dbContext.Pacientes.Where(p => EF.Functions.Like(p.Nationality, nacionalidadBuscada)).ToList();
+            return pacientes;
         }
 
         public async Task<List<Paciente>> GetByModalityAsync(string modality)
