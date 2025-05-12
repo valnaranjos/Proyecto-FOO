@@ -11,7 +11,7 @@ using ProyectoFoo.Domain.Entities;
 
 
 
-namespace ProyectoFoo.Application.Features.Patients
+namespace ProyectoFoo.Application.Features.Patients.CRUD
 {
     public class GetAllPatientsHandler : IRequestHandler<GetAllPatientsQuery, GetAllPatientsResponse>
     {

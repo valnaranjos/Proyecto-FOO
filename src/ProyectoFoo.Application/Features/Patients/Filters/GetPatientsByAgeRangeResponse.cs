@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProyectoFoo.Application.Features.Patients
+namespace ProyectoFoo.Application.Features.Patients.Filters
 {
-    public class UpdatePatientResponse
+    public class GetPatientsByAgeRangeResponse
     {
-        public int PatientId { get; set; }
         public bool Success { get; set; }
         public string? Message { get; set; }
+        public List<PatientDTO>? Patients { get; set; }
     }
 }

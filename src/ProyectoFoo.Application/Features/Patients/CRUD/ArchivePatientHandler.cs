@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProyectoFoo.Application.Features.Patients
+namespace ProyectoFoo.Application.Features.Patients.CRUD
 {
     public class ArchivePatientHandler : IRequestHandler<ArchivePatientCommand, ArchivePatientResponse>
     {

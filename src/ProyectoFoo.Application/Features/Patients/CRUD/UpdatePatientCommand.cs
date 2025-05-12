@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ProyectoFoo.Domain.Common.Enums;
-namespace ProyectoFoo.Application.Features.Patients
+namespace ProyectoFoo.Application.Features.Patients.CRUD
 {
     public class UpdatePatientCommand : IRequest<UpdatePatientResponse>
     {

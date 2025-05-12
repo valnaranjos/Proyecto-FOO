@@ -1,4 +1,4 @@
-﻿namespace ProyectoFoo.Application.Features.Patients
+﻿namespace ProyectoFoo.Application.Features.Patients.CRUD
 {
     public class ArchivePatientResponse
     {

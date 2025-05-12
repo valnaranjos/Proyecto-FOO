@@ -5,11 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProyectoFoo.Application.Features.Patients
+namespace ProyectoFoo.Application.Features.Patients.CRUD
 {
-    public class GetPatientByIdResponse
+    public class CreatePatientResponse
     {
-        public PatientDTO? Patient { get; set; }
+        public int PatientId { get; set; }
+        public PatientDTO? PatientDto { get; set; }
         public bool Success { get; set; }
         public string? Message { get; set; }
     }

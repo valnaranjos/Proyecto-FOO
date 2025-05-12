@@ -1,4 +1,5 @@
-﻿using ProyectoFoo.Domain.Entities;
+﻿using ProyectoFoo.Domain.Common.Enums;
+using ProyectoFoo.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +13,17 @@ namespace ProyectoFoo.Application.Contracts.Persistence
         //Como hereda, no se deben implementar los métodos de la interfaz IAsyncRepository<T>
 
 
+        //BUSQUEDAS
         Task<Paciente> GetByEmailAsync(string email);
 
+        Task<Paciente> GetByIdentificationAsync(string identification);
+
+        Task<List<Paciente>> GetByNationalityAsync(string nationality);
+
+
+        //FILTROS
         Task<List<Paciente>> GetByModalityAsync(string modality);
+        Task<List<Paciente>> GetBySexTypeAsync(SexType sex);
+        Task<List<Paciente>> GetByAgeRangeAsync(string ageRange);
     }
 }

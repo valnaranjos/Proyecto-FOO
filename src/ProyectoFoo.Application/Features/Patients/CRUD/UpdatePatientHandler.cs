@@ -4,7 +4,7 @@ using ProyectoFoo.Domain.Entities;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ProyectoFoo.Application.Features.Patients
+namespace ProyectoFoo.Application.Features.Patients.CRUD
 {
     public class UpdatePatientHandler : IRequestHandler<UpdatePatientCommand, UpdatePatientResponse>
     {

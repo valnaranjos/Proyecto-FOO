@@ -30,6 +30,19 @@ namespace ProyectoFoo.Infrastructure.Persistence
             return paciente;
         }
 
+        public async Task<Paciente> GetByIdentificationAsync(string identification)
+        {
+            return await _dbContext.Pacientes
+               .FirstOrDefaultAsync(p => p.Identification == identification);
+        }
+
+        public async Task<List<Paciente>> GetByNationalityAsync(string nationality)
+        {
+            return await _dbContext.Pacientes
+                .Where(p => p.Nationality.Equals(nationality, StringComparison.CurrentCultureIgnoreCase))
+                .ToListAsync();
+        }
+
         public async Task<List<Paciente>> GetByModalityAsync(string modality)
         {
             // Intentamos convertir el string a un valor del enum ModalityType
@@ -40,6 +53,20 @@ namespace ProyectoFoo.Infrastructure.Persistence
 
             return await _dbContext.Pacientes
                 .Where(p => p.Modality == parsedModality)
+                .ToListAsync();
+        }
+
+        public async Task<List<Paciente>> GetBySexTypeAsync(SexType sex)
+        {
+            return await _dbContext.Pacientes
+                 .Where(p => p.Sex == sex)
+                 .ToListAsync();
+        }
+
+        public async Task<List<Paciente>> GetByAgeRangeAsync(string ageRange)
+        {
+            return await _dbContext.Pacientes
+                .Where(p => p.AgeRange.Equals(ageRange, StringComparison.CurrentCultureIgnoreCase))
                 .ToListAsync();
         }
 

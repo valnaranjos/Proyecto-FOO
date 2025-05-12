@@ -1,37 +1,37 @@
 ﻿using MediatR;
 using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Application.ServiceExtension;
-using ProyectoFoo.Domain.Common.Enums;
 using System;
-using System.Threading;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
-namespace ProyectoFoo.Application.Features.Patients
+namespace ProyectoFoo.Application.Features.Patients.Search
 {
-    public class GetPatientByIdHandler : IRequestHandler<GetPatientByIdQuery, GetPatientByIdResponse>
+    public class GetPatientsByNationalityHandler : IRequestHandler<GetPatientsByNationalityCommand, GetPatientsByNationalityResponse>
     {
         private readonly IPatientRepository _pacienteRepository;
 
-        public GetPatientByIdHandler(IPatientRepository pacienteRepository)
+        public GetPatientsByNationalityHandler(IPatientRepository pacienteRepository)
         {
             _pacienteRepository = pacienteRepository ?? throw new ArgumentNullException(nameof(pacienteRepository));
         }
 
-        public async Task<GetPatientByIdResponse> Handle(GetPatientByIdQuery request, CancellationToken cancellationToken)
+        public async Task<GetPatientsByNationalityResponse> Handle(GetPatientsByNationalityCommand request, CancellationToken cancellationToken)
         {
-            var patient = await _pacienteRepository.GetByIdAsync(request.PatientId);
+            var patients = await _pacienteRepository.GetByNationalityAsync(request.Nationality);
 
-            if (patient != null)
+            if (patients != null && patients.Any())
             {
-                var patientDto = new PatientDTO
+                var patientsDto = patients.Select(patient => new PatientDTO
                 {
                     Id = patient.Id,
                     Name = patient.Name.CapitalizeFirstLetter(),
                     Surname = patient.Surname.CapitalizeFirstLetter(),
                     Birthdate = patient.Birthdate,
                     Identification = patient.Identification,
-
-                    TypeOfIdentification = patient.TypeOfIdentification.ToUpper() ?? string.Empty,
+                    TypeOfIdentification = patient.TypeOfIdentification?.ToUpper() ?? string.Empty,
                     Sex = patient.Sex,
                     Modality = patient.Modality,
                     Email = patient.Email ?? string.Empty,
@@ -40,20 +40,21 @@ namespace ProyectoFoo.Application.Features.Patients
                     RangoEtario = patient.CalculateAgeRange(patient.Age),
                     Nationality = patient.Nationality.CapitalizeFirstLetter(),
                     AdmissionDate = patient.AdmissionDate,
-                };
+                }).ToList();
 
-                return new GetPatientByIdResponse
+                return new GetPatientsByNationalityResponse
                 {
-                    Patient = patientDto,
-                    Success = true,
+                    Patients = patientsDto,
+                    Success = true
                 };
             }
             else
             {
-                return new GetPatientByIdResponse
+                return new GetPatientsByNationalityResponse
                 {
                     Success = false,
-                    Message = $"Paciente con ID {request.PatientId} no encontrado."
+                    Message = $"No se encontraron pacientes con la nacionalidad: {request.Nationality}",
+                    Patients = new List<PatientDTO>()
                 };
             }
         }

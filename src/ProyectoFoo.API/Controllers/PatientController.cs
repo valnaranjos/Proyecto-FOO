@@ -1,18 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
-using System.ComponentModel.DataAnnotations;
-using ProyectoFoo.Infrastructure.Context;
-using ServiceStack.Text.Json;
 using MySqlConnector;
 using Microsoft.AspNetCore.Authorization;
-using ProyectoFoo.Domain.Entities;
-using ProyectoFoo.API.Models.Dtos;
 using MediatR;
-using ProyectoFoo.Application.Features.Patients;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 using ProyectoFoo.Application.Contracts.Persistence;
-using ProyectoFoo.Application.ServiceExtension;
+using ProyectoFoo.Application.Features.Patients.Search;
+using ProyectoFoo.Application.Features.Patients.Filters;
+using ProyectoFoo.Application.Features.Patients.CRUD;
 
 
 namespace ProyectoFOO.API.Controllers
@@ -45,10 +39,6 @@ namespace ProyectoFOO.API.Controllers
         /// <remarks>
         /// Este endpoint devuelve una colección de todos los pacientes actualmente registrados en el sistema.
         ///
-        /// Ejemplo de solicitud:
-        ///
-        ///     GET /api/patients
-        ///
         /// Ejemplo de respuesta (200 OK):
         ///
         ///     [
@@ -57,34 +47,16 @@ namespace ProyectoFOO.API.Controllers
         ///             "name": "Ana",
         ///             "surname": "Nanana",
         ///             "birthdate": "2005-04-30T00:00:00",
-        ///             "identification": 214748357,
-        ///             "sex": "M",
+        ///             "identification": "214748357",
+        ///             "sex": "Masculino",
         ///             "modality": "Presencial",
         ///             "email": "userrr@example.com",
-        ///             "phone": "234566"
+        ///             "phone": "234566", 
+        ///             "age": 20,
+        ///             "admissionDate: "2025-05-01T00:00:00",
+        ///             "ageRange": "Adulto",
+        ///             "nationality": "Colombiano",
         ///         },
-        ///         {
-        ///             "id": 2,
-        ///             "name": "string",
-        ///             "surname": "string",
-        ///             "birthdate": "2025-05-01T00:00:00",
-        ///             "identification": 1234569574,
-        ///             "sex": "F",
-        ///             "modality": "string",
-        ///             "email": "user@example.com",
-        ///             "phone": "3008644707"
-        ///         },
-        ///         {
-        ///             "id": 3,
-        ///             "name": "Juan",
-        ///             "surname": "Perez",
-        ///             "birthdate": "2025-05-01T00:00:00",
-        ///             "identification": 105386074,
-        ///             "sex": "M",
-        ///             "modality": "Presencial",
-        ///             "email": "juan@example.com",
-        ///             "phone": "3105468820"
-        ///         }
         ///     ]
         ///
         /// Ejemplo de respuesta (500 Internal Server Error - Error al obtener pacientes):
@@ -133,44 +105,15 @@ namespace ProyectoFOO.API.Controllers
         ///             "name": "Juan",
         ///             "surname": "Pérez",
         ///             "birthdate": "2000-05-15T00:00:00",
-        ///             "identification": 123456789,
-        ///             "sex": "M",
-        ///             "modality": "Virtual",
+        ///             "nationality" : "Colombiano",
+        ///             "typeOfIdentification": "Cédula de Ciudadanía",
+        ///             "identification": "123456789",
+        ///             "sex": "Masculino",
         ///             "email": "juan.perez@example.com",
         ///             "phone": "3101234567"
-        ///             +datos opcionales...   
         ///         }
         ///     }
         ///
-        /// Ejemplo de respuesta (201 Created):
-        ///
-        ///     {
-        ///         "patient": {
-        ///             "id": 4,
-        ///             "name": "Juan",
-        ///             "surname": "Pérez",
-        ///             "birthdate": "2000-05-15T00:00:00",
-        ///             "identification": 123456789,
-        ///             "sex": "M",
-        ///             "modality": "Virtual",
-        ///             "email": "juan.perez@example.com",
-        ///             "phone": "3101234567"
-        ///         },
-        ///         "success": true
-        ///     }
-        ///
-        /// Ejemplo de respuesta (400 Bad Request - Validación fallida):
-        ///
-        ///     {
-        ///         "type": "URL...",
-        ///         "title": "One or more validation errors occurred.",
-        ///         "status": 400,
-        ///         "errors": {
-        ///             "NuevoPaciente.Name": [
-        ///                 "The Name field is required."
-        ///             ]
-        ///         }
-        ///     }
         /// </remarks>
         [HttpPost]
         public async Task<ActionResult<CreatePatientResponse>> CreatePaciente([FromBody] CreatePatientCommand command)
@@ -216,31 +159,6 @@ namespace ProyectoFOO.API.Controllers
         /// <returns>Respuesta HTTP con la información del paciente si se encuentra.</returns>
         /// <remarks>
         /// Este endpoint permite obtener los detalles de un paciente específico utilizando su identificador único.
-        ///
-        /// Ejemplo de solicitud:
-        ///
-        ///     GET /api/patients/1
-        ///
-        /// Ejemplo de respuesta (200 OK):
-        ///
-        ///     {
-        ///         "id": 1,
-        ///         "name": "Ana",
-        ///         "surname": "Nanana",
-        ///         "birthdate": "2005-04-30T00:00:00",
-        ///         "identification": 214748357,
-        ///         "sex": "M",
-        ///         "modality": "Presencial",
-        ///         "email": "userrr@example.com",
-        ///         "phone": "234566"
-        ///     }
-        ///
-        /// Ejemplo de respuesta (404 Not Found - Paciente no encontrado):
-        ///
-        ///     {
-        ///         "success": false,
-        ///         "message": "Paciente con ID 99 no encontrado."
-        ///     }
         /// </remarks>
         [HttpGet("{id}")]
         public async Task<ActionResult<GetPatientByIdResponse>> GetPatientById(int id)
@@ -275,24 +193,6 @@ namespace ProyectoFOO.API.Controllers
         /// <remarks>
         /// Este endpoint permite actualizar solo los campos proporcionados en el cuerpo de la solicitud.
         /// El ID del paciente se debe especificar en la URL.
-        ///
-        /// Ejemplo de solicitud:
-        ///
-        ///     PUT /api/1
-        ///     {
-        ///         "name": "Nuevo Nombre",
-        ///         "phone": "987654321"
-        ///     }
-        ///
-        /// Ejemplo de respuesta (204 No Content - Éxito):
-        ///
-        ///     // Sin cuerpo de respuesta
-        ///     
-        /// Ejemplo de respuesta (404 Not Found - Paciente no encontrado):
-        ///
-        ///     {
-        ///         "message": "Paciente con ID 1 no encontrado."
-        ///     }
         /// </remarks>
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdatePatient(int id, [FromBody] UpdatePatientCommand command)
@@ -376,7 +276,11 @@ namespace ProyectoFOO.API.Controllers
             }
         }
 
-
+        /// <summary\>
+        /// Archiva un paciente existente por su ID\.
+        /// </summary\>
+        /// <param name\="id"\>ID del paciente a archivar\.</param\>
+        /// <returns\>Respuesta HTTP indicando el éxito o error del archivado\.</returns\>
         [HttpPut("pacientes/{id}/archive")]
         public async Task<ActionResult<ArchivePatientResponse>> ArchivePaciente(int id)
         {
@@ -409,12 +313,121 @@ namespace ProyectoFOO.API.Controllers
             return Ok(paciente);
         }
 
+
+        //ENDPOINTS DE BUSQUEDA 
+        /// <summary>
+        /// Busca un paciente por su número de identificación.
+        /// </summary>
+        /// <param name="identification">Número de identificación del paciente a buscar (como parámetro de consulta).</param>
+        /// <returns>Respuesta HTTP con la información del paciente encontrado o NotFound si no existe.</returns>
+        /// <response code="200">Paciente encontrado exitosamente.</response>
+        /// <response code="400">Error en la solicitud.</response>
+        /// <response code="404">No se encontró ningún paciente con el número de identificación proporcionado.</response>
+        /// <response code="500">Error interno del servidor.</response>
+        [HttpGet("search-by-identification")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<GetPatientByIdResponse>> GetPatientByIdentification([FromQuery] string identification)
+        {
+            var query = new GetPatientByIdentificationCommand(identification);
+            var response = await _mediator.Send(query);
+
+            if (response.Success && response.Patient != null)
+            {
+                return Ok(response.Patient);
+            }
+            else if (response.Success)
+            {
+                return NotFound(" No se encontró ningún paciente con esa identificación"); // No se encontró ningún paciente con esa identificación
+            }
+            else
+            {
+                return BadRequest(response.Message); // O un StatusCode más apropiado para el error
+            }
+        }
+
+        /// <summary>
+        /// Busca un paciente por su nacionalidad.
+        /// </summary>
+        /// <param name="nationality"> String nacionalidad del paciente(como parámetro de consulta).</param>
+        /// <returns>Respuesta HTTP con la información del paciente encontrado o NotFound si no existe.</returns>
+        /// <response code="200">Paciente encontrado exitosamente.</response>
+        /// <response code="400">Error en la solicitud.</response>
+        /// <response code="404">No se encontró ningún paciente con la nacionalidad proporcionado.</response>
+        /// <response code="500">Error interno del servidor.</response>
+        [HttpGet("search-by-nationality")]
+        public async Task<ActionResult<GetPatientsByNationalityResponse>> GetPatientsByNationality([FromQuery] string nationality)
+        {
+            var query = new GetPatientsByNationalityCommand(nationality);
+            var response = await _mediator.Send(query);
+
+            if (response.Success && response.Patients != null)
+            {
+                return Ok(response.Patients);
+            }
+            else if (response.Success)
+            {
+                return NotFound();
+            }
+            else
+            {
+                return BadRequest(response.Message); // O un StatusCode??
+            }
+        }
+
+        //FILTROS 
+
+        /// <summary>
+        /// Filtra los pacientes por tipo de sexo.
+        /// </summary>
+        /// <param name="sexType">Tipo de sexo del paciente.</param>
+        /// <returns>Lista de pacientes filtrados por tipo de sexo.</returns>
+        /// <returns>Respuesta HTTP con la lista de pacientes que coinciden con la el tipo de sexo proporcionada o NotFound si no existe ninguno.</returns>
+        /// <response code="200">Lista de pacientes filtrados exitosamente.</response>
+        /// <response code="400">Error en la solicitud.</response>
+        /// <response code="404">No se encontraron pacientes con el tipo de sexo proporcionado.</response>
+        /// <response code="500">Error interno del servidor.</response>
+        [HttpGet("filter-by-sexType")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]       
+        public async Task<ActionResult<GetPatientsBySexTypeResponse>> GetPatientsBySex([FromQuery] string sex)
+        {
+            var query = new GetPatientsBySexTypeCommand(sex);
+            var response = await _mediator.Send(query);
+
+            if (response.Success && response.Patients != null)
+            {
+                return Ok(response.Patients);
+            }
+            else if (response.Success)
+            {
+                return NotFound($"No se encontraron pacientes con tipo de sexo {sex}"); 
+            }
+            else
+            {
+                return BadRequest(response.Message);
+            }
+        }
+
         /// <summary>
         /// Filtra los pacientes por modalidad.
         /// </summary>
         /// <param name="modality">Modalidad del paciente.</param>
         /// <returns>Lista de pacientes filtrados por modalidad.</returns>
+        ///   /// <returns>Respuesta HTTP con la lista de pacientes que coinciden con la modalidad proporcionada o NotFound si no existe ninguno.</returns>
+        /// <response code="200">Lista de pacientes filtrados exitosamente.</response>
+        /// <response code="400">Error en la solicitud.</response>
+        /// <response code="404">No se encontraron pacientes con la modalidad proporcionado.</response>
+        /// <response code="500">Error interno del servidor.</response>
         [HttpGet("filter-by-modality")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]     
         public async Task<IActionResult> GetPatientByModality(string modality)
         {
             var patients = await _patientService.GetPacientesByModalityAsync(modality);
@@ -424,5 +437,40 @@ namespace ProyectoFOO.API.Controllers
             }
             return Ok(patients);
         }
+
+
+        /// <summary>
+        /// Filtra pacientes por rango etario.
+        /// </summary>
+        /// <param name="ageRange">Rango etario de los pacientes a filtrar (como parámetro de consulta).</param>
+        /// <returns>Respuesta HTTP con la lista de pacientes que coinciden con el rango etario proporcionado o NotFound si no existe ninguno.</returns>
+        /// <response code="200">Lista de pacientes filtrados exitosamente.</response>
+        /// <response code="400">Error en la solicitud.</response>
+        /// <response code="404">No se encontraron pacientes en el rango etario proporcionado.</response>
+        /// <response code="500">Error interno del servidor.</response>
+        [HttpGet("filter-by-age-range")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<GetPatientsByAgeRangeResponse>> GetPatientsByAgeRange([FromQuery] string ageRange)
+        {
+            var query = new GetPatientsByAgeRangeCommand(ageRange);
+            var response = await _mediator.Send(query);
+
+            if (response.Success && response.Patients != null)
+            {
+                return Ok(response.Patients);
+            }
+            else if (response.Success)
+            {
+                return NotFound($"No se encontraron pacientes {ageRange} de rango etario."); 
+            }
+            else
+            {
+                return BadRequest(response.Message); // O un StatusCode?
+            }
+        }
+
     }
 }
