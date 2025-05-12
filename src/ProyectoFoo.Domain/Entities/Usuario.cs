@@ -9,10 +9,10 @@ namespace ProyectoFoo.Domain.Entities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-
         [Required(ErrorMessage = "El número de identificación es obligatorio.")]
         [Range(10, int.MaxValue, ErrorMessage = "El número de identificación debe ser positivo.")]
         public int Identification { get; set; }
+
 
         [Required(ErrorMessage = "El nombre es obligatorio.")]
         [StringLength(50, ErrorMessage = "El nombre no puede exceder los 50 caracteres.")]
@@ -28,9 +28,16 @@ namespace ProyectoFoo.Domain.Entities
         [StringLength(100, ErrorMessage = "El correo no puede exceder los 100 caracteres.")]
         public string Email { get; set; }
 
-        //[Phone(ErrorMessage ="Número de teléfono no válido.")]
-        //[Range(15, int.MaxValue, ErrorMessage = "El número de identificación debe ser positivo.")]
-        //public int Phone { get; set; }
+        [Phone(ErrorMessage ="Número de teléfono no válido.")]
+        [Range(15, int.MaxValue, ErrorMessage = "El número de identificación debe ser positivo.")]
+        public long? Phone { get; set; }
+
+       
+        [StringLength(100, ErrorMessage = "El nombre no puede exceder los 100 caracteres.")]
+        [RegularExpression(@"^[a-zA-ZÁÉÍÓÚáéíóúÑñ\s]+$", ErrorMessage = "El título puede contener letras y espacios.")]
+        public string? Title { get; set; } = string.Empty;
+
+
 
         [Required]
         public string PasswordHash { get; private set; }
@@ -45,12 +52,28 @@ namespace ProyectoFoo.Domain.Entities
             Email = string.Empty;
             PasswordHash = string.Empty;
         }
-        public Usuario(int id, string nombre, string correo, string contrasena) //int phone)
+
+        //Constructor sin telefono ni especialidad (titulo), ya que son opcionales.
+        public Usuario(int id, int identification, string nombre, string surname,  string correo, string contrasena)
         {
             Id = id;
+            Identification = identification;
             Name = nombre;
+            Surname = surname;
             Email = correo;
-            //Phone = phone;
+            PasswordHash = HashPassword(contrasena); // Guardamos el hash de la contraseña
+            CreatedDate = DateTime.Now;
+            LastAccesDate = DateTime.Now;
+        }
+        public Usuario(int id, int identification, string nombre, string surname, string correo, string contrasena, long phone, string title)
+        {
+            Id = id;
+            Identification = identification;
+            Name = nombre;
+            Surname = surname;
+            Email = correo;
+            Phone = phone;
+            Title = title ?? string.Empty;
             PasswordHash = HashPassword(contrasena); // Guardamos el hash de la contraseña
             CreatedDate = DateTime.Now;
             LastAccesDate = DateTime.Now;

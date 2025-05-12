@@ -80,13 +80,14 @@ namespace ProyectoFoo.Application.Features.Users
             // Si no existe un usuario con ese correo, proceder con la creación normal
             var newUser = new Usuario(
                 id: 0,
-                nombre: request.Name,
+                nombre: request.Name.CapitalizeFirstLetter(),
+                surname : request.Surname.CapitalizeFirstLetter(),
+                identification: request.Identification,
                 correo: request.Email,
                 contrasena: request.Password
             )
             {
                 Surname = request.Surname,
-                Identification = request.Identification,
                 IsVerified = false
             };
 

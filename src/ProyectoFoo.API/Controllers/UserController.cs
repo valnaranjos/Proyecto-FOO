@@ -53,7 +53,7 @@ namespace ProyectoFoo.API.Controllers
 
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState); // Devuelve errores de validación
+                return BadRequest(ModelState);
             }
 
             try
@@ -62,8 +62,8 @@ namespace ProyectoFoo.API.Controllers
 
                 if (response.Success)
                 {
-                    // return CreatedAtAction(nameof(GetUserById), new { id = response.User?.Id }, response.User);
-                    return StatusCode(StatusCodes.Status201Created, response.User); // Devuelve 201 con el usuario creado response.User);
+                  
+                    return StatusCode(StatusCodes.Status201Created, response.User);
                 }
                 else
                 {

@@ -1,4 +1,5 @@
-﻿using ProyectoFoo.Domain.Entities;
+﻿using ProyectoFoo.Application.Features.Users;
+using ProyectoFoo.Domain.Entities;
 using ProyectoFoo.Shared;
 using System.Threading.Tasks;
 

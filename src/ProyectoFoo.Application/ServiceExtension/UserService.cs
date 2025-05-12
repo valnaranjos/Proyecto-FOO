@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using ProyectoFoo.Application.Contracts.Persistence;
+using ProyectoFoo.Application.Features.Users;
 using ProyectoFoo.Domain.Entities;
 using ProyectoFoo.Shared;
 using System;
@@ -55,11 +56,23 @@ namespace ProyectoFoo.Application.ServiceExtension
             // Actualizar solo las propiedades permitidas desde el DTO
             if (updateUser.Name != null)
             {
-                existingUser.Name = updateUser.Name;
+                existingUser.Name = updateUser.Name.CapitalizeFirstLetter();
             }
             if (updateUser.Surname != null)
             {
-                existingUser.Surname = updateUser.Surname;
+                existingUser.Surname = updateUser.Surname.CapitalizeFirstLetter();
+            }
+            if (updateUser.Email != null)
+            {
+                existingUser.Email = updateUser.Email;
+            }
+            if (updateUser.Phone != null)
+            {
+                existingUser.Phone = updateUser.Phone;
+            }
+            if (updateUser.Title != null)
+            {
+                existingUser.Title = updateUser.Title.CapitalizeFirstLetter();
             }
 
             // Actualizar la fecha del último acceso (opcional)
