@@ -3,6 +3,7 @@ using ProyectoFoo.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,6 +20,8 @@ namespace ProyectoFoo.Application.Contracts.Persistence
         Task<Paciente> GetByIdentificationAsync(string identification);
 
         Task<List<Paciente>> GetByNationalityAsync(string nationality);
+
+        Task<List<Paciente>> ListPatientsAsync(Expression<Func<Paciente, bool>> predicate);
 
 
         //FILTROS
