@@ -27,7 +27,7 @@ namespace ProyectoFoo.Application.Features.Patients
             var allPatients = await _pacienteRepository.GetAllAsync();
             var enabledPatients = allPatients.Where(p => p.IsEnabled).ToList();
 
-            if (enabledPatients != null && enabledPatients.Any())
+            if (enabledPatients != null && enabledPatients.Count != 0)
             {
                 var patientsDto = enabledPatients.Select(patientEntity =>
                 {
@@ -80,7 +80,7 @@ namespace ProyectoFoo.Application.Features.Patients
             {
                 return new GetAllPatientsResponse
                 {
-                    Patients = new List<PatientDTO>(), // Devuelve una lista vacía si no hay pacientes
+                    Patients = [], // Devuelve una lista vacía si no hay pacientes
                     Success = true,
                     Message = "No se encontraron pacientes."
                 };

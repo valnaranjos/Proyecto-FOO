@@ -6,7 +6,6 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
-using Newtonsoft.Json.Converters;
 using ProyectoFoo.Domain.Common.Enums;
 
 namespace ProyectoFoo.Application.Features.Patients
@@ -20,7 +19,7 @@ namespace ProyectoFoo.Application.Features.Patients
         public DateTime Birthdate { get; set; }
 
         public string TypeOfIdentification { get; set; } = string.Empty;
-        public string Identification { get; set; }
+        public string Identification { get; set; } = string.Empty;
 
         public SexType Sex { get; set; } = SexType.Masculino;
 

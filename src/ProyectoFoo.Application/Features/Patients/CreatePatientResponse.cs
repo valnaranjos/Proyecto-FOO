@@ -10,7 +10,7 @@ namespace ProyectoFoo.Application.Features.Patients
     public class CreatePatientResponse
     {
         public int PatientId { get; set; }
-        public PatientDTO PatientDto { get; set; }
+        public PatientDTO? PatientDto { get; set; }
         public bool Success { get; set; }
         public string? Message { get; set; }
     }

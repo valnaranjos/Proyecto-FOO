@@ -53,6 +53,11 @@ namespace ProyectoFoo.API.Controllers
                 return Unauthorized("Credenciales inválidas.");
             }
 
+            if (!usuario.IsVerified)
+            {
+                return Unauthorized("Cuenta no verificada. Por favor, verifica tu correo electrónico.");
+            }
+
             // Generar el token utilizando el TokenService
             var token = _tokenService.GenerateToken(usuario);
 
