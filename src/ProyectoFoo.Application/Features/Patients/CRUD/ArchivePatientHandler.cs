@@ -26,7 +26,7 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
                 return new ArchivePatientResponse { Success = false, Message = $"No se encontró el paciente con el ID: {request.Id}" };
             }
 
-            patientToArchive.IsEnabled = false; // Establecer el estado a "archivado" (deshabilitado)
+            patientToArchive.IsEnabled = false; // Establece el estado a "archivado" (deshabilitado)
 
             try
             {

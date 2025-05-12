@@ -6,16 +6,17 @@ namespace ProyectoFoo.Domain.Entities
 {
     public class Paciente
     {
+        //OBLIGATORIAS
         public int Id { get; set; }
 
         [Required]
         [StringLength(50, ErrorMessage = "El nombre de usuario no puede exceder los 50 caracteres.")]
-        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "El  nombre de usuario solo puede contener letras y espacios.")]
+        [RegularExpression(@"^[a-zA-Z·ÈÌÛ˙¡…Õ”⁄Ò—\s]+$", ErrorMessage = "El nombre solo permite letras, acentos, la 'Ò' y espacios.")]
         public string Name { get; set; }
 
         [Required]
         [StringLength(50, ErrorMessage = "El apellido del usuario no puede exceder los 50 caracteres.")]
-        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "El  apellido del usuario solo puede contener letras y espacios.")]
+        [RegularExpression(@"^[a-zA-Z·ÈÌÛ˙¡…Õ”⁄Ò—\s]+$", ErrorMessage = "El Apellido solo permite letras, acentos, la 'Ò' y espacios.")]
         public string Surname { get; set; }
 
         [Required]
@@ -50,8 +51,7 @@ namespace ProyectoFoo.Domain.Entities
         [Phone(ErrorMessage = "Formato de n˙mero de telÈfono no v·lido.")]
         public string Phone { get; set; }
 
-        public ModalityType Modality { get; set; }
-
+        //CALCULADAS O AUTOM¡TICAS
         public DateTimeOffset AdmissionDate { get; set; } = DateTime.UtcNow;
 
         public int Age { get; set; }
@@ -60,6 +60,49 @@ namespace ProyectoFoo.Domain.Entities
 
         public bool IsEnabled { get; set; } = true;
 
+
+
+        //OPCIONALES
+
+        //Motivo de consulta
+
+        public string? PrincipalMotive { get; set; }
+
+        public string? ActualSymptoms { get; set; }
+
+        public string? RecentEvents { get; set; }
+
+        public string? PreviousDiagnosis { get; set; }
+
+
+        //Historia clinica
+
+        public string? ProfesionalObservations { get; set; }
+        public string? KeyWords { get; set; }
+
+        public string? FailedActs { get; set; }
+
+        public string? Interconsulation { get; set; }
+
+        public string? PatientEvolution { get; set; }
+
+
+
+
+        //Organizacion y seguimiento
+
+        public DateTime? SessionDay { get; set; }
+
+        public ModalityType? Modality { get; set; }
+        public int? SessionDuration { get; set; }
+
+        public string? SessionFrequency { get; set; }
+
+        public string? PreferedContact { get; set; }
+
+
+
+        //Constructor por defecto
         public Paciente()
         {
             Name = string.Empty;
@@ -72,24 +115,6 @@ namespace ProyectoFoo.Domain.Entities
             Email = string.Empty;
             Phone = string.Empty;
         }
-
-        public Paciente(string name, string surname, DateTime birthdate, string nationality, string typeofidentification, string identification, SexType sex, string email, string phone)
-        {
-            Name = name ?? throw new ArgumentNullException(nameof(name));
-            Surname = surname ?? throw new ArgumentNullException(nameof(surname));
-            Birthdate = birthdate;
-            Nationality = nationality ?? throw new ArgumentNullException(nameof(nationality)); ;
-            TypeOfIdentification = typeofidentification ?? throw new ArgumentNullException(nameof(typeofidentification));
-            Identification = identification ?? throw new ArgumentNullException(nameof(identification));
-            Sex = sex;
-            Email = email ?? throw new ArgumentNullException(nameof(email));
-            Phone = phone ?? throw new ArgumentNullException(nameof(phone));
-            Age = CalculateAge(birthdate);
-            AgeRange = CalculateAgeRange(Age);
-            AdmissionDate = DateTime.UtcNow;            
-        }
-                
-
         public string CalculateAgeRange(int age)
         {
             if (Age <= 12)

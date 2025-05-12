@@ -29,6 +29,7 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
             }
 
             // Actualizar solo las propiedades que tienen un valor en la request
+           
             if (!string.IsNullOrEmpty(request.Name)) patientToUpdate.Name = request.Name;
             if (!string.IsNullOrEmpty(request.Surname)) patientToUpdate.Surname = request.Surname;
 
@@ -36,10 +37,34 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
             if (!string.IsNullOrEmpty(request.Identification)) patientToUpdate.Identification = request.Identification;
             if (!string.IsNullOrEmpty(request.TypeOfIdentification)) patientToUpdate.TypeOfIdentification = request.TypeOfIdentification;
 
+            if (request.Sex.HasValue) patientToUpdate.Sex = request.Sex.Value;
             if (!string.IsNullOrEmpty(request.Email)) patientToUpdate.Email = request.Email;
             if (!string.IsNullOrEmpty(request.Phone)) patientToUpdate.Phone = request.Phone;
-
             if (request.Nationality != null) patientToUpdate.Nationality = request.Nationality;
+
+
+            //Actualizar datos opcionales
+
+           
+            //Motivo de consulta
+            if (!string.IsNullOrEmpty(request.PrincipalMotive)) patientToUpdate.PrincipalMotive = request.PrincipalMotive;
+            if (!string.IsNullOrEmpty(request.ActualSymptoms)) patientToUpdate.ActualSymptoms = request.ActualSymptoms;
+            if (!string.IsNullOrEmpty(request.RecentEvents)) patientToUpdate.RecentEvents = request.RecentEvents;
+            if (!string.IsNullOrEmpty(request.PreviousDiagnosis)) patientToUpdate.PreviousDiagnosis = request.PreviousDiagnosis;
+            
+            //Historia clínica
+            if (!string.IsNullOrEmpty(request.ProfesionalObservations)) patientToUpdate.ProfesionalObservations = request.ProfesionalObservations;
+            if (!string.IsNullOrEmpty(request.KeyWords)) patientToUpdate.KeyWords = request.KeyWords;
+            if (!string.IsNullOrEmpty(request.FailedActs)) patientToUpdate.FailedActs = request.FailedActs;
+            if (!string.IsNullOrEmpty(request.Interconsulation)) patientToUpdate.Interconsulation = request.Interconsulation;
+            if (!string.IsNullOrEmpty(request.PatientEvolution)) patientToUpdate.PatientEvolution = request.PatientEvolution;
+
+            //Organización y seguimiento
+            if (request.SessionDay.HasValue) patientToUpdate.SessionDay = request.SessionDay.Value;
+            if (request.Modality.HasValue) patientToUpdate.Modality = request.Modality.Value;
+            if (request.SessionDuration.HasValue) patientToUpdate.SessionDuration = request.SessionDuration.Value;
+            if (!string.IsNullOrEmpty(request.SessionFrequency)) patientToUpdate.SessionFrequency = request.SessionFrequency;
+            if (!string.IsNullOrEmpty(request.PreferedContact)) patientToUpdate.PreferedContact = request.PreferedContact;
 
             try
             {

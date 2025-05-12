@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProyectoFoo.Infrastructure.Context;
 
@@ -10,9 +11,11 @@ using ProyectoFoo.Infrastructure.Context;
 namespace ProyectoFoo.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationContextSqlServer))]
-    partial class ApplicationContextSqlServerModelSnapshot : ModelSnapshot
+    [Migration("20250512180308_ChangeEnumColumnsToInt")]
+    partial class ChangeEnumColumnsToInt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,9 +27,6 @@ namespace ProyectoFoo.Infrastructure.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
-
-                    b.Property<string>("ActualSymptoms")
-                        .HasColumnType("longtext");
 
                     b.Property<DateTimeOffset>("AdmissionDate")
                         .HasColumnType("datetime(6)");
@@ -46,24 +46,15 @@ namespace ProyectoFoo.Infrastructure.Migrations
                         .HasColumnType("varchar(100)")
                         .UseCollation("utf8_general_ci");
 
-                    b.Property<string>("FailedActs")
-                        .HasColumnType("longtext");
-
                     b.Property<string>("Identification")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("varchar(20)");
 
-                    b.Property<string>("Interconsulation")
-                        .HasColumnType("longtext");
-
                     b.Property<bool>("IsEnabled")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("KeyWords")
-                        .HasColumnType("longtext");
-
-                    b.Property<int?>("Modality")
+                    b.Property<int>("Modality")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -76,35 +67,8 @@ namespace ProyectoFoo.Infrastructure.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("varchar(30)");
 
-                    b.Property<string>("PatientEvolution")
-                        .HasColumnType("longtext");
-
                     b.Property<string>("Phone")
                         .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("PreferedContact")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("PreviousDiagnosis")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("PrincipalMotive")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("ProfesionalObservations")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("RecentEvents")
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime?>("SessionDay")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int?>("SessionDuration")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SessionFrequency")
                         .HasColumnType("longtext");
 
                     b.Property<int>("Sex")

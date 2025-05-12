@@ -17,12 +17,12 @@ namespace ProyectoFoo.Domain.Entities
 
         [Required(ErrorMessage = "El nombre es obligatorio.")]
         [StringLength(50, ErrorMessage = "El nombre no puede exceder los 50 caracteres.")]
-        [RegularExpression(@"^[a-zA-ZÁÉÍÓÚáéíóúÑñ\s]+$", ErrorMessage = "El nombre solo puede contener letras y espacios.")]
+        [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El nombre solo permite letras, acentos, la 'ñ' y espacios.")]
         public string Name { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El apellido es obligatorio.")]
         [StringLength(50, ErrorMessage = "El nombre no puede exceder los 50 caracteres.")]
-        [RegularExpression(@"^[a-zA-ZÁÉÍÓÚáéíóúÑñ\s]+$", ErrorMessage = "El apellido solo puede contener letras y espacios.")]
+        [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El Apellido solo permite letras, acentos, la 'ñ' y espacios.")]
         public string Surname { get; set; } = string.Empty;
 
         [EmailAddress(ErrorMessage = "Correo no válido.")]
@@ -76,7 +76,7 @@ namespace ProyectoFoo.Domain.Entities
             Surname = surname;
             Email = correo;
             Phone = phone;
-            Title = title ?? string.Empty;
+            Title = title;
             PasswordHash = HashPassword(contrasena); // Guardamos el hash de la contraseña
             CreatedDate = DateTime.Now;
             LastAccesDate = DateTime.Now;
