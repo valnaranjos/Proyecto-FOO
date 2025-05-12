@@ -10,17 +10,13 @@ namespace ProyectoFoo.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
-                name: "Title",
-                table: "Usuarios",
-                type: "varchar(100)",
-                maxLength: 100,
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "varchar(100)",
-                oldMaxLength: 100)
-                .Annotation("MySql:CharSet", "utf8mb4")
-                .OldAnnotation("MySql:CharSet", "utf8mb4");
+         migrationBuilder.AddColumn<string>(
+             name: "Title",
+             table: "Usuarios",
+             type: "varchar(100)",
+             maxLength: 100,
+             nullable: true)
+             .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.AlterColumn<long>(
                 name: "Phone",
