@@ -297,12 +297,34 @@ namespace ProyectoFOO.API.Controllers
             }
         }
 
-        /// <summary>
-        /// Busca un paciente por su correo electrónico.
-        /// </summary>
-        /// <param name="email">Correo electrónico del paciente.</param>
-        /// <returns>Paciente si se encuentra, 404 si no se encuentra.</returns>
-        [HttpGet("search-by-email")]
+        /// <summary\>
+        /// Desarchiva un paciente existente por su ID\.
+        /// </summary\>
+        /// <param name\="id"\>ID del paciente a archivar\.</param\>
+        /// <returns\>Respuesta HTTP indicando el éxito o error del archivado\.</returns\>
+        [HttpPut("pacientes/{id}/unarchive")]
+        public async Task<ActionResult<ArchivePatientResponse>> UnarchivePaciente(int id)
+        {
+            var command = new UnarchivePatientCommand(id);
+            var response = await _mediator.Send(command);
+
+            if (response.Success)
+            {
+                return Ok(new { message = response.Message });
+            }
+            else
+            {
+                return NotFound(response.Message);
+            }
+
+        }
+
+            /// <summary>
+            /// Busca un paciente por su correo electrónico.
+            /// </summary>
+            /// <param name="email">Correo electrónico del paciente.</param>
+            /// <returns>Paciente si se encuentra, 404 si no se encuentra.</returns>
+            [HttpGet("search-by-email")]
         public async Task<IActionResult> GetPatientByEmail(string email)
         {
             var paciente = await _patientService.GetPatientByEmailAsync(email);
@@ -374,6 +396,36 @@ namespace ProyectoFOO.API.Controllers
             else
             {
                 return BadRequest(response.Message); // O un StatusCode??
+            }
+        }
+
+        /// <summary>
+        /// Busca un paciente por su nombre.
+        /// </summary>
+        /// <param name="fullname"> String nombre del paciente(como parámetro de consulta).</param>
+        /// <returns>Respuesta HTTP con la información del paciente encontrado o NotFound si no existe.</returns>
+        /// <response code="200">Paciente encontrado exitosamente.</response>
+        /// <response code="400">Error en la solicitud.</response>
+        /// <response code="404">No se encontró ningún paciente con la nacionalidad proporcionado.</response>
+        /// <response code="500">Error interno del servidor.</response>
+        [HttpGet("search-by-fullname")]
+        public async Task<ActionResult<GetPatientsByNationalityResponse>> GetPatientsByFullName([FromQuery] string fullname)
+        {
+            if (string.IsNullOrWhiteSpace(fullname))
+            {
+                return BadRequest("El nombre completo no puede estar vacío.");
+            }
+
+            var query = new GetPatientsByFullNameCommand(fullname.Trim());
+            var response = await _mediator.Send(query);
+
+            if (response.Success && response.Patients != null && response.Patients.Any())
+            {
+                return Ok(response.Patients);
+            }
+            else
+            {
+                return NotFound($"No se encontraron pacientes con el nombre completo: {fullname.Trim()}");
             }
         }
 

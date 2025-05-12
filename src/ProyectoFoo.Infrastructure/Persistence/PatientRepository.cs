@@ -4,6 +4,7 @@ using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Domain.Common.Enums;
 using ProyectoFoo.Domain.Entities;
 using ProyectoFoo.Infrastructure.Context;
+using System.Linq.Expressions;
 
 namespace ProyectoFoo.Infrastructure.Persistence
 {
@@ -46,6 +47,11 @@ namespace ProyectoFoo.Infrastructure.Persistence
             string nacionalidadBuscada = nationality.Trim();
             var pacientes = _dbContext.Pacientes.Where(p => EF.Functions.Like(p.Nationality, nacionalidadBuscada)).ToList();
             return pacientes;
+        }
+
+        public async Task<List<Paciente>> ListPatientsAsync(Expression<Func<Paciente, bool>> predicate)
+        {
+            return await _dbContext.Set<Paciente>().Where(predicate).ToListAsync();
         }
 
         public async Task<List<Paciente>> GetByModalityAsync(string modality)
