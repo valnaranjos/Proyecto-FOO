@@ -3,7 +3,7 @@ namespace ProyectoFoo.Shared.Models
     /// <summary>
     /// Modelo para las notas.
     /// </summary>
-    public class Notas
+    public class Notes
     {
         public int Id { get; set; }
         public string? Titulo { get; set; }
