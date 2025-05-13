@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Folder Include="Exceptions\" />
+    <Folder Include="Features\Patients\PatientMaterials\" />
   </ItemGroup>
 
   <ItemGroup>

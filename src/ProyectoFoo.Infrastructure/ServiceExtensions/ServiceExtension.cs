@@ -15,6 +15,7 @@ namespace ProyectoFoo.Infrastructure.ServiceExtensions
             services.AddScoped<IUserRepository, UsuarioRepository>();
             services.AddScoped<IPatientRepository, PatientRepository>();
             services.AddScoped<IVerificationCodeRepository, VerificationCodeRepository>();
+           services.AddScoped<IPatientMaterialRepository, PatientMaterialRepository>();
             // Registra aquí otros servicios de infraestructura (repositorios, etc.)
             return services;
         } 

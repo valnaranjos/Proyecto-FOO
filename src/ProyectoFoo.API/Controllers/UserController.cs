@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using ProyectoFoo.Application.Features.Users;
 using Microsoft.AspNetCore.Authorization;// Necesario para StatusCodes y Authorize
 using System.Security.Claims;
-using ProyectoFoo.Shared;
 using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Application.ServiceExtension;
 using ProyectoFoo.Domain.Services;
 using ProyectoFoo.API.Services;
+using ProyectoFoo.Shared.Models;
 
 
 namespace ProyectoFoo.API.Controllers

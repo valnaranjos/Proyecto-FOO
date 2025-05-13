@@ -1,6 +1,6 @@
 ﻿using ProyectoFoo.Application.Features.Users;
 using ProyectoFoo.Domain.Entities;
-using ProyectoFoo.Shared;
+using ProyectoFoo.Shared.Models;
 using System.Threading.Tasks;
 
 namespace ProyectoFoo.Application.Contracts.Persistence

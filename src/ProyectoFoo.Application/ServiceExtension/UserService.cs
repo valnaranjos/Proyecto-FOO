@@ -2,7 +2,7 @@
 using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Application.Features.Users;
 using ProyectoFoo.Domain.Entities;
-using ProyectoFoo.Shared;
+using ProyectoFoo.Shared.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

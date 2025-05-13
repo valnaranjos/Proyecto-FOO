@@ -7,6 +7,9 @@ using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Application.Features.Patients.Search;
 using ProyectoFoo.Application.Features.Patients.Filters;
 using ProyectoFoo.Application.Features.Patients.CRUD;
+using ProyectoFoo.Shared.Models;
+using ProyectoFoo.Application.Features.PatientMaterials;
+using ProyectoFoo.Application.Features.Patients;
 
 
 namespace ProyectoFOO.API.Controllers
@@ -276,6 +279,10 @@ namespace ProyectoFOO.API.Controllers
             }
         }
 
+
+        //RELACIONADO A ARCHIVAR/DESARCHIVAR Y OBTENER ARCHIVADOS:
+
+
         /// <summary\>
         /// Archiva un paciente existente por su ID\.
         /// </summary\>
@@ -319,12 +326,138 @@ namespace ProyectoFOO.API.Controllers
 
         }
 
-            /// <summary>
-            /// Busca un paciente por su correo electrónico.
-            /// </summary>
-            /// <param name="email">Correo electrónico del paciente.</param>
-            /// <returns>Paciente si se encuentra, 404 si no se encuentra.</returns>
-            [HttpGet("search-by-email")]
+
+        /// <summary>
+        /// Obtiene todos los pacientes que están deshabilitados (IsEnabled = false) con toda su información.
+        /// </summary>
+        /// <returns>Una lista de todos los pacientes deshabilitados.</returns>
+        /// <response code="200">Retorna la lista de pacientes deshabilitados.</response>
+        [HttpGet("disabled")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<List<PatientDTO>>> GetAllDisabledPatients()
+        {
+            var query = new GetAllArchivedPatientsCommand();
+            var disabledPatients = await _mediator.Send(query);
+            return Ok(disabledPatients);
+        }
+
+
+
+        //RELACIONADO A MATERIAL DE PACIENTE:
+
+
+        /// <summary>
+        /// Crea un nuevo material para un paciente específico.
+        /// </summary>
+        /// <param name="patientId">Identificador único del paciente.</param>
+        /// <param name="createPacienteMaterialDto">Datos para la creación del material.</param>
+        /// <returns>Un ActionResult que indica el resultado de la creación.</returns>
+        /// <response code="201">Retorna el material recién creado.</response>
+        /// <response code="400">Si la petición no es válida.</response>
+        /// <response code="404">Si el paciente especificado no existe.</response>
+        [HttpPost("{patientId}/materials")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<CreatePatientMaterialResponse>> CreatePatientMaterial(
+            [FromRoute] int pacienteId,
+            [FromBody] CreatePatientMaterialDto createPacienteMaterialDto)
+        {
+            if (createPacienteMaterialDto == null || !ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var command = new CreatePatientMaterialCommand
+            {
+                PatientId = pacienteId,
+                Material = createPacienteMaterialDto
+            };
+
+            var response = await _mediator.Send(command);
+
+            if (response.Success)
+            {
+                return CreatedAtAction(nameof(GetPatientMaterialById),
+                    new { pacienteId = pacienteId, materialId = response.PatientMaterial.Id },
+                    response);
+            }
+
+            if (response.Message.Contains("No se encontró el paciente"))
+            {
+                return NotFound(response.Message);
+            }
+
+            return BadRequest(response.Message);
+        }
+
+
+        /// <summary>
+        /// Obtiene todo el material asociado a un paciente específico.
+        /// </summary>
+        /// <param name="patientId">Identificador único del paciente.</param>
+        /// <returns>Una lista de materiales del paciente.</returns>
+        /// <response code="200">Retorna la lista de materiales del paciente.</response>
+        /// <response code="404">Si el paciente especificado no existe.</response>
+        [HttpGet("{patientId}/materials")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<List<PatientMaterialDto>>> GetAllPatientMaterials([FromRoute] int patientId)
+        {
+            // Crear el query para obtener el material del paciente
+            var query = new GetAllPatientMaterialsCommand { PatientId = patientId };
+
+            // Enviar el query al Mediator y obtener la respuesta
+            var materials = await _mediator.Send(query);
+
+            if (materials != null && materials.Count > 0)
+            {
+                return Ok(materials);
+            }
+
+            var patientExists = await _mediator.Send(new GetPatientByIdQuery(patientId));
+            if (patientExists == null)
+            {
+                return NotFound($"No se encontró el paciente con ID: {patientId}");
+            }
+
+            return Ok(new List<PatientMaterialDto>()); // Paciente encontrado, pero no tiene material
+        }
+
+
+        /// <summary>
+        /// Obtiene un material específico por su ID para un paciente específico.
+        /// </summary>
+        /// <param name="patientId">Identificador único del paciente.</param>
+        /// <param name="materialId">Identificador único del material.</param>
+        /// <returns>El material solicitado.</returns>
+        /// <response code="200">Retorna el material solicitado.</response>
+        /// <response code="404">Si el paciente o el material no existen.</response>
+        [HttpGet("{patientId}/materials/{materialId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<PatientMaterialDto>> GetPatientMaterialById([FromRoute] int patientId, [FromRoute] int materialId)
+        {
+            var query = new GetPatientMaterialByIdQuery { PatientId = patientId, MaterialId = materialId };
+            var materialDto = await _mediator.Send(query);
+
+            if (materialDto != null)
+            {
+                return Ok(materialDto);
+            }
+
+            return NotFound($"No se encontró el material con ID: {materialId} para el paciente con ID: {patientId}");
+        }
+
+
+        //ENDPOINTS DE BUSQUEDA 
+
+        /// <summary>
+        /// Busca un paciente por su correo electrónico.
+        /// </summary>
+        /// <param name="email">Correo electrónico del paciente.</param>
+        /// <returns>Paciente si se encuentra, 404 si no se encuentra.</returns>
+        [HttpGet("search-by-email")]
         public async Task<IActionResult> GetPatientByEmail(string email)
         {
             var paciente = await _patientService.GetPatientByEmailAsync(email);
@@ -336,7 +469,6 @@ namespace ProyectoFOO.API.Controllers
         }
 
 
-        //ENDPOINTS DE BUSQUEDA 
         /// <summary>
         /// Busca un paciente por su número de identificación.
         /// </summary>

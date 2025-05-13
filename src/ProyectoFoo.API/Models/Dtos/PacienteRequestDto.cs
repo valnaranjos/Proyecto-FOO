@@ -1,5 +1,6 @@
 ﻿using ProyectoFoo.Application.Features.Patients;
 using ProyectoFoo.Domain.Entities;
+using ProyectoFoo.Shared.Models;
 
 namespace ProyectoFoo.API.Models.Dtos
 {

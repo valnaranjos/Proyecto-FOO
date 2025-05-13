@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace ProyectoFoo.Shared
+namespace ProyectoFoo.Shared.Models
 {
     public class UpdateUserDto
     {

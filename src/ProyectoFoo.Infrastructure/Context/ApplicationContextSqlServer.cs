@@ -19,6 +19,9 @@ namespace ProyectoFoo.Infrastructure.Context
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<VerificationCode> VerificationCodes { get; set; }
 
+        public DbSet<PatientMaterial> PatientMaterials { get; set; }
+        
+        
         //Modelo a crear
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
