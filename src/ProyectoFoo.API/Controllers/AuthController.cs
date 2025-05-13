@@ -69,6 +69,14 @@ namespace ProyectoFoo.API.Controllers
             return Ok(new { Token = token });
         }
 
+
+        /// <summary>
+        /// Solicita el restablecimiento de contraseña para un usuario.
+        /// </summary>
+        /// <param name="command">Objeto que contiene el email del usuario.</param>
+        /// <returns>Mensaje indicando si la solicitud fue procesada correctamente.</returns>
+        /// <response code="200">La solicitud de restablecimiento fue enviada exitosamente.</response>
+        /// <response code="400">El modelo es inválido o hubo un error al procesar la solicitud.</response>
         [HttpPost("request-password-reset")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordCommand command)
         {
@@ -86,6 +94,14 @@ namespace ProyectoFoo.API.Controllers
             return Ok(result.Message);
         }
 
+
+        /// <summary>
+        /// Verifica el código de restablecimiento de contraseña y actualiza la contraseña del usuario.
+        /// </summary>
+        /// <param name="command">Objeto que contiene el código, email y nueva contraseña.</param>
+        /// <returns>Mensaje indicando el resultado del restablecimiento.</returns>
+        /// <response code="200">Contraseña restablecida exitosamente.</response>
+        /// <response code="400">Datos inválidos o error al restablecer la contraseña.</response>
         [HttpPost("verify-password-reset-code")]
         public async Task<IActionResult> VerifyPasswordResetCode([FromBody] VerifyPasswordResetCommand command)
         {

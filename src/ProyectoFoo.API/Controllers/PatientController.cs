@@ -283,11 +283,13 @@ namespace ProyectoFOO.API.Controllers
         //RELACIONADO A ARCHIVAR/DESARCHIVAR Y OBTENER ARCHIVADOS:
 
 
-        /// <summary\>
-        /// Archiva un paciente existente por su ID\.
-        /// </summary\>
-        /// <param name\="id"\>ID del paciente a archivar\.</param\>
-        /// <returns\>Respuesta HTTP indicando el éxito o error del archivado\.</returns\>
+        /// <summary>
+        /// Archiva (desactiva) a un paciente activo por su ID.
+        /// </summary>
+        /// <param name="id">ID del paciente a archivar.</param>
+        /// <returns>Mensaje indicando si la operación fue exitosa.</returns>
+        /// <response code="200">El paciente fue archivado correctamente.</response>
+        /// <response code="404">No se encontró el paciente o no se pudo archivar.</response>
         [HttpPut("pacientes/{id}/archive")]
         public async Task<ActionResult<ArchivePatientResponse>> ArchivePaciente(int id)
         {
@@ -304,11 +306,13 @@ namespace ProyectoFOO.API.Controllers
             }
         }
 
-        /// <summary\>
-        /// Desarchiva un paciente existente por su ID\.
-        /// </summary\>
-        /// <param name\="id"\>ID del paciente a archivar\.</param\>
-        /// <returns\>Respuesta HTTP indicando el éxito o error del archivado\.</returns\>
+        /// <summary>
+        /// Desarchiva (reactiva) a un paciente previamente archivado.
+        /// </summary>
+        /// <param name="id">ID del paciente a desarchivar.</param>
+        /// <returns>Mensaje indicando si la operación fue exitosa.</returns>
+        /// <response code="200">El paciente fue desarchivado correctamente.</response>
+        /// <response code="404">No se encontró el paciente o no se pudo desarchivar.</response>
         [HttpPut("pacientes/{id}/unarchive")]
         public async Task<ActionResult<ArchivePatientResponse>> UnarchivePaciente(int id)
         {
