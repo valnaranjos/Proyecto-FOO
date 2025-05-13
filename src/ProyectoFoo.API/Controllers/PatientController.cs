@@ -360,7 +360,7 @@ namespace ProyectoFOO.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<CreatePatientMaterialResponse>> CreatePatientMaterial(
-            [FromRoute] int pacienteId,
+            [FromRoute] int patientId,
             [FromBody] CreatePatientMaterialDto createPacienteMaterialDto)
         {
             if (createPacienteMaterialDto == null || !ModelState.IsValid)
@@ -370,7 +370,7 @@ namespace ProyectoFOO.API.Controllers
 
             var command = new CreatePatientMaterialCommand
             {
-                PatientId = pacienteId,
+                PatientId = patientId,
                 Material = createPacienteMaterialDto
             };
 
@@ -379,7 +379,7 @@ namespace ProyectoFOO.API.Controllers
             if (response.Success)
             {
                 return CreatedAtAction(nameof(GetPatientMaterialById),
-                    new { pacienteId, materialId = response.PatientMaterial.Id },
+                    new { patientId, materialId = response.PatientMaterial.Id },
                     response);
             }
 
@@ -447,6 +447,80 @@ namespace ProyectoFOO.API.Controllers
             }
 
             return NotFound($"No se encontró el material con ID: {materialId} para el paciente con ID: {patientId}");
+        }
+
+
+        /// <summary>
+        /// Actualiza la información de un material específico de un paciente.
+        /// </summary>
+        /// <param name="patientId">Identificador único del paciente.</param>
+        /// <param name="materialId">Identificador único del material a actualizar.</param>
+        /// <param name="updatePatientMaterialDto">Datos para la actualización del material.</param>
+        /// <returns>Un ActionResult que indica el resultado de la actualización.</returns>
+        /// <response code="200">Retorna el material actualizado.</response>
+        /// <response code="400">Si la petición no es válida.</response>
+        /// <response code="404">Si el paciente o el material no existen.</response>
+        [HttpPut("{patientId}/materials/{materialId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<UpdatePatientMaterialResponse>> UpdatePatientMaterial(
+        [FromRoute] int patientId,
+        [FromRoute] int materialId,
+        [FromBody] UpdatePatientMaterialDto updatePatientMaterialDto)
+        {
+            if (updatePatientMaterialDto == null || !ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var command = new UpdatePatientMaterialCommand
+            {
+                PatientId = patientId,
+                MaterialId = materialId,
+                Material = updatePatientMaterialDto
+            };
+
+            var response = await _mediator.Send(command);
+
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+
+            return NotFound(response.Message);
+        }
+
+
+        /// <summary>
+        /// Elimina un material específico de un paciente.
+        /// </summary>
+        /// <param name="patientId">Identificador único del paciente.</param>
+        /// <param name="materialId">Identificador único del material a eliminar.</param>
+        /// <returns>Un IActionResult que indica el resultado de la eliminación.</returns>
+        /// <response code="204">Si el material fue eliminado exitosamente.</response>
+        /// <response code="404">Si el paciente o el material no existen.</response>
+        [HttpDelete("{patientId}/materials/{materialId}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeletePatientMaterial(
+        [FromRoute] int patientId,
+        [FromRoute] int materialId)
+        {
+            var command = new DeletePatientMaterialCommand
+            {
+                PatientId = patientId,
+                MaterialId = materialId
+            };
+
+            var response = await _mediator.Send(command);
+
+            if (response.Success)
+            {
+                return NoContent(); // Código 204 para indicar eliminación exitosa sin cuerpo
+            }
+
+            return NotFound(response.Message);
         }
 
 
@@ -577,7 +651,7 @@ namespace ProyectoFOO.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]       
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<GetPatientsBySexTypeResponse>> GetPatientsBySex([FromQuery] string sex)
         {
             var query = new GetPatientsBySexTypeCommand(sex);
@@ -589,7 +663,7 @@ namespace ProyectoFOO.API.Controllers
             }
             else if (response.Success)
             {
-                return NotFound($"No se encontraron pacientes con tipo de sexo {sex}"); 
+                return NotFound($"No se encontraron pacientes con tipo de sexo {sex}");
             }
             else
             {
@@ -611,7 +685,7 @@ namespace ProyectoFOO.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]     
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetPatientByModality(string modality)
         {
             var patients = await _patientService.GetPacientesByModalityAsync(modality);
@@ -648,13 +722,12 @@ namespace ProyectoFOO.API.Controllers
             }
             else if (response.Success)
             {
-                return NotFound($"No se encontraron pacientes {ageRange} de rango etario."); 
+                return NotFound($"No se encontraron pacientes {ageRange} de rango etario.");
             }
             else
             {
                 return BadRequest(response.Message); // O un StatusCode?
             }
         }
-
     }
 }
