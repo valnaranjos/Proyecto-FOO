@@ -332,9 +332,9 @@ namespace ProyectoFOO.API.Controllers
         /// </summary>
         /// <returns>Una lista de todos los pacientes deshabilitados.</returns>
         /// <response code="200">Retorna la lista de pacientes deshabilitados.</response>
-        [HttpGet("archived")]
+        [HttpGet("patients/archived")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<List<PatientDTO>>> GetAllArchiveddPatients()
+        public async Task<ActionResult<List<PatientDTO>>> GetAllArchivedPatients()
         {
             var query = new GetAllArchivedPatientsCommand();
             var disabledPatients = await _mediator.Send(query);
