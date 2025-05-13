@@ -332,9 +332,9 @@ namespace ProyectoFOO.API.Controllers
         /// </summary>
         /// <returns>Una lista de todos los pacientes deshabilitados.</returns>
         /// <response code="200">Retorna la lista de pacientes deshabilitados.</response>
-        [HttpGet("disabled")]
+        [HttpGet("archived")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<List<PatientDTO>>> GetAllDisabledPatients()
+        public async Task<ActionResult<List<PatientDTO>>> GetAllArchiveddPatients()
         {
             var query = new GetAllArchivedPatientsCommand();
             var disabledPatients = await _mediator.Send(query);
@@ -379,7 +379,7 @@ namespace ProyectoFOO.API.Controllers
             if (response.Success)
             {
                 return CreatedAtAction(nameof(GetPatientMaterialById),
-                    new { pacienteId = pacienteId, materialId = response.PatientMaterial.Id },
+                    new { pacienteId, materialId = response.PatientMaterial.Id },
                     response);
             }
 
@@ -551,7 +551,7 @@ namespace ProyectoFOO.API.Controllers
             var query = new GetPatientsByFullNameCommand(fullname.Trim());
             var response = await _mediator.Send(query);
 
-            if (response.Success && response.Patients != null && response.Patients.Any())
+            if (response.Success && response.Patients != null && response.Patients.Count != 0)
             {
                 return Ok(response.Patients);
             }
