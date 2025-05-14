@@ -50,5 +50,12 @@ namespace ProyectoFoo.Infrastructure.Persistence
         {
             return await _context.SaveChangesAsync(cancellationToken);
         }
+
+        public async Task<List<Note>> GetByPatientIdAsync(int patientId, CancellationToken cancellationToken)
+{
+    return await _context.Notes
+        .Where(n => n.PatientId == patientId)
+        .ToListAsync(cancellationToken);
+}
     }
 }
