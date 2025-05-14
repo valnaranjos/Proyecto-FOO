@@ -1,21 +1,17 @@
 using MediatR;
-using ProyectoFoo.Application.Features.Notes;
-using ProyectoFoo.Shared.Models;
+using ProyectoFoo.Application.Common.Interfaces.Repositories;
 using ProyectoFoo.Domain.Entities;
-using ProyectoFoo.Application.Common.Interfaces;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+using ProyectoFoo.Shared.Models;
 
 namespace ProyectoFoo.Application.Features.Notes.Handlers
 {
     public class CreateNoteCommandHandler : IRequestHandler<CreateNoteCommand, NoteResponseDto>
     {
-        private readonly IApplicationDbContext _context;
+        private readonly IPatientNoteRepository _noteRepository;
 
-        public CreateNoteCommandHandler(IApplicationDbContext context)
+        public CreateNoteCommandHandler(IPatientNoteRepository noteRepository)
         {
-            _context = context;
+            _noteRepository = noteRepository;
         }
 
         public async Task<NoteResponseDto> Handle(CreateNoteCommand request, CancellationToken cancellationToken)
@@ -28,8 +24,8 @@ namespace ProyectoFoo.Application.Features.Notes.Handlers
                 PatientId = request.Note.PatientId
             };
 
-            _context.Notes.Add(note);
-            await _context.SaveChangesAsync(cancellationToken);
+            await _noteRepository.AddAsync(note, cancellationToken);
+            await _noteRepository.SaveChangesAsync(cancellationToken);
 
             return new NoteResponseDto
             {
@@ -37,7 +33,7 @@ namespace ProyectoFoo.Application.Features.Notes.Handlers
                 Title = note.Title,
                 Content = note.Content,
                 CreatedDate = note.CreatedDate,
-                PatientId = note.PatientId
+                PacienteId = note.PatientId
             };
         }
     }

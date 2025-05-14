@@ -1,6 +1,5 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using ProyectoFoo.Application.Common.Interfaces;
+using ProyectoFoo.Application.Common.Interfaces.Repositories;
 using ProyectoFoo.Application.Features.Notes;
 using ProyectoFoo.Shared.Models;
 
@@ -8,17 +7,16 @@ namespace ProyectoFoo.Application.Features.Notes.Handlers
 {
     public class UpdateNoteCommandHandler : IRequestHandler<UpdateNoteCommand, NoteResponseDto>
     {
-        private readonly IApplicationDbContext _context;
+        private readonly IPatientNoteRepository _noteRepository;
 
-        public UpdateNoteCommandHandler(IApplicationDbContext context)
+        public UpdateNoteCommandHandler(IPatientNoteRepository noteRepository)
         {
-            _context = context;
+            _noteRepository = noteRepository;
         }
 
         public async Task<NoteResponseDto> Handle(UpdateNoteCommand request, CancellationToken cancellationToken)
         {
-            var note = await _context.Notes
-                .FirstOrDefaultAsync(n => n.Id == request.Id, cancellationToken);
+            var note = await _noteRepository.GetByIdAsync(request.Id, cancellationToken);
 
             if (note == null)
                 throw new KeyNotFoundException($"Note with ID {request.Id} not found.");
@@ -26,7 +24,7 @@ namespace ProyectoFoo.Application.Features.Notes.Handlers
             note.Title = request.Note.Title;
             note.Content = request.Note.Content;
 
-            await _context.SaveChangesAsync(cancellationToken);
+            await _noteRepository.SaveChangesAsync(cancellationToken);
 
             return new NoteResponseDto
             {
@@ -34,7 +32,7 @@ namespace ProyectoFoo.Application.Features.Notes.Handlers
                 Title = note.Title,
                 Content = note.Content,
                 CreatedDate = note.CreatedDate,
-                PatientId = note.PatientId
+                PacienteId = note.PatientId
             };
         }
     }

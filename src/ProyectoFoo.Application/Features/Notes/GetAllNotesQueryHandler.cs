@@ -1,36 +1,35 @@
 using MediatR;
-using ProyectoFoo.Application.Common.Interfaces;
+using ProyectoFoo.Application.Common.Interfaces.Repositories;
 using ProyectoFoo.Shared.Models;
+using ProyectoFoo.Application.Features.Notes.Queries;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ProyectoFoo.Application.Features.Notes.Queries
+namespace ProyectoFoo.Application.Features.Notes.Handlers
 {
     public class GetAllNotesQueryHandler : IRequestHandler<GetAllNotesQuery, List<NoteResponseDto>>
     {
-        private readonly IApplicationDbContext _context;
+        private readonly IPatientNoteRepository _noteRepository;
 
-        public GetAllNotesQueryHandler(IApplicationDbContext context)
+        public GetAllNotesQueryHandler(IPatientNoteRepository noteRepository)
         {
-            _context = context;
+            _noteRepository = noteRepository;
         }
 
         public async Task<List<NoteResponseDto>> Handle(GetAllNotesQuery request, CancellationToken cancellationToken)
         {
-            var notes = _context.Notes
-                .Select(note => new NoteResponseDto
-                {
-                    Id = note.Id,
-                    Title = note.Title,
-                    Content = note.Content,
-                    CreatedDate = note.CreatedDate,
-                    PatientId = note.PatientId
-                })
-                .ToList();
+            var notes = await _noteRepository.GetAllAsync(cancellationToken);
 
-            return await Task.FromResult(notes);
+            return notes.Select(note => new NoteResponseDto
+            {
+                Id = note.Id,
+                Title = note.Title,
+                Content = note.Content,
+                CreatedDate = note.CreatedDate,
+                PacienteId = note.PatientId
+            }).ToList();
         }
     }
 }

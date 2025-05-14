@@ -1,5 +1,5 @@
 using MediatR;
-using ProyectoFoo.Application.Common.Interfaces;
+using ProyectoFoo.Application.Common.Interfaces.Repositories;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,21 +7,23 @@ namespace ProyectoFoo.Application.Features.Notes
 {
     public class DeleteNoteCommandHandler : IRequestHandler<DeleteNoteCommand, Unit>
     {
-        private readonly IApplicationDbContext _context;
+        private readonly IPatientNoteRepository _noteRepository;
 
-        public DeleteNoteCommandHandler(IApplicationDbContext context)
+        public DeleteNoteCommandHandler(IPatientNoteRepository noteRepository)
         {
-            _context = context;
+            _noteRepository = noteRepository;
         }
 
         public async Task<Unit> Handle(DeleteNoteCommand request, CancellationToken cancellationToken)
         {
-            var note = await _context.Notes.FindAsync(new object[] { request.Id }, cancellationToken);
-            if (note == null)
-                throw new Exception("Note not found");
+            var note = await _noteRepository.GetByIdAsync(request.Id, cancellationToken);
 
-            _context.Notes.Remove(note);
-            await _context.SaveChangesAsync(cancellationToken);
+            if (note == null)
+                throw new KeyNotFoundException($"No se encontró la nota con ID {request.Id}");
+
+            _noteRepository.Remove(note);
+            await _noteRepository.SaveChangesAsync(cancellationToken);
+
             return Unit.Value;
         }
     }
