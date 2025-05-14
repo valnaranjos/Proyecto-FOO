@@ -23,6 +23,8 @@ namespace ProyectoFoo.Application.Contracts.Persistence
 
         Task<List<Paciente>> ListPatientsAsync(Expression<Func<Paciente, bool>> predicate);
 
+        
+
 
         //FILTROS
         Task<List<Paciente>> GetByModalityAsync(string modality);

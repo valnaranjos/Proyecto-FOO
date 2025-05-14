@@ -20,6 +20,8 @@ namespace ProyectoFoo.Infrastructure.Context
         public DbSet<VerificationCode> VerificationCodes { get; set; }
 
         public DbSet<PatientMaterial> PatientMaterials { get; set; }
+
+        public DbSet<Note> Notes { get; set; }
         
         
         //Modelo a crear
