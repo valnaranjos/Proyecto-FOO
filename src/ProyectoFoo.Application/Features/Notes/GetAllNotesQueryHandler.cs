@@ -1,5 +1,5 @@
 using MediatR;
-using ProyectoFoo.Application.Common.Interfaces.Repositories;
+using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Shared.Models;
 using ProyectoFoo.Application.Features.Notes.Queries;
 using System.Collections.Generic;
@@ -28,7 +28,7 @@ namespace ProyectoFoo.Application.Features.Notes.Handlers
                 Title = note.Title,
                 Content = note.Content,
                 CreatedDate = note.CreatedDate,
-                PacienteId = note.PatientId
+                PatientId = note.PatientId
             }).ToList();
         }
     }
