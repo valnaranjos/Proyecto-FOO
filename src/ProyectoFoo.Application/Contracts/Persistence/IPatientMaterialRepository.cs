@@ -9,6 +9,6 @@ namespace ProyectoFoo.Application.Contracts.Persistence
 {
     public interface IPatientMaterialRepository : IAsyncRepository<PatientMaterial>
     {
-        Task<List<PatientMaterial>> GetByPacienteIdAsync(int pacienteId);
+        Task<List<PatientMaterial>> GetByPatientIdAsync(int pacienteId);
     }
 }

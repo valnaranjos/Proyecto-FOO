@@ -19,7 +19,7 @@ namespace ProyectoFoo.Infrastructure.Persistence
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
-        public async Task<List<PatientMaterial>> GetByPacienteIdAsync(int pacienteId)
+        public async Task<List<PatientMaterial>> GetByPatientIdAsync(int pacienteId)
         {
             return await _dbContext.PatientMaterials
                 .Where(pm => pm.PatientId == pacienteId)

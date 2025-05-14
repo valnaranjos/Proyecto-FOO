@@ -95,7 +95,7 @@ namespace ProyectoFOO.API.Controllers
         /// <summary>
         /// Crea un nuevo paciente.
         /// </summary>
-        /// <param name="request">Objeto JSON que representa la información del nuevo paciente.</param>
+        /// <param name="command">Objeto JSON que representa la información del nuevo paciente.</param>
         /// <returns>Respuesta HTTP indicando el éxito de la creación. En caso de éxito, devuelve la información del paciente creado.</returns>
         /// <remarks>
         /// Este endpoint recibe la información para crear un nuevo paciente en el sistema.
@@ -644,7 +644,7 @@ namespace ProyectoFOO.API.Controllers
         /// <summary>
         /// Filtra los pacientes por tipo de sexo.
         /// </summary>
-        /// <param name="sexType">Tipo de sexo del paciente.</param>
+        /// <param name="sex">Tipo de sexo del paciente.</param>
         /// <returns>Lista de pacientes filtrados por tipo de sexo.</returns>
         /// <returns>Respuesta HTTP con la lista de pacientes que coinciden con la el tipo de sexo proporcionada o NotFound si no existe ninguno.</returns>
         /// <response code="200">Lista de pacientes filtrados exitosamente.</response>

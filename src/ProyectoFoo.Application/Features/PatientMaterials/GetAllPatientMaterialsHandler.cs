@@ -20,7 +20,7 @@ namespace ProyectoFoo.Application.Features.PatientMaterials
 
         public async Task<List<PatientMaterialDto>> Handle(GetAllPatientMaterialsCommand request, CancellationToken cancellationToken)
         {
-            var materials = await _patientMaterialRepository.GetByPacienteIdAsync(request.PatientId);
+            var materials = await _patientMaterialRepository.GetByPatientIdAsync(request.PatientId);
             return materials.Select(m => new PatientMaterialDto
             {
                 Id = m.Id,

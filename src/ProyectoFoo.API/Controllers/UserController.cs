@@ -1,12 +1,10 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ProyectoFoo.Application.Features.Users;
-using Microsoft.AspNetCore.Authorization;// Necesario para StatusCodes y Authorize
+using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using ProyectoFoo.Application.Contracts.Persistence;
-using ProyectoFoo.Application.ServiceExtension;
 using ProyectoFoo.Domain.Services;
-using ProyectoFoo.API.Services;
 using ProyectoFoo.Shared.Models;
 
 
@@ -22,8 +20,7 @@ namespace ProyectoFoo.API.Controllers
         private readonly IMediator _mediator;
         private readonly IUserService _userService;
         private readonly ILogger<UserController> _logger;
-        private readonly IEmailService _emailService;
-        //private readonly IVerificationCodeRepository _verificationCodeRepository;
+        private readonly IEmailService _emailService;       
         private readonly ITokenService _tokenService;
 
         public UserController(IMediator mediator, ILogger<UserController> logger, IUserService userService, IEmailService emailService, ITokenService tokenService)
@@ -92,6 +89,28 @@ namespace ProyectoFoo.API.Controllers
             return BadRequest(response.Message);
         }
 
+
+        /// <summary>
+        /// Obtiene la información del usuario autenticado actualmente.
+        /// </summary>
+        /// <returns>Datos del usuario autenticado.</returns>
+        [HttpGet("me")]
+        [Authorize]
+        public async Task<IActionResult> GetCurrentUser()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdClaim))
+                return Unauthorized();
+
+            var query = new GetCurrentUserCommand(int.Parse(userIdClaim));
+            var result = await _mediator.Send(query);
+
+            return Ok(result);
+        }
+
+
+
         /// <summary>
         /// Actualiza el perfil del usuario autenticado actual.
         /// </summary>
@@ -104,7 +123,7 @@ namespace ProyectoFoo.API.Controllers
         /// Retorna un código de error apropiado (por ejemplo, 400 Bad Request) si la solicitud no es válida o si ocurre un error durante la actualización.
         /// </returns>
 
-        [HttpPut("me")] // Usamos "me" para indicar que el usuario actual actualiza su propio perfil
+        [HttpPut("me/edit")] // Usamos "me" para indicar que el usuario actual actualiza su propio perfil
         [Authorize] // Requiere que el usuario esté autenticado
         public async Task<IActionResult> UpdateCurrentUser([FromBody] UpdateUserDto updateUser)
         {

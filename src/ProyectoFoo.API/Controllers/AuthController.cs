@@ -10,15 +10,8 @@ using Microsoft.AspNetCore.Authorization;
 namespace ProyectoFoo.API.Controllers
 {
     /// <summary>
-    /// Autentica a un usuario y devuelve un token JWT si las credenciales son válidas.
+    /// Controlador de autenticación.
     /// </summary>
-    /// <param name="model">Objeto JSON que contiene el correo electrónico y la contraseña del usuario.</param>
-    /// <returns>
-    /// Si las credenciales son correctas, devuelve un código de estado 200 OK con el token JWT.
-    /// Si las credenciales son incorrectas, devuelve un código de estado 401 Unauthorized.
-    /// </returns>
-    /// <response code="200">Credenciales válidas. Devuelve el token JWT.</response>
-    /// <response code="401">Credenciales inválidas.</response>
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
