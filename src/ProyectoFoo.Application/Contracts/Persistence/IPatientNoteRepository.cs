@@ -5,13 +5,12 @@ using System.Collections.Generic;
 
 namespace ProyectoFoo.Application.Contracts.Persistence
 {
-    public interface IPatientNoteRepository
+    public interface IPatientNoteRepository : IAsyncRepository<PatientNote>
     {
-        Task AddAsync(Note note, CancellationToken cancellationToken);
-        Task<Note?> GetByIdAsync(int id, CancellationToken cancellationToken);
-        Task<List<Note>> GetAllAsync(CancellationToken cancellationToken);
-        Task<List<Note>> GetByPatientIdAsync(int patientId, CancellationToken cancellationToken);
-        Task DeleteAsync(Note note, CancellationToken cancellationToken);
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+       Task<List<PatientNote>> GetPatientByIdAsync(int patientId);
+      
+        Task<List<PatientNote>> GetNotesByPatientIdAsync(int patientId);
+
+        Task<PatientNote?> GetByIdAsync(int noteId, CancellationToken cancellationToken);
     }
 }

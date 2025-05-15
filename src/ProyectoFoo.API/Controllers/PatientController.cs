@@ -526,7 +526,8 @@ namespace ProyectoFOO.API.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PatientMaterialDto>> GetPatientMaterialById([FromRoute] int patientId, [FromRoute] int materialId)
         {
-            try {
+            try
+            {
                 var query = new GetPatientMaterialByIdQuery { PatientId = patientId, MaterialId = materialId };
                 var materialDto = await _mediator.Send(query);
 
@@ -623,7 +624,8 @@ namespace ProyectoFOO.API.Controllers
         [FromRoute] int patientId,
         [FromRoute] int materialId)
         {
-            try {
+            try
+            {
                 var command = new DeletePatientMaterialCommand
                 {
                     PatientId = patientId,
@@ -858,141 +860,129 @@ namespace ProyectoFOO.API.Controllers
             }
         }
         /// <summary>
-/// Crea una nueva nota para un paciente.
-/// </summary>
-/// <param name="patientId">ID del paciente.</param>
-/// <param name="note">Datos de la nota a crear.</param>
-/// <returns>La nota recién creada.</returns>
-/// <response code="201">Nota creada exitosamente.</response>
-/// <response code="400">Datos inválidos.</response>
-[HttpPost("{patientId}/notes")]
-[ProducesResponseType(StatusCodes.Status201Created)]
-[ProducesResponseType(StatusCodes.Status400BadRequest)]
-public async Task<ActionResult<NoteResponseDto>> CreateNote(int patientId, [FromBody] CreateNoteDto note)
-{
-    if (!ModelState.IsValid)
-        return BadRequest(ModelState);
-
-    note.PatientId = patientId; // Asignamos el ID del paciente manualmente
-
-    var command = new CreateNoteCommand { Note = note };
-    var createdNote = await _mediator.Send(command);
-
-    return CreatedAtAction(nameof(GetNoteById), new { patientId, noteId = createdNote.Id }, createdNote);
-}
-
-    /// <summary>
-/// Obtiene una nota específica de un paciente.
-/// </summary>
-/// <param name="patientId">ID del paciente.</param>
-/// <param name="noteId">ID de la nota.</param>
-/// <returns>La nota solicitada.</returns>
-/// <response code="200">Nota encontrada exitosamente.</response>
-/// <response code="404">Nota no encontrada.</response>
-[HttpGet("{patientId}/notes/{noteId}")]
-[ProducesResponseType(StatusCodes.Status200OK)]
-[ProducesResponseType(StatusCodes.Status404NotFound)]
-public async Task<ActionResult<NoteResponseDto>> GetNoteById(int patientId, int noteId)
-{
-    var query = new GetNoteByIdQuery(noteId);
-    var note = await _mediator.Send(query);
-
-    if (note == null)
-        return NotFound($"No se encontró la nota con ID {noteId} para el paciente {patientId}");
-
-    // Opcional: si quieres asegurar que la nota pertenece al paciente
-    if (note.PatientId != patientId)
-        return NotFound($"La nota con ID {noteId} no pertenece al paciente {patientId}");
-
-    return Ok(note);
-}
-
-
-/// <summary>
-/// Obtiene todas las notas de un paciente específico.
-/// </summary>
-/// <param name="patientId">ID del paciente.</param>
-/// <returns>Lista de notas del paciente.</returns>
-/// <response code="200">Notas encontradas exitosamente.</response>
-[HttpGet("{patientId}/notes")]
-[ProducesResponseType(StatusCodes.Status200OK)]
-public async Task<ActionResult<List<NoteResponseDto>>> GetNotesByPatient(int patientId)
-{
-    var query = new GetNotesByPatientQuery(patientId);
-    var notes = await _mediator.Send(query);
-
-    return Ok(notes);
-}
-
-
-/// <summary>
-/// Actualiza una nota específica de un paciente.
-/// </summary>
-/// <param name="patientId">ID del paciente.</param>
-/// <param name="noteId">ID de la nota.</param>
-/// <param name="updateDto">Datos actualizados de la nota.</param>
-/// <returns>Resultado de la operación.</returns>
-/// <response code="204">Nota actualizada exitosamente.</response>
-/// <response code="400">Datos inválidos.</response>
-/// <response code="404">Nota no encontrada.</response>
-[HttpPut("{patientId}/notes/{noteId}")]
-[ProducesResponseType(StatusCodes.Status204NoContent)]
-[ProducesResponseType(StatusCodes.Status400BadRequest)]
-[ProducesResponseType(StatusCodes.Status404NotFound)]
-public async Task<IActionResult> UpdateNote(int patientId, int noteId, [FromBody] UpdateNoteDto updateDto)
-{
-    // Verificar si el modelo recibido es válido
-    if (!ModelState.IsValid)
-        return BadRequest(ModelState);
-
-    // Crear el comando con los datos necesarios
-    var command = new UpdateNoteCommand
-    {
-        Id = noteId,
-        Note = new UpdateNoteDto
+        /// Crea una nueva nota para un paciente.
+        /// </summary>
+        /// <param name="patientId">ID del paciente.</param>
+        /// <param name="note">Datos de la nota a crear.</param>
+        /// <returns>La nota recién creada.</returns>
+        /// <response code="201">Nota creada exitosamente.</response>
+        /// <response code="400">Datos inválidos.</response>
+        [HttpPost("{patientId}/notes")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<NoteResponseDto>> CreateNote(int patientId, [FromBody] CreateNoteDto note)
         {
-            Title = updateDto.Title,
-            Content = updateDto.Content,
-            PatientId = patientId
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            note.PatientId = patientId;
+
+            var command = new CreateNoteCommand { Note = note };
+            var createdNote = await _mediator.Send(command);
+
+            return CreatedAtAction(nameof(GetNoteById), new { patientId, noteId = createdNote.PatientNote.Id }, createdNote);
         }
-    };
-
-    // Ejecutar el comando usando MediatR
-    var result = await _mediator.Send(command);
-
-    // Verificar el resultado de la operación
-    if (result == null)
-          return NotFound($"No se encontró la nota con ID {noteId} para el paciente {patientId}");
-
-    // Si no se encuentra la nota, devolver "No encontrado"
-    
-        return NoContent(); // Si el comando se ejecuta correctamente, devolver una respuesta de "sin contenido"
-}
 
         /// <summary>
-/// Elimina una nota específica de un paciente.
-/// </summary>
-/// <param name="patientId">ID del paciente.</param>
-/// <param name="noteId">ID de la nota.</param>
-/// <returns>Resultado de la operación.</returns>
-/// <response code="204">Nota eliminada exitosamente.</response>
-/// <response code="404">Nota no encontrada.</response>
-[HttpDelete("{patientId}/notes/{noteId}")]
-[ProducesResponseType(StatusCodes.Status204NoContent)]
-[ProducesResponseType(StatusCodes.Status404NotFound)]
-public async Task<IActionResult> DeleteNote(int patientId, int noteId)
-{
-    var command = new DeleteNoteCommand(noteId);
-    var result = await _mediator.Send(command);
+        /// Obtiene una nota específica de un paciente.
+        /// </summary>
+        /// <param name="patientId">ID del paciente.</param>
+        /// <param name="noteId">ID de la nota.</param>
+        /// <returns>La nota solicitada.</returns>
+        /// <response code="200">Nota encontrada exitosamente.</response>
+        /// <response code="404">Nota no encontrada.</response>
+        [HttpGet("{patientId}/notes/{noteId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<NoteResponseDto>> GetNoteById(int patientId, int noteId)
+        {
+            var query = new GetNoteByIdQuery(noteId);
+            var note = await _mediator.Send(query);
 
-    if (!result)
-        return NotFound($"No se encontró la nota con ID {noteId} para el paciente {patientId}");
+            if (note == null)
+                return NotFound($"No se encontró la nota con ID {noteId} para el paciente {patientId}");
 
-    return NoContent();
-}
+            if (note.PatientId != patientId)
+                return NotFound($"La nota con ID {noteId} no pertenece al paciente {patientId}");
+
+            return Ok(note);
+        }
 
 
+        /// <summary>
+        /// Obtiene todas las notas de un paciente específico.
+        /// </summary>
+        /// <param name="patientId">ID del paciente.</param>
+        /// <returns>Lista de notas del paciente.</returns>
+        /// <response code="200">Notas encontradas exitosamente.</response>
+        [HttpGet("{patientId}/notes")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<List<NoteResponseDto>>> GetNotesByPatient(int patientId)
+        {
+            var query = new GetAllNotesByPatientQuery(patientId);
+            var notes = await _mediator.Send(query);
+
+            return Ok(notes);
+        }
 
 
+        /// <summary>
+        /// Actualiza una nota específica de un paciente.
+        /// </summary>
+        /// <param name="patientId">ID del paciente.</param>
+        /// <param name="noteId">ID de la nota.</param>
+        /// <param name="updateDto">Datos actualizados de la nota.</param>
+        /// <returns>Resultado de la operación.</returns>
+        /// <response code="204">Nota actualizada exitosamente.</response>
+        /// <response code="400">Datos inválidos.</response>
+        /// <response code="404">Nota no encontrada.</response>
+        [HttpPut("{patientId}/notes/{noteId}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateNote(int patientId, int noteId, [FromBody] UpdateNoteDto updateDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var command = new UpdateNoteCommand
+            {
+                Id = noteId,
+                Note = new UpdateNoteDto
+                {
+                    Title = updateDto.Title,
+                    Content = updateDto.Content
+                }
+            };
+            var result = await _mediator.Send(command);
+
+            if (result == null)
+                return NotFound($"No se encontró la nota con ID {noteId} para el paciente {patientId}");
+
+
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Elimina una nota específica de un paciente.
+        /// </summary>
+        /// <param name="patientId">ID del paciente.</param>
+        /// <param name="noteId">ID de la nota.</param>
+        /// <returns>Resultado de la operación.</returns>
+        /// <response code="204">Nota eliminada exitosamente.</response>
+        /// <response code="404">Nota no encontrada.</response>
+        [HttpDelete("{patientId}/notes/{noteId}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteNote(int patientId, int noteId)
+        {
+            var command = new DeleteNoteCommand(noteId);
+            var result = await _mediator.Send(command);
+
+            if (result is null)
+                return NotFound($"No se encontró la nota con ID {noteId} para el paciente {patientId}");
+
+            return NoContent();
+        }
     }
 }

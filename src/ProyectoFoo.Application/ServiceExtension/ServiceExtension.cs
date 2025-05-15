@@ -16,7 +16,6 @@ namespace ProyectoFoo.Application.ServiceExtension
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IPatientService, PatientService>();
             services.AddSingleton<IVerificationCodeService, VerificationCodeService>();
-            // Agg otras configuraciones específicas de la CAPA APPLICATION
             return services;
         }
     }

@@ -9,53 +9,34 @@ using System.Threading.Tasks;
 
 namespace ProyectoFoo.Infrastructure.Persistence
 {
-    public class PatientNoteRepository : IPatientNoteRepository
+    public class PatientNoteRepository : BaseRepository<PatientNote>, IPatientNoteRepository
     {
-        private readonly ApplicationContextSqlServer _context;
+        private readonly ApplicationContextSqlServer _dbContext;
 
-        public PatientNoteRepository(ApplicationContextSqlServer context)
+        public PatientNoteRepository(ApplicationContextSqlServer dbContext) : base(dbContext)
         {
-            _context = context;
+            _dbContext = dbContext;
         }
 
-        public async Task AddAsync(Note note, CancellationToken cancellationToken)
+        public async Task<List<PatientNote>> GetPatientByIdAsync(int pacienteId)
         {
-            await _context.Notes.AddAsync(note, cancellationToken);
+            return await _dbContext.PatientNotes
+                .Where(pm => pm.PatientId == pacienteId)
+                .ToListAsync();
         }
 
-        public async Task DeleteAsync(Note note, CancellationToken cancellationToken)
+        public async Task<List<PatientNote>> GetNotesByPatientIdAsync(int patientId)
         {
-            _context.Notes.Remove(note);
-            await Task.CompletedTask;
+            return await _dbContext.PatientNotes
+                                 .Where(n => n.PatientId == patientId)
+                                 .OrderByDescending(n => n.CreatedDate)
+                                 .ToListAsync();
         }
 
-        public async Task<List<Note>> GetAllAsync(CancellationToken cancellationToken)
+        public async Task<PatientNote?> GetByIdAsync(int noteId, CancellationToken cancellationToken)
         {
-            return await _context.Notes
-                                 .AsNoTracking()
-                                 .ToListAsync(cancellationToken);
+            return await _dbContext.PatientNotes
+                                 .FirstOrDefaultAsync(n => n.Id == noteId, cancellationToken);
         }
-
-        public IQueryable<Note> GetAll()
-        {
-            return _context.Notes.AsNoTracking();
-        }
-
-        public async Task<Note?> GetByIdAsync(int id, CancellationToken cancellationToken)
-        {
-            return await _context.Notes.FindAsync(new object[] { id }, cancellationToken);
-        }
-
-        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
-        {
-            return await _context.SaveChangesAsync(cancellationToken);
-        }
-
-        public async Task<List<Note>> GetByPatientIdAsync(int patientId, CancellationToken cancellationToken)
-{
-    return await _context.Notes
-        .Where(n => n.PatientId == patientId)
-        .ToListAsync(cancellationToken);
-}
     }
 }

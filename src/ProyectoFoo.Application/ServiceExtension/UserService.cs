@@ -3,57 +3,56 @@ using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Application.Features.Users;
 using ProyectoFoo.Domain.Entities;
 using ProyectoFoo.Shared.Models;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ProyectoFoo.Application.ServiceExtension
 {
-    public class UserService : IUserService
+    /// <summary>
+    /// Servicio que contiene la lógica de negocio relacionada a usuarios.
+    /// </summary>
+    public class UserService(IUserRepository usuarioRepository, IEmailService emailService, IVerificationCodeService verificationCodeService, ILogger<UserService> logger) : IUserService
     {
-        private readonly IUserRepository _usuarioRepository;
-        private readonly IEmailService _emailService; // Servicio de correo email para verificar
-        private readonly IVerificationCodeService _verificationCodeService;
-        private readonly ILogger<UserService> _logger;
+        private readonly IUserRepository _userRepository = usuarioRepository ?? throw new ArgumentNullException(nameof(_userRepository));
+        private readonly IEmailService _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService)); // Servicio de correo email para verificar
+        private readonly IVerificationCodeService _verificationCodeService = verificationCodeService ?? throw new ArgumentNullException(nameof(verificationCodeService));
+        private readonly ILogger<UserService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        public UserService(IUserRepository usuarioRepository, IEmailService emailService, IVerificationCodeService verificationCodeService, ILogger<UserService> logger)
-        {
-            _usuarioRepository = usuarioRepository ?? throw new ArgumentNullException(nameof(usuarioRepository));
-            _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
-            _verificationCodeService = verificationCodeService ?? throw new ArgumentNullException(nameof(verificationCodeService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
-
+        /// <summary>
+        /// Obtiene un usuario por su identificador.
+        /// </summary>
         public async Task<Usuario> GetUserByIdAsync(int id)
         {
-            return await _usuarioRepository.GetUserById(id);
+            return await _userRepository.GetUserById(id);
         }
 
+        /// <summary>
+        /// Marca a un usuario como verificado.
+        /// </summary>
         public async Task<bool> MarkUserAsVerifiedAsync(int userId)
         {
-            var user = await _usuarioRepository.GetUserById(userId);
-            if (user != null)
+            var user = await _userRepository.GetUserById(userId);
+            if (user is null)
             {
-                user.IsVerified = true;
-                await _usuarioRepository.UpdateUsuario(user);
-                return true;
+                return false;
             }
-            return false;
+
+            user.IsVerified = true;
+                await _userRepository.UpdateUsuario(user);
+                return true;
         }
 
+        /// <summary>
+        /// Actualiza los datos del usuario con los valores recibidos desde un DTO.
+        /// </summary>
         public async Task<Usuario> UpdateUserAsync(int id, UpdateUserDto updateUser)
         {
-            var existingUser = await _usuarioRepository.GetUserById(id);
+            var existingUser = await _userRepository.GetUserById(id);
 
-            if (existingUser == null)
+            if (existingUser is null)
             {
                 return null; // El usuario no existe
             }
 
-            // Actualizar solo las propiedades permitidas desde el DTO
+            // Actualizar solo las propiedades permitidas desde el DTO, si no son nulos.
             if (updateUser.Name != null)
             {
                 existingUser.Name = updateUser.Name.CapitalizeFirstLetter();
@@ -75,25 +74,25 @@ namespace ProyectoFoo.Application.ServiceExtension
                 existingUser.Title = updateUser.Title.CapitalizeFirstLetter();
             }
 
-            // Actualizar la fecha del último acceso (opcional)
             existingUser.LastAccesDate = DateTime.UtcNow;
 
-            await _usuarioRepository.UpdateUsuario(existingUser); // Actualiza la BD
+            await _userRepository.UpdateUsuario(existingUser);
 
             return existingUser;
         }
 
+        /// <summary>
+        /// Actualiza la contraseña del usuario validando la contraseña actual.
+        /// </summary>
         public async Task<bool> UpdateUserPasswordAsync(int id, UpdatePasswordDto updatePassword)
         {
-            // 1. Buscar el usuario en la base de datos por su ID
-            var existingUser = await _usuarioRepository.GetUserById(id);
+            var existingUser = await _userRepository.GetUserById(id);
 
-            if (existingUser == null)
+            if (existingUser is null)
             {
                 return false; // El usuario no existe
             }
 
-            // 2. Verificar la contraseña actual
             if (!existingUser.VerifyPassword(updatePassword.CurrentPassword))
             {
                 return false; // La contraseña actual es incorrecta
@@ -103,24 +102,25 @@ namespace ProyectoFoo.Application.ServiceExtension
            
             existingUser.SetPasswordHash(newPasswordHash);
 
-            await _usuarioRepository.UpdateUsuario(existingUser);
+            await _userRepository.UpdateUsuario(existingUser);
 
             return true;
         }
 
+        /// <summary>
+        /// Solicita un cambio de correo electrónico enviando un código de verificación al nuevo correo.
+        /// </summary>
         public async Task<bool> RequestEmailChangeAsync(int userId, string newEmail)
         {
-            var existingUser = await _usuarioRepository.GetUserById(userId);
+            var existingUser = await _userRepository.GetUserById(userId);
 
-            if (existingUser == null)
+            if (existingUser is null)
             {
                 return false;
             }
 
-            // Generar código de verificación
             string verificationCode = _verificationCodeService.GenerateCode(userId, "email-change");
 
-            // Enviar correo electrónico con el código
             string subject = "Verificación de cambio de correo electrónico";
             string body = $"Tu código de verificación para cambiar tu correo electrónico es: {verificationCode}.Este código expirará en 15 minutos.";
 
@@ -129,33 +129,32 @@ namespace ProyectoFoo.Application.ServiceExtension
                 await _emailService.SendEmailAsync(newEmail, subject, body);
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError("Error al enviar el correo de verificación a {newEmail}: {ex}", newEmail, ex);
                 _verificationCodeService.RemoveCode(userId, "email-change");
                 return false;
             }
         }
 
+        /// <summary>
+        /// Confirma el cambio de correo electrónico si el código de verificación es válido.
+        /// </summary>
         public async Task<bool> ConfirmEmailChangeAsync(int userId, string newEmail, string verificationCode)
         {
-            // Validar el código de verificación
             if (!_verificationCodeService.ValidateCode(userId, "email-change", verificationCode))
             {
                 return false; // Código inválido o expirado
             }
 
-            var existingUser = await _usuarioRepository.GetUserById(userId);
-            if (existingUser == null)
+            var existingUser = await _userRepository.GetUserById(userId);
+            if (existingUser is null)
             {
                 return false; // Usuario no encontrado
             }
 
-            // Actualizar el correo electrónico del usuario
             existingUser.Email = newEmail;
-            await _usuarioRepository.UpdateUsuario(existingUser);
+            await _userRepository.UpdateUsuario(existingUser);
 
-            // Eliminar el código de verificación usado
             _verificationCodeService.RemoveCode(userId, "email-change");
 
             return true;

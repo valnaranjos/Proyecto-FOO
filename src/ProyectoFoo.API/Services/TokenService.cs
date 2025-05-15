@@ -37,7 +37,11 @@ namespace ProyectoFoo.API.Services
         /// <returns>Una cadena que representa el token JWT.</returns>
         public string GenerateToken(Usuario user)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            string? jwtKey = _configuration["Jwt:Key"];
+            if (string.IsNullOrWhiteSpace(jwtKey))
+                throw new InvalidOperationException("La clave JWT no está configurada.");
+
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new[] {

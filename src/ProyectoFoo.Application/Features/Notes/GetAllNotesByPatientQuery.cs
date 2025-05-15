@@ -4,13 +4,14 @@ using System.Collections.Generic;
 
 namespace ProyectoFoo.Application.Features.Notes
 {
-    public class GetNotesByPatientQuery : IRequest<List<NoteResponseDto>>
+    public class GetAllNotesByPatientQuery : IRequest<List<PatientNoteDto>>
     {
         public int PatientId { get; set; }
 
-        public GetNotesByPatientQuery(int patientId)
+        public GetAllNotesByPatientQuery(int patientId)
         {
             PatientId = patientId;
         }
+
     }
 }

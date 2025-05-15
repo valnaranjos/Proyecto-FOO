@@ -2,6 +2,9 @@
 
 namespace ProyectoFoo.API.Models.Authentication
 {
+    /// <summary>
+    /// Objeto de transferencia de datos (DTO) para el registro de un usuario.
+    /// </summary>
     public class RegisterRequestDto
     {
         [Required(ErrorMessage = "La Identificación es requerida.")]

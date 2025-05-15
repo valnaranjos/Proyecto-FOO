@@ -10,29 +10,29 @@ namespace ProyectoFoo.Infrastructure.Persistence
 {
     public class PatientRepository : BaseRepository<Paciente>, IPatientRepository
     {
+
+        //Como hereda de BaseRepository, no es necesario implementar los métodos dque hereda, los demás sí.
+
         private new readonly ApplicationContextSqlServer _dbContext;
 
-        // Constructor que recibe el DbContext y lo pasa a la base
-        public PatientRepository(ApplicationContextSqlServer dbContext) : base(dbContext)
-        {
-            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
-        }
 
-        public async Task<Paciente> GetByEmailAsync(string email)
+        public PatientRepository(ApplicationContextSqlServer dbContext) : base(dbContext) => _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+
+        public async Task<Paciente?> GetByEmailAsync(string email)
         {
             var emailLower = email.ToLower();
             var paciente = await _dbContext.Pacientes
                 .FirstOrDefaultAsync(p => p.Email != null && p.Email.Equals(emailLower, StringComparison.CurrentCultureIgnoreCase));
 
-            if (paciente == null)
+            if (paciente is null)
             {
-                return null; // Regresar null si no se encuentra el paciente
+                return null;
             }
 
             return paciente;
         }
 
-        public async Task<Paciente> GetByIdentificationAsync(string identification)
+        public async Task<Paciente?> GetByIdentificationAsync(string identification)
         {
             return await _dbContext.Pacientes
                .FirstOrDefaultAsync(p => p.Identification == identification);
@@ -40,12 +40,10 @@ namespace ProyectoFoo.Infrastructure.Persistence
 
         public async Task<List<Paciente>> GetByNationalityAsync(string nationality)
         {
-            //string searchNationality = nationality.Trim().ToLower();
-            //var patients = _dbContext.Pacientes
-            //  .Where(p => p.Nationality.ToLower() == searchNationality.ToLower()).ToList();
-
             string nacionalidadBuscada = nationality.Trim();
-            var pacientes = _dbContext.Pacientes.Where(p => EF.Functions.Like(p.Nationality, nacionalidadBuscada)).ToList();
+            var pacientes = await  _dbContext.Pacientes
+                .Where(p => EF.Functions.Like(p.Nationality, nacionalidadBuscada))
+                .ToListAsync();
             return pacientes;
         }
 
@@ -81,6 +79,5 @@ namespace ProyectoFoo.Infrastructure.Persistence
                 .ToListAsync();
         }
 
-        //Como hereda de BaseRepository, no es necesario implementar los métodos dque hereda, los demás sí.
     }
 }

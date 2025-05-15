@@ -101,6 +101,10 @@ namespace ProyectoFoo.Domain.Entities
         public string? PreferedContact { get; set; }
 
 
+        //Notas y materiales
+        public ICollection<PatientNote> Notes { get; set; } = new List<PatientNote>();
+        public ICollection<PatientMaterial> Materials { get; set; } = new List<PatientMaterial>();
+
 
         //Constructor por defecto
         public Paciente()

@@ -9,21 +9,22 @@ using System.Threading.Tasks;
 
 namespace ProyectoFoo.Application.Contracts.Persistence
 {
+    /// <summary>
+    /// Define el contrato para el repositorio de paciente.
+    /// </summary>
     public interface IPatientRepository : IAsyncRepository<Paciente>
     {
-        //Como hereda, no se deben implementar los métodos de la interfaz IAsyncRepository<T>
+        //Como hereda, no se deben implementar los métodos base.
 
-
-        //BUSQUEDAS
-        Task<Paciente> GetByEmailAsync(string email);
-
-        Task<Paciente> GetByIdentificationAsync(string identification);
-
-        Task<List<Paciente>> GetByNationalityAsync(string nationality);
 
         Task<List<Paciente>> ListPatientsAsync(Expression<Func<Paciente, bool>> predicate);
 
-        
+        //BUSQUEDAS
+        Task<Paciente?> GetByEmailAsync(string email);
+
+        Task<Paciente?> GetByIdentificationAsync(string identification);
+
+        Task<List<Paciente>> GetByNationalityAsync(string nationality);   
 
 
         //FILTROS

@@ -21,9 +21,9 @@ namespace ProyectoFoo.Infrastructure.Context
 
         public DbSet<PatientMaterial> PatientMaterials { get; set; }
 
-        public DbSet<Note> Notes { get; set; }
-        
-        
+        public DbSet<PatientNote> PatientNotes { get; set; }
+
+
         //Modelo a crear
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -43,6 +43,18 @@ namespace ProyectoFoo.Infrastructure.Context
 
             modelBuilder.Entity<VerificationCode>()
             .HasIndex(vc => vc.Expiry);
+
+            modelBuilder.Entity<PatientMaterial>()
+            .HasOne(n => n.Patient)
+            .WithMany(p => p.Materials)
+            .HasForeignKey(n => n.PatientId)
+            .OnDelete(DeleteBehavior.Cascade); // Elimina los materiales si se elimina el paciente
+
+            modelBuilder.Entity<PatientNote>()
+            .HasOne(n => n.Patient)
+            .WithMany(p => p.Notes)
+            .HasForeignKey(n => n.PatientId)
+            .OnDelete(DeleteBehavior.Cascade); // Elimina las notas si se elimina el paciente
         }
 
         //Configuracion de la base de datos

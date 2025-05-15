@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ProyectoFoo.Domain.Entities
 {
-    public class Note
+    public class PatientNote
     {
         public int Id { get; set; }
 
@@ -17,6 +17,6 @@ namespace ProyectoFoo.Domain.Entities
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
         public int PatientId { get; set; }
-        public Paciente Paciente { get; set; } = null!;
+        public Paciente Patient { get; set; } = null!;
     }
 }

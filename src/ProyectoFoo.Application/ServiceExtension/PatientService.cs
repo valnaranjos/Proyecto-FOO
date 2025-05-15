@@ -8,23 +8,16 @@ using System.Threading.Tasks;
 
 namespace ProyectoFoo.Application.ServiceExtension
 {
-    public class PatientService : IPatientService
+    public class PatientService(IPatientRepository pacienteRepository) : IPatientService
     {
-        private readonly IPatientRepository _patientRepository;
-
-        public PatientService(IPatientRepository pacienteRepository)
-        {
-            _patientRepository = pacienteRepository;
-        }
-
         public async Task<Paciente> GetPatientByEmailAsync(string email)
         {
-            return await _patientRepository.GetByEmailAsync(email);
+            return await pacienteRepository.GetByEmailAsync(email);
         }
 
         public async Task<List<Paciente>> GetPacientesByModalityAsync(string modality)
         {
-            return await _patientRepository.GetByModalityAsync(modality);
+            return await pacienteRepository.GetByModalityAsync(modality);
         }
     }
 }

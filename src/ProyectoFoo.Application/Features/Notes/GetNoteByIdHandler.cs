@@ -9,27 +9,30 @@ using System.Threading.Tasks;
 
 namespace ProyectoFoo.Application.Features.Notes.Queries
 {
-    public class GetNotesByPatientQueryHandler : IRequestHandler<GetNotesByPatientQuery, List<NoteResponseDto>>
+    public class GetNoteByIdHandler : IRequestHandler<GetNoteByIdQuery, PatientNoteDto?>
     {
         private readonly IPatientNoteRepository _noteRepository;
 
-        public GetNotesByPatientQueryHandler(IPatientNoteRepository noteRepository)
+        public GetNoteByIdHandler(IPatientNoteRepository noteRepository)
         {
             _noteRepository = noteRepository;
         }
 
-        public async Task<List<NoteResponseDto>> Handle(GetNotesByPatientQuery request, CancellationToken cancellationToken)
+        public async Task<PatientNoteDto?> Handle(GetNoteByIdQuery request, CancellationToken cancellationToken)
         {
-            var notes = await _noteRepository.GetByPatientIdAsync(request.PatientId, cancellationToken);
+            var note = await _noteRepository.GetByIdAsync(request.NoteId, cancellationToken);
 
-            return notes.Select(note => new NoteResponseDto
+            if (note == null)
+                return null;
+
+            return new PatientNoteDto
             {
                 Id = note.Id,
+                PatientId = note.PatientId,
                 Title = note.Title,
                 Content = note.Content,
-                CreatedDate = note.CreatedDate,
-                PatientId = note.PatientId
-            }).ToList();
+                CreatedDate = note.CreatedDate
+            };
         }
     }
 }

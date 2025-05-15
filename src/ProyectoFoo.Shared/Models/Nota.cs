@@ -1,7 +1,7 @@
 namespace ProyectoFoo.Shared.Models
 {
     /// <summary>
-    /// Modelo para las notas.
+    /// Modelo Dto para las notas de paciente.
     /// </summary>
     public class Notes
     {

@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace ProyectoFoo.Application.Contracts.Persistence
 {
-        public interface IVerificationCodeService
+    /// <summary>
+    /// Servicio para la gestión de códigos de verificación.
+    /// </summary>
+    public interface IVerificationCodeService
         {
             /// <summary>
             /// Genera y almacena un código de verificación para un propósito específico.

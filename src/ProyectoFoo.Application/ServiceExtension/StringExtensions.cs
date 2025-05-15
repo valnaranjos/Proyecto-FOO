@@ -14,7 +14,7 @@ namespace ProyectoFoo.Application.ServiceExtension
             {
                 return str;
             }
-            return char.ToUpper(str[0]) + str.Substring(1).ToLower();
+            return char.ToUpper(str[0]) + str[1..].ToLower();
         }
     }
 }
