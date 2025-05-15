@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace ProyectoFoo.Application.Features.Notes
 {
-public class DeleteNoteCommandHandler : IRequestHandler<DeleteNoteCommand, Unit>
+public class DeleteNoteCommandHandler : IRequestHandler<DeleteNoteCommand, bool>
 {
     private readonly IPatientNoteRepository _noteRepository;
 
@@ -14,17 +14,16 @@ public class DeleteNoteCommandHandler : IRequestHandler<DeleteNoteCommand, Unit>
         _noteRepository = noteRepository;
     }
 
-    public async Task<Unit> Handle(DeleteNoteCommand request, CancellationToken cancellationToken)
+    public async Task<bool> Handle(DeleteNoteCommand request, CancellationToken cancellationToken)
     {
         var note = await _noteRepository.GetByIdAsync(request.Id, cancellationToken);
 
         if (note == null)
-            throw new KeyNotFoundException($"No se encontró la nota con ID {request.Id}");
+            return false;
 
         await _noteRepository.DeleteAsync(note, cancellationToken); 
         await _noteRepository.SaveChangesAsync(cancellationToken);
 
-        return Unit.Value;
+        return true;
     }
-}
-}
+}}

@@ -10,6 +10,7 @@ namespace ProyectoFoo.Application.Contracts.Persistence
         Task AddAsync(Note note, CancellationToken cancellationToken);
         Task<Note?> GetByIdAsync(int id, CancellationToken cancellationToken);
         Task<List<Note>> GetAllAsync(CancellationToken cancellationToken);
+        Task<List<Note>> GetByPatientIdAsync(int patientId, CancellationToken cancellationToken);
         Task DeleteAsync(Note note, CancellationToken cancellationToken);
         Task<int> SaveChangesAsync(CancellationToken cancellationToken);
     }

@@ -1,26 +1,26 @@
 using MediatR;
+using ProyectoFoo.Application.Features.Notes;
 using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Shared.Models;
-using ProyectoFoo.Application.Features.Notes.Queries;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ProyectoFoo.Application.Features.Notes.Handlers
+namespace ProyectoFoo.Application.Features.Notes.Queries
 {
-    public class GetAllNotesQueryHandler : IRequestHandler<GetAllNotesQuery, List<NoteResponseDto>>
+    public class GetNotesByPatientQueryHandler : IRequestHandler<GetNotesByPatientQuery, List<NoteResponseDto>>
     {
         private readonly IPatientNoteRepository _noteRepository;
 
-        public GetAllNotesQueryHandler(IPatientNoteRepository noteRepository)
+        public GetNotesByPatientQueryHandler(IPatientNoteRepository noteRepository)
         {
             _noteRepository = noteRepository;
         }
 
-        public async Task<List<NoteResponseDto>> Handle(GetAllNotesQuery request, CancellationToken cancellationToken)
+        public async Task<List<NoteResponseDto>> Handle(GetNotesByPatientQuery request, CancellationToken cancellationToken)
         {
-            var notes = await _noteRepository.GetAllAsync(cancellationToken);
+            var notes = await _noteRepository.GetByPatientIdAsync(request.PatientId, cancellationToken);
 
             return notes.Select(note => new NoteResponseDto
             {

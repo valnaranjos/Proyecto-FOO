@@ -2,7 +2,7 @@ using MediatR;
 
 namespace ProyectoFoo.Application.Features.Notes
 {
-    public class DeleteNoteCommand : IRequest<Unit> 
+    public class DeleteNoteCommand : IRequest<bool> 
     {
         public int Id { get; set; }
 
