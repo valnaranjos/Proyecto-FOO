@@ -1,5 +1,4 @@
-﻿using Swashbuckle.AspNetCore.SwaggerGen;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using ProyectoFoo.Infrastructure.Context;
@@ -19,17 +18,17 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
-builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddEndpointsApiExplorer(); // Agregar explorador de endpoints
 builder.Services.AddInfrastructureServices(); // Extensión para la capa de Infraestructure
 builder.Services.AddApplicationServices(); // Extensión para la capa de Application
 
 
-// Leer la clave secreta desde Key Vault o variables de entorno
+// Leer la clave secreta desde variables de entorno
 var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
 
 if (string.IsNullOrEmpty(secretKey))
 {
-    // Manejo de error si la variable de entorno no está configurada (podría personalizar esto)
+    // Manejo de error si la variable de entorno no está configurada.
     var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
     var logger = loggerFactory.CreateLogger("Program");
     logger.LogError("La variable de entorno JWT_SECRET_KEY no está configurada. La aplicación no puede iniciar correctamente.");
@@ -41,16 +40,13 @@ else
     builder.Services.AddSingleton<ITokenService, TokenService>(sp => new TokenService(secretKey, sp.GetRequiredService<IConfiguration>()));
 }
 
-// Add Swagger to the container
-//Activar este línea en caso de querer desactivar Swagger en producción
-//var enableSwagger = builder.Configuration.GetValue<bool>("EnableSwagger");
-
+// Añade Swagger al contendor
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo 
     { Title = "Gestión de Pacientes API", Version = "v1" });
 
-    //Include XML comments for better documentation
+    //Incluye comentarios XML para documentacion
     var xmlFile = $"{System.AppDomain.CurrentDomain.FriendlyName}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     if (File.Exists(xmlPath))
@@ -69,7 +65,6 @@ builder.Services.AddSwaggerGen(c =>
         BearerFormat = "JWT"
     });
 
-    // Aplica la seguridad a todos los endpoints (opcional, puedes configurarlo por controlador/acción)
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -86,7 +81,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Add database context
+// Añade contexto de base de datos.
 builder.Services.AddDbContext<ApplicationContextSqlServer>(options =>
 options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
                      ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection")),
@@ -108,7 +103,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Agregar JWT Authentication
+// Agregar autenticación JWT 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -121,38 +116,27 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration["Jwt:Audience"],
             IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
-            //precaución con este null-forgivin. Suprime la advertencia, pero si la config no está, se cae.
         };    });
 
 var app = builder.Build();
 
-// Swagger for production only
-/*if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Gestión de Pacientes API");
-        c.RoutePrefix = string.Empty;
-    });
-}*/
 
 // Habilitar Swagger en todos los entornos
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Gestión de pacientes API");
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Insight API");
     c.RoutePrefix = string.Empty; // Para mostrar Swagger en la raíz
 });
 
 
 
-// Ensure database is created
+//Se asegura que la base de datos esté creada
 try
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<ApplicationContextSqlServer>();
-    db.Database.Migrate(); // Applies pending migrations
+    db.Database.Migrate(); // Aplica migraciones pendietes.
     Console.WriteLine("✅ Conexión a la base de datos exitosa.");
 }
 catch (Exception ex)
@@ -165,9 +149,11 @@ catch (Exception ex)
 // Middleware
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
-app.UseAuthentication(); // Agrega el middleware de autenticación0uij
-app.UseAuthorization(); // Necesario para que JWT funcione
-app.MapControllers();
+app.UseAuthentication(); // Agrega el middleware de autenticación
+app.UseAuthorization(); // Agrega JWT Bearer
+app.MapControllers(); 
 
 app.Run();
 
+// Catch-all para SPA
+app.MapFallbackToFile("index.html"); // 👈 Redirige cualquier ruta desconocida al index

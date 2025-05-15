@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MySqlConnector;
 using Microsoft.AspNetCore.Authorization;
 using MediatR;
 using ProyectoFoo.Application.Contracts.Persistence;
@@ -20,30 +19,21 @@ namespace ProyectoFOO.API.Controllers
     [Authorize] // Requiere autenticación para todas las acciones en este controlador
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
-    public class PatientController : ControllerBase
+    public class PatientController(IMediator mediator, IPatientService patientService) : ControllerBase
     {
 
-        private readonly IMediator _mediator;
-        private readonly IPatientService _patientService;
-
-        public PatientController(IMediator mediator, IPatientService patientService)
-        {
-            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-            _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
-        }
+        private readonly IMediator _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        private readonly IPatientService _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
 
 
 
         /// <summary>
         /// Obtiene la lista de pacientes de la base de datos.
         /// </summary>
-        /// /// <returns>Respuesta HTTP con una lista de todos los pacientes.</returns>
         /// <remarks>
-        /// Este endpoint devuelve una colección de todos los pacientes actualmente registrados en el sistema.
+        /// Este endpoint devuelve una colección de todos los pacientes.
         ///
         /// Ejemplo de respuesta (200 OK):
-        ///
         ///     [
         ///         {
         ///             "id": 1,
@@ -59,16 +49,16 @@ namespace ProyectoFOO.API.Controllers
         ///             "admissionDate: "2025-05-01T00:00:00",
         ///             "ageRange": "Adulto",
         ///             "nationality": "Colombiano",
+        ///             // ... otros campos opcionales del PatientDTO
         ///         },
         ///     ]
-        ///
-        /// Ejemplo de respuesta (500 Internal Server Error - Error al obtener pacientes):
-        ///
-        ///     {
-        ///         "message": "Error al obtener todos los pacientes."
-        ///     }
         /// </remarks>
+        ///  /// <returns>Un objeto <see cref="GetAllPatientsResponse"/> que contiene la lista de pacientes y el estado de la operación.</returns>
+        /// <response code="200">Devuelve la lista de pacientes y el estado de la operación.</response>
+        /// <response code="500">Se produjo un error inesperado en el servidor al intentar obtener los pacientes.</response>     
         [HttpGet("pacientes")]
+        [ProducesResponseType(typeof(GetAllPatientsResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<GetAllPatientsResponse>> GetPacientes()
         {
             try
@@ -85,21 +75,21 @@ namespace ProyectoFOO.API.Controllers
                     return StatusCode(500, response.Message ?? "Error al obtener todos los pacientes.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // En caso de error, devuelve un BadRequest
-                return BadRequest($"Error al obtener los pacientes: {ex.Message}");
+                return Problem(
+                   detail: "Se produjo un error inesperado al procesar su solicitud.",
+                   statusCode: StatusCodes.Status500InternalServerError,
+                   title: "Error Interno del Servidor"
+               );
             }
         }
 
         /// <summary>
-        /// Crea un nuevo paciente.
+        /// Crea un nuevo paciente  en el sistema.
         /// </summary>
-        /// <param name="command">Objeto JSON que representa la información del nuevo paciente.</param>
-        /// <returns>Respuesta HTTP indicando el éxito de la creación. En caso de éxito, devuelve la información del paciente creado.</returns>
+        /// <param name="command">Los datos del paciente a crear. Ver <see cref="CreatePatientCommand"/>.</param>
         /// <remarks>
-        /// Este endpoint recibe la información para crear un nuevo paciente en el sistema.
-        ///
         /// Ejemplo de solicitud:
         ///
         ///     POST /api/patients
@@ -114,18 +104,26 @@ namespace ProyectoFOO.API.Controllers
         ///             "sex": "Masculino",
         ///             "email": "juan.perez@example.com",
         ///             "phone": "3101234567"
+        ///             // ... otros campos requeridos u opcionales según CreatePatientCommand
         ///         }
-        ///     }
-        ///
         /// </remarks>
+        /// /// <returns>Una respuesta <see cref="CreatePatientResponse"/> que incluye el ID del paciente creado si la operación fue exitosa.</returns>
+        /// <response code="201">Paciente creado exitosamente. Devuelve la ubicación del nuevo recurso y <see cref="CreatePatientResponse"/>.</response>
+        /// <response code="400">La solicitud es incorrecta (ej. datos de validación fallidos). Ver <see cref="ValidationProblemDetails"/> o <see cref="ProblemDetails"/>.</response>
+        /// <response code="409">Ya existe un paciente con el número de identificación proporcionado. Ver <see cref="ProblemDetails"/>.</response>
+        /// <response code="500">Error interno del servidor. Ver <see cref="ProblemDetails"/>.</response>
         [HttpPost]
+        [ProducesResponseType(typeof(CreatePatientResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<CreatePatientResponse>> CreatePaciente([FromBody] CreatePatientCommand command)
         {
             var response = await _mediator.Send(command);
 
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return ValidationProblem(ModelState);
             }
 
             try
@@ -136,21 +134,24 @@ namespace ProyectoFOO.API.Controllers
                 }
                 else
                 {
-                    return BadRequest(response); // O podrías usar StatusCode según el tipo de error
+                    return BadRequest(new ProblemDetails { Title = "Error al crear el paciente", Detail = response.Message });
                 }
             }
-            catch (DbUpdateException ex) // Captura excepciones relacionadas con la base de datos
+            catch (DbUpdateException) // Captura excepciones relacionadas con la base de datos
             {
-                if (ex.InnerException is MySqlException mySqlException && mySqlException.Number == 1062) // 1062 es el código de error para violación de unicidad en MySQL
+                return Conflict(new ProblemDetails
                 {
-                    return Conflict($"Ya existe un paciente con la identificación '{command.Identification}'."); // Usamos command.Identification ahora
-                }
-
-                return BadRequest($"Error al crear el paciente: {ex.Message}");
+                    Title = "Conflicto de Recurso",
+                    Detail = $"Ya existe un paciente con la identificación '{command.Identification}'."
+                });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, $"Error inesperado al crear el paciente: {ex.Message}"); // Usamos StatusCode 500 para errores inesperados
+                return Problem(
+                     detail: "Se produjo un error inesperado al crear el paciente.",
+                     statusCode: StatusCodes.Status500InternalServerError,
+                     title: "Error Interno del Servidor"
+                 );
             }
         }
 
@@ -159,11 +160,18 @@ namespace ProyectoFOO.API.Controllers
         /// Obtiene un paciente especifico por su ID.
         /// </summary>
         /// <param name="id">ID del paciente a buscar.</param>
-        /// <returns>Respuesta HTTP con la información del paciente si se encuentra.</returns>
         /// <remarks>
-        /// Este endpoint permite obtener los detalles de un paciente específico utilizando su identificador único.
+        /// Devuelve los detalles completos del paciente si se encuentra.
+        /// El objeto devuelto sería `PatientDTO` dentro de `GetPatientByIdResponse`.
         /// </remarks>
+        /// <returns>Un objeto <see cref="PatientDTO"/> si se encuentra; de lo contrario, <see cref="NotFoundResult"/>.</returns>
+        /// <response code="200">Devuelve los datos del paciente encontrado (ej. `PatientDTO`).</response>
+        /// <response code="404">Paciente no encontrado.</response>
+        /// <response code="500">Error interno del servidor.</response> 
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(PatientDTO), StatusCodes.Status200OK)] // Asumiendo que response.Patient es de tipo PatientDTO
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<GetPatientByIdResponse>> GetPatientById(int id)
         {
             try
@@ -177,12 +185,22 @@ namespace ProyectoFOO.API.Controllers
                 }
                 else
                 {
-                    return NotFound(response.Message ?? $"Paciente con ID {id} no encontrado.");
+                    return NotFound(new ProblemDetails
+                    {
+                        Title = "Recurso no encontrado",
+                        Detail = response.Message ?? $"Paciente con ID {id} no encontrado.",
+                        Status = StatusCodes.Status404NotFound,
+                        Instance = HttpContext.Request.Path
+                    });
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, $"Error inesperado al obtener el paciente con ID {id}: {ex.Message}");
+                return Problem(
+                     detail: $"Error inesperado al obtener el paciente con ID {id}.",
+                     statusCode: StatusCodes.Status500InternalServerError,
+                     title: "Error Interno del Servidor"
+                 );
             }
         }
 
@@ -192,17 +210,28 @@ namespace ProyectoFOO.API.Controllers
         /// </summary>
         /// <param name="id">ID del paciente a actualizar.</param>
         /// <param name="command">Objeto JSON con los campos a actualizar.</param>
-        /// <returns>Respuesta HTTP indicando el éxito o error de la actualización. En caso de éxito, devuelve el paciente actualizado.</returns>
         /// <remarks>
-        /// Este endpoint permite actualizar solo los campos proporcionados en el cuerpo de la solicitud.
-        /// El ID del paciente se debe especificar en la URL.
+        /// Permite actualizar los campos proporcionados en el cuerpo de la solicitud.
+        /// El ID del paciente se especifica en la URL y debe coincidir con el command.Id si este último existe.
+        /// Solo dejar los campos que van a ser cambiados.
         /// </remarks>
+        /// /// <returns>Una respuesta <see cref="UpdatePatientResponse"/> o <see cref="NoContentResult"/> en caso de éxito.</returns>
+        /// <response code="200">Paciente actualizado exitosamente. Devuelve <see cref="UpdatePatientResponse"/>.</response>
+        /// <response code="204">Paciente actualizado exitosamente (si no se devuelve contenido).</response>
+        /// <response code="400">Solicitud incorrecta (ej. datos inválidos).</response>
+        /// <response code="404">Paciente no encontrado.</response>
+        /// <response code="500">Error interno del servidor.</response>
+        /// [ProducesResponseType(typeof(UpdatePatientResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdatePatient(int id, [FromBody] UpdatePatientCommand command)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return ValidationProblem(ModelState);
             }
 
             command.Id = id;
@@ -217,12 +246,16 @@ namespace ProyectoFOO.API.Controllers
                 }
                 else
                 {
-                    return NotFound(response.Message);
+                    return NotFound(new ProblemDetails { Title = "No encontrado", Detail = response.Message, Status = StatusCodes.Status404NotFound });
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest($"Error al actualizar el paciente: {ex.Message}");
+                return Problem(
+                     detail: $"Error inesperado al actualizar el paciente con ID {id}.",
+                     statusCode: StatusCodes.Status500InternalServerError,
+                     title: "Error Interno del Servidor"
+                 );
             }
         }
 
@@ -230,32 +263,19 @@ namespace ProyectoFOO.API.Controllers
         /// <summary>
         /// Elimina un paciente existente por su ID.
         /// </summary>
-        /// <param name="id">ID del paciente a eliminar.</param>
-        /// <returns>Respuesta HTTP indicando el éxito o error de la eliminación.</returns>
         /// <remarks>
-        /// Este endpoint permite eliminar un paciente del sistema utilizando su identificador único.
+        /// Esta operación elimina permanentemente (o lógicamente, según implementación) al paciente.
         ///
-        /// Ejemplo de solicitud:
-        ///
-        ///     DELETE /api/patients/5
-        ///
-        /// Ejemplo de respuesta (204 No Content - Éxito):
-        ///
-        ///     // Sin cuerpo de respuesta
-        ///
-        /// Ejemplo de respuesta (404 Not Found - Paciente no encontrado):
-        ///
-        ///     {
-        ///         "message": "Paciente con ID 5 no encontrado."
-        ///     }
-        ///
-        /// Ejemplo de respuesta (500 Internal Server Error - Error al eliminar):
-        ///
-        ///     {
-        ///         "message": "Error inesperado al eliminar el paciente con ID 5: Error de base de datos."
-        ///     }
+        /// Ejemplo de solicitud: `DELETE /api/Patient/5`
         /// </remarks>
+        /// <returns>No devuelve contenido en caso de éxito.</returns>
+        /// <response code="204">Paciente eliminado exitosamente.</response>
+        /// <response code="404">Paciente no encontrado.</response>
+        /// <response code="500">Error interno del servidor.</response>
         [HttpDelete("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeletePatient(int id)
         {
             var command = new DeletePatientCommand { PatientId = id };
@@ -266,66 +286,98 @@ namespace ProyectoFOO.API.Controllers
 
                 if (response.Success)
                 {
-                    return NoContent(); // Código 204 para indicar una eliminación exitosa
+                    return NoContent();
                 }
                 else
                 {
-                    return NotFound(response.Message); // Código 404 si el paciente no se encuentra
+                    return NotFound(new ProblemDetails
+                    {
+                        Title = "Recurso no encontrado",
+                        Detail = response.Message ?? $"Paciente con ID {id} no encontrado para eliminar.",
+                        Status = StatusCodes.Status404NotFound,
+                        Instance = HttpContext.Request.Path
+                    });
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return BadRequest($"Error inesperado al eliminar el paciente: {ex.Message}");
+                return Problem(
+                    detail: $"Error inesperado al eliminar el paciente con ID {id}.",
+                    statusCode: StatusCodes.Status500InternalServerError,
+                    title: "Error Interno del Servidor"
+                );
             }
         }
 
 
-        //RELACIONADO A ARCHIVAR/DESARCHIVAR Y OBTENER ARCHIVADOS:
+        // --- RELACIONADO A ARCHIVAR/DESARCHIVAR Y OBTENER ARCHIVADOS ---
 
 
         /// <summary>
         /// Archiva (desactiva) a un paciente activo por su ID.
         /// </summary>
         /// <param name="id">ID del paciente a archivar.</param>
-        /// <returns>Mensaje indicando si la operación fue exitosa.</returns>
-        /// <response code="200">El paciente fue archivado correctamente.</response>
-        /// <response code="404">No se encontró el paciente o no se pudo archivar.</response>
+        /// <returns>Una respuesta <see cref="ArchivePatientResponse"/> indicando el resultado.</returns>
+        /// <response code="200">El paciente fue archivado correctamente. Devuelve <see cref="ArchivePatientResponse"/>.</response>
+        /// <response code="404">No se encontró el paciente o ya estaba archivado.</response>
+        /// <response code="500">Error interno del servidor.</response>
+        ///  [ProducesResponseType(typeof(ArchivePatientResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [HttpPut("pacientes/{id}/archive")]
         public async Task<ActionResult<ArchivePatientResponse>> ArchivePaciente(int id)
         {
-            var command = new ArchivePatientCommand(id);
-            var response = await _mediator.Send(command);
+            try
+            {
+                var command = new ArchivePatientCommand(id);
+                var response = await _mediator.Send(command);
 
-            if (response.Success)
-            {
-                return Ok(new { message = response.Message });
+                if (response.Success)
+                {
+                    return Ok(new { message = response.Message });
+                }
+                else
+                {
+                    return NotFound(new ProblemDetails { Title = "Operación fallida o recurso no encontrado", Detail = response.Message, Status = StatusCodes.Status404NotFound });
+                }
             }
-            else
+            catch (Exception)
             {
-                return NotFound(response.Message);
+                return Problem(detail: $"Error al archivar paciente con ID {id}.", statusCode: StatusCodes.Status500InternalServerError, title: "Error Interno");
             }
         }
 
         /// <summary>
-        /// Desarchiva (reactiva) a un paciente previamente archivado.
+        /// Desarchiva (reactiva lógicamente) a un paciente previamente archivado.
         /// </summary>
         /// <param name="id">ID del paciente a desarchivar.</param>
         /// <returns>Mensaje indicando si la operación fue exitosa.</returns>
-        /// <response code="200">El paciente fue desarchivado correctamente.</response>
-        /// <response code="404">No se encontró el paciente o no se pudo desarchivar.</response>
+        /// <response code="200">El paciente fue desarchivado correctamente. Devuelve la respuesta del comando.</response>
+        /// <response code="404">No se encontró el paciente o no estaba archivado.</response>
+        /// <response code="500">Error interno del servidor.</response>
         [HttpPut("pacientes/{id}/unarchive")]
+        [ProducesResponseType(typeof(ArchivePatientResponse), StatusCodes.Status200OK)] // Asumiendo que Unarchive usa el mismo tipo de respuesta
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ArchivePatientResponse>> UnarchivePaciente(int id)
         {
-            var command = new UnarchivePatientCommand(id);
-            var response = await _mediator.Send(command);
+            try
+            {
+                var command = new UnarchivePatientCommand(id);
+                var response = await _mediator.Send(command);
 
-            if (response.Success)
-            {
-                return Ok(new { message = response.Message });
+                if (response.Success)
+                {
+                    return Ok(new { message = response.Message });
+                }
+                else
+                {
+                    return NotFound(new ProblemDetails { Title = "Operación fallida o recurso no encontrado", Detail = response.Message, Status = StatusCodes.Status404NotFound });
+                }
             }
-            else
+            catch (Exception)
             {
-                return NotFound(response.Message);
+                return Problem(detail: $"Error al desarchivar paciente con ID {id}.", statusCode: StatusCodes.Status500InternalServerError, title: "Error Interno");
             }
 
         }
@@ -334,15 +386,26 @@ namespace ProyectoFOO.API.Controllers
         /// <summary>
         /// Obtiene todos los pacientes que están deshabilitados (IsEnabled = false) con toda su información.
         /// </summary>
-        /// <returns>Una lista de todos los pacientes deshabilitados.</returns>
-        /// <response code="200">Retorna la lista de pacientes deshabilitados.</response>
+        /// <remarks>Devuelve una lista de `PatientDTO` para los pacientes archivados.</remarks>
+        /// <returns>Una lista de <see cref="PatientDTO"/> de pacientes archivados.</returns>
+        /// <response code="200">Retorna la lista de pacientes archivados.</response>
+        /// <response code="500">Error interno del servidor.</response>
         [HttpGet("patients/archived")]
+        [ProducesResponseType(typeof(List<PatientDTO>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<List<PatientDTO>>> GetAllArchivedPatients()
         {
-            var query = new GetAllArchivedPatientsCommand();
-            var disabledPatients = await _mediator.Send(query);
-            return Ok(disabledPatients);
+            try
+            {
+                var query = new GetAllArchivedPatientsCommand();
+                var response = await _mediator.Send(query);
+                return Ok(response);
+            }
+            catch (Exception)
+            {
+                return Problem(detail: "Error al obtener pacientes archivados.", statusCode: StatusCodes.Status500InternalServerError, title: "Error Interno");
+            }
         }
 
 
@@ -359,10 +422,12 @@ namespace ProyectoFOO.API.Controllers
         /// <response code="201">Retorna el material recién creado.</response>
         /// <response code="400">Si la petición no es válida.</response>
         /// <response code="404">Si el paciente especificado no existe.</response>
+        ///  /// <response code="500">Error interno del servidor.</response>
         [HttpPost("{patientId}/materials")]
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(CreatePatientMaterialResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<CreatePatientMaterialResponse>> CreatePatientMaterial(
             [FromRoute] int patientId,
             [FromBody] CreatePatientMaterialDto createPacienteMaterialDto)
@@ -372,60 +437,75 @@ namespace ProyectoFOO.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var command = new CreatePatientMaterialCommand
+            try
             {
-                PatientId = patientId,
-                Material = createPacienteMaterialDto
-            };
+                var command = new CreatePatientMaterialCommand
+                {
+                    PatientId = patientId,
+                    Material = createPacienteMaterialDto
+                };
 
-            var response = await _mediator.Send(command);
+                var response = await _mediator.Send(command);
 
-            if (response.Success)
-            {
-                return CreatedAtAction(nameof(GetPatientMaterialById),
-                    new { patientId, materialId = response.PatientMaterial.Id },
-                    response);
+                if (response.Success)
+                {
+                    return CreatedAtAction(nameof(GetPatientMaterialById),
+                        new { patientId, materialId = response.PatientMaterial.Id },
+                        response);
+                }
+
+                if (response.Message.Contains("No se encontró el paciente"))
+                {
+                    return NotFound(new ProblemDetails { Title = "Paciente no encontrado", Detail = response.Message, Status = StatusCodes.Status404NotFound });
+                }
+
+                return BadRequest(new ProblemDetails { Title = "Error al crear material", Detail = response.Message ?? "No se pudo crear el material." });
             }
-
-            if (response.Message.Contains("No se encontró el paciente"))
+            catch (Exception)
             {
-                return NotFound(response.Message);
+                // Loggear ex
+                return Problem(detail: "Error inesperado al crear material para el paciente.", statusCode: StatusCodes.Status500InternalServerError, title: "Error Interno");
             }
-
-            return BadRequest(response.Message);
         }
+
 
 
         /// <summary>
         /// Obtiene todo el material asociado a un paciente específico.
         /// </summary>
         /// <param name="patientId">Identificador único del paciente.</param>
-        /// <returns>Una lista de materiales del paciente.</returns>
-        /// <response code="200">Retorna la lista de materiales del paciente.</response>
-        /// <response code="404">Si el paciente especificado no existe.</response>
+        /// <returns>Una lista de <see cref="PatientMaterialDto"/> para el paciente.</returns>
+        /// <response code="200">Retorna la lista de materiales del paciente. Puede ser una lista vacía si no tiene materiales.</response>
+        /// <response code="404">Si el paciente especificado no existe (esto debería ser manejado por el comando idealmente).</response>
+        /// <response code="500">Error interno del servidor.</response>
         [HttpGet("{patientId}/materials")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(List<PatientMaterialDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<List<PatientMaterialDto>>> GetAllPatientMaterials([FromRoute] int patientId)
         {
-            // Crear el query para obtener el material del paciente
-            var query = new GetAllPatientMaterialsCommand { PatientId = patientId };
-
-            // Enviar el query al Mediator y obtener la respuesta
-            var materials = await _mediator.Send(query);
-
-            if (materials != null && materials.Count > 0)
+            try
             {
-                return Ok(materials);
-            }
+                var query = new GetAllPatientMaterialsCommand { PatientId = patientId };
+                var response = await _mediator.Send(query);
 
-            var patientExists = await _mediator.Send(new GetPatientByIdQuery(patientId));
-            if (patientExists == null)
+                if (response != null && response.Count > 0)
+                {
+                    return Ok(response);
+                }
+
+                var patientExists = await _mediator.Send(new GetPatientByIdQuery(patientId));
+                if (patientExists == null)
+                {
+                    return NotFound($"No se encontró el paciente con ID: {patientId}");
+                }
+
+                return Ok(new List<PatientMaterialDto>());
+            }
+            catch (Exception)
             {
-                return NotFound($"No se encontró el paciente con ID: {patientId}");
+                return Problem(detail: "Error inesperado al obtener los materiales del paciente.", statusCode: StatusCodes.Status500InternalServerError, title: "Error Interno");
             }
-
-            return Ok(new List<PatientMaterialDto>()); // Paciente encontrado, pero no tiene material
         }
 
 
@@ -434,23 +514,36 @@ namespace ProyectoFOO.API.Controllers
         /// </summary>
         /// <param name="patientId">Identificador único del paciente.</param>
         /// <param name="materialId">Identificador único del material.</param>
-        /// <returns>El material solicitado.</returns>
+        /// <returns>El <see cref="PatientMaterialDto"/> solicitado.</returns>
         /// <response code="200">Retorna el material solicitado.</response>
         /// <response code="404">Si el paciente o el material no existen.</response>
+        /// <response code="500">Error interno del servidor.</response>
         [HttpGet("{patientId}/materials/{materialId}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(PatientMaterialDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<PatientMaterialDto>> GetPatientMaterialById([FromRoute] int patientId, [FromRoute] int materialId)
         {
-            var query = new GetPatientMaterialByIdQuery { PatientId = patientId, MaterialId = materialId };
-            var materialDto = await _mediator.Send(query);
+            try {
+                var query = new GetPatientMaterialByIdQuery { PatientId = patientId, MaterialId = materialId };
+                var materialDto = await _mediator.Send(query);
 
-            if (materialDto != null)
-            {
-                return Ok(materialDto);
+                if (materialDto != null)
+                {
+                    return Ok(materialDto);
+                }
+
+                return NotFound(new ProblemDetails
+                {
+                    Title = "Recurso no encontrado",
+                    Detail = $"No se encontró el material con ID {materialId} para el paciente con ID {patientId}.",
+                    Status = StatusCodes.Status404NotFound
+                });
             }
-
-            return NotFound($"No se encontró el material con ID: {materialId} para el paciente con ID: {patientId}");
+            catch (Exception)
+            {
+                return Problem(detail: "Error inesperado al obtener el material del paciente.", statusCode: StatusCodes.Status500InternalServerError, title: "Error Interno");
+            }
         }
 
 
@@ -460,14 +553,16 @@ namespace ProyectoFOO.API.Controllers
         /// <param name="patientId">Identificador único del paciente.</param>
         /// <param name="materialId">Identificador único del material a actualizar.</param>
         /// <param name="updatePatientMaterialDto">Datos para la actualización del material.</param>
-        /// <returns>Un ActionResult que indica el resultado de la actualización.</returns>
-        /// <response code="200">Retorna el material actualizado.</response>
-        /// <response code="400">Si la petición no es válida.</response>
+        /// <returns>Un <see cref="UpdatePatientMaterialResponse"/> que indica el resultado.</returns>
+        /// <response code="200">Retorna <see cref="UpdatePatientMaterialResponse"/> con el material actualizado o mensaje de éxito.</response>
+        /// <response code="400">Si la petición no es válida (ej. datos faltantes).</response>
         /// <response code="404">Si el paciente o el material no existen.</response>
+        /// <response code="500">Error interno del servidor.</response>
         [HttpPut("{patientId}/materials/{materialId}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(UpdatePatientMaterialResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UpdatePatientMaterialResponse>> UpdatePatientMaterial(
         [FromRoute] int patientId,
         [FromRoute] int materialId,
@@ -475,24 +570,37 @@ namespace ProyectoFOO.API.Controllers
         {
             if (updatePatientMaterialDto == null || !ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return ValidationProblem(ModelState);
             }
 
-            var command = new UpdatePatientMaterialCommand
+            try
             {
-                PatientId = patientId,
-                MaterialId = materialId,
-                Material = updatePatientMaterialDto
-            };
+                var command = new UpdatePatientMaterialCommand
+                {
+                    PatientId = patientId,
+                    MaterialId = materialId,
+                    Material = updatePatientMaterialDto
+                };
 
-            var response = await _mediator.Send(command);
+                var response = await _mediator.Send(command);
 
-            if (response.Success)
-            {
-                return Ok(response);
+                if (response.Success)
+                {
+                    return Ok(response);
+                }
+                else
+                {
+                    if (response.Message != null && (response.Message.Contains("no encontrado", StringComparison.CurrentCultureIgnoreCase) || response.Message.Contains("no existe", StringComparison.CurrentCultureIgnoreCase)))
+                    {
+                        return NotFound(new ProblemDetails { Title = "Recurso no encontrado", Detail = response.Message, Status = StatusCodes.Status404NotFound });
+                    }
+                    return BadRequest(new ProblemDetails { Title = "Error al actualizar material", Detail = response.Message ?? "No se pudo actualizar el material." });
+                }
             }
-
-            return NotFound(response.Message);
+            catch (Exception)
+            {
+                return Problem(detail: "Error inesperado al actualizar el material del paciente.", statusCode: StatusCodes.Status500InternalServerError, title: "Error Interno");
+            }
         }
 
 
@@ -501,30 +609,38 @@ namespace ProyectoFOO.API.Controllers
         /// </summary>
         /// <param name="patientId">Identificador único del paciente.</param>
         /// <param name="materialId">Identificador único del material a eliminar.</param>
-        /// <returns>Un IActionResult que indica el resultado de la eliminación.</returns>
+        /// <returns>No devuelve contenido en caso de éxito.</returns>
         /// <response code="204">Si el material fue eliminado exitosamente.</response>
         /// <response code="404">Si el paciente o el material no existen.</response>
+        /// <response code="500">Error interno del servidor.</response>
         [HttpDelete("{patientId}/materials/{materialId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeletePatientMaterial(
         [FromRoute] int patientId,
         [FromRoute] int materialId)
         {
-            var command = new DeletePatientMaterialCommand
-            {
-                PatientId = patientId,
-                MaterialId = materialId
-            };
+            try {
+                var command = new DeletePatientMaterialCommand
+                {
+                    PatientId = patientId,
+                    MaterialId = materialId
+                };
 
-            var response = await _mediator.Send(command);
+                var response = await _mediator.Send(command);
 
-            if (response.Success)
-            {
-                return NoContent(); // Código 204 para indicar eliminación exitosa sin cuerpo
+                if (response.Success)
+                {
+                    return NoContent();
+                }
+
+                return NotFound(new ProblemDetails { Title = "Recurso no encontrado", Detail = response.Message ?? "No se pudo eliminar el material.", Status = StatusCodes.Status404NotFound });
             }
-
-            return NotFound(response.Message);
+            catch (Exception)
+            {
+                return Problem(detail: "Error inesperado al eliminar el material del paciente.", statusCode: StatusCodes.Status500InternalServerError, title: "Error Interno");
+            }
         }
 
 
@@ -534,14 +650,20 @@ namespace ProyectoFOO.API.Controllers
         /// Busca un paciente por su correo electrónico.
         /// </summary>
         /// <param name="email">Correo electrónico del paciente.</param>
-        /// <returns>Paciente si se encuentra, 404 si no se encuentra.</returns>
+        /// <returns>Información del paciente si se encuentra.</returns>
+        /// <response code="200">Paciente encontrado exitosamente.</response>
+        /// <response code="404">No se encontró un paciente con el correo electrónico proporcionado.</response>
+        /// <response code="500">Error interno del servidor.</response>
         [HttpGet("search-by-email")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetPatientByEmail(string email)
         {
             var paciente = await _patientService.GetPatientByEmailAsync(email);
             if (paciente == null)
             {
-                return NotFound($"Paciente con email {email} no encontrado.");
+                return NotFound($"No se encontró un paciente con el email: {email}.");
             }
             return Ok(paciente);
         }
@@ -572,11 +694,11 @@ namespace ProyectoFOO.API.Controllers
             }
             else if (response.Success)
             {
-                return NotFound(" No se encontró ningún paciente con esa identificación"); // No se encontró ningún paciente con esa identificación
+                return NotFound($"No se encontró ningún paciente con la identificación: {identification}.");
             }
             else
             {
-                return BadRequest(response.Message); // O un StatusCode más apropiado para el error
+                return BadRequest(response.Message);
             }
         }
 
@@ -584,8 +706,8 @@ namespace ProyectoFOO.API.Controllers
         /// Busca un paciente por su nacionalidad.
         /// </summary>
         /// <param name="nationality"> String nacionalidad del paciente(como parámetro de consulta).</param>
-        /// <returns>Respuesta HTTP con la información del paciente encontrado o NotFound si no existe.</returns>
-        /// <response code="200">Paciente encontrado exitosamente.</response>
+        /// <returns>Lista de pacientes con la nacionalidad especificada.</returns>
+        /// <response code="200">Pacientes encontrados exitosamente.</response>
         /// <response code="400">Error en la solicitud.</response>
         /// <response code="404">No se encontró ningún paciente con la nacionalidad proporcionado.</response>
         /// <response code="500">Error interno del servidor.</response>
@@ -601,11 +723,11 @@ namespace ProyectoFOO.API.Controllers
             }
             else if (response.Success)
             {
-                return NotFound();
+                return NotFound($"No se encontraron pacientes con nacionalidad: {nationality}.");
             }
             else
             {
-                return BadRequest(response.Message); // O un StatusCode??
+                return BadRequest(response.Message);
             }
         }
 
@@ -613,7 +735,7 @@ namespace ProyectoFOO.API.Controllers
         /// Busca un paciente por su nombre.
         /// </summary>
         /// <param name="fullname"> String nombre del paciente(como parámetro de consulta).</param>
-        /// <returns>Respuesta HTTP con la información del paciente encontrado o NotFound si no existe.</returns>
+        /// <returns>Lista de pacientes que coinciden con el nombre completo.</returns>
         /// <response code="200">Paciente encontrado exitosamente.</response>
         /// <response code="400">Error en la solicitud.</response>
         /// <response code="404">No se encontró ningún paciente con la nacionalidad proporcionado.</response>
@@ -680,7 +802,7 @@ namespace ProyectoFOO.API.Controllers
         /// </summary>
         /// <param name="modality">Modalidad del paciente.</param>
         /// <returns>Lista de pacientes filtrados por modalidad.</returns>
-        ///   /// <returns>Respuesta HTTP con la lista de pacientes que coinciden con la modalidad proporcionada o NotFound si no existe ninguno.</returns>
+        ///  <returns>Respuesta HTTP con la lista de pacientes que coinciden con la modalidad proporcionada o NotFound si no existe ninguno.</returns>
         /// <response code="200">Lista de pacientes filtrados exitosamente.</response>
         /// <response code="400">Error en la solicitud.</response>
         /// <response code="404">No se encontraron pacientes con la modalidad proporcionado.</response>
@@ -730,7 +852,7 @@ namespace ProyectoFOO.API.Controllers
             }
             else
             {
-                return BadRequest(response.Message); // O un StatusCode?
+                return BadRequest(response.Message);
             }
         }
     }

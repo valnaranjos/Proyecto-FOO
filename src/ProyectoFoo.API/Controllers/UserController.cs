@@ -6,6 +6,7 @@ using System.Security.Claims;
 using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Domain.Services;
 using ProyectoFoo.Shared.Models;
+using ProyectoFoo.API.Models.Authentication;
 
 
 namespace ProyectoFoo.API.Controllers
@@ -15,22 +16,13 @@ namespace ProyectoFoo.API.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController(IMediator mediator, ILogger<UserController> logger, IUserService userService, IEmailService emailService, ITokenService tokenService) : ControllerBase
     {
-        private readonly IMediator _mediator;
-        private readonly IUserService _userService;
-        private readonly ILogger<UserController> _logger;
-        private readonly IEmailService _emailService;       
-        private readonly ITokenService _tokenService;
-
-        public UserController(IMediator mediator, ILogger<UserController> logger, IUserService userService, IEmailService emailService, ITokenService tokenService)
-        {
-            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
-            _emailService = emailService;
-            _tokenService = tokenService;
-        }
+        private readonly IMediator _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        private readonly IUserService _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+        private readonly ILogger<UserController> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly IEmailService _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));       
+        private readonly ITokenService _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
 
         /// <summary>
         /// Crea un nuevo usuario.
@@ -40,10 +32,11 @@ namespace ProyectoFoo.API.Controllers
         /// <response code="201">Usuario creado exitosamente.</response>
         /// <response code="400">Error de validación o usuario ya existente.</response>
         /// <response code="500">Error interno del servidor.</response>
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost("register")]
+        [ProducesResponseType(typeof(RegisterRequestDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
+        
         public async Task<ActionResult<CreateUserResponse>> CreateUser([FromBody] CreateUserCommand command)
         {
             System.Diagnostics.Debug.WriteLine($"Received CreateUserCommand: {System.Text.Json.JsonSerializer.Serialize(command)}");
@@ -60,7 +53,7 @@ namespace ProyectoFoo.API.Controllers
                 if (response.Success)
                 {
                   
-                    return StatusCode(StatusCodes.Status201Created, response.User);
+                    return Ok(response.User);
                 }
                 else
                 {
@@ -76,9 +69,14 @@ namespace ProyectoFoo.API.Controllers
         /// <summary>
         /// Verifica el registro de un usuario mediante un código de verificación.
         /// </summary>
-        /// <param name="command">Comando con el correo electrónico y el código de verificación.</param>
-        /// <returns>Una respuesta que indica el resultado de la verificación.</returns>
+        /// <param name="command">Correo y código.</param>
+        /// <returns>Token JWT si es exitoso.</returns>
+        /// <response code="200">Verificación exitosa.</response>
+        /// <response code="400">Código incorrecto o expirado.</response>
+
         [HttpPost("verify-registration")]
+        [ProducesResponseType(typeof(VerifyRegistrationResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> VerifyRegistration([FromBody] VerifyRegistrationCommand command)
         {
             var response = await _mediator.Send(command);
@@ -93,9 +91,13 @@ namespace ProyectoFoo.API.Controllers
         /// <summary>
         /// Obtiene la información del usuario autenticado actualmente.
         /// </summary>
-        /// <returns>Datos del usuario autenticado.</returns>
+        /// <returns>Datos del usuario actual.</returns>
+        /// <response code="200">Datos obtenidos exitosamente.</response>
+        /// <response code="401">Token inválido o no proporcionado.</response>
         [HttpGet("me")]
         [Authorize]
+        [ProducesResponseType(typeof(UserInfoDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetCurrentUser()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -114,25 +116,28 @@ namespace ProyectoFoo.API.Controllers
         /// <summary>
         /// Actualiza el perfil del usuario autenticado actual.
         /// </summary>
-        /// <remarks>
-        /// Permite al usuario modificar sus propios datos de perfil, como nombre, apellido, etc.  
-        /// Requiere que el usuario esté autenticado (proporcione un token JWT válido).
-        /// </remarks>
-        /// <returns>
-        /// Retorna un código 200 (OK) si la actualización es exitosa.  
-        /// Retorna un código de error apropiado (por ejemplo, 400 Bad Request) si la solicitud no es válida o si ocurre un error durante la actualización.
-        /// </returns>
+        /// <param name="updateUser">Datos a actualizar.</param>
+        /// <returns>Usuario actualizado.</returns>
+        /// <response code="200">Actualización exitosa.</response>
+        /// <response code="400">Datos inválidos.</response>
+        /// <response code="401">No autenticado.</response>
+        /// <response code="404">Usuario no encontrado.</response>
+        /// <response code="500">Error interno.</response>
 
         [HttpPut("me/edit")] // Usamos "me" para indicar que el usuario actual actualiza su propio perfil
         [Authorize] // Requiere que el usuario esté autenticado
+        [ProducesResponseType(typeof(UpdateUserDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateCurrentUser([FromBody] UpdateUserDto updateUser)
         {
-            // 1. Obtener el ID del usuario autenticado desde el token JWT
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int currentUserId))
             {
                 _logger.LogWarning("No se pudo obtener el ID del usuario desde el token.");
-                return Unauthorized(); // Si no se puede obtener el ID del usuario, la autenticación falló
+                return Unauthorized(); 
             }
 
             if (!ModelState.IsValid)
@@ -142,44 +147,42 @@ namespace ProyectoFoo.API.Controllers
 
             try
             {
-                // 2. Llamar al servicio para actualizar el usuario
                 var updatedUser = await _userService.UpdateUserAsync(currentUserId, updateUser);
 
                 if (updatedUser == null)
                 {
-                    _logger.LogWarning("No se encontró el usuario con ID {currentUserId} para actualizar.", currentUserId);
-                    return NotFound(); // El usuario con ese ID no se encontró
+                    
+                    return NotFound();
                 }
 
-                // 3. Devolver una respuesta exitosa con los datos actualizados
                 return Ok(updatedUser);
             }
-            catch (Exception ex)
-            {
-                _logger.LogError("Error al actualizar el usuario con ID {UserId}: {Error}", currentUserId, ex);
+            catch (Exception)
+            {              
                 return StatusCode(500, "Ocurrió un error al actualizar el perfil. Inténtalo de nuevo más tarde.");
             }
         }
 
         /// <summary>
-        /// Actualiza la contraseña del usuario autenticado actual.
+        /// Cambia la contraseña del usuario autenticado.
         /// </summary>
-        /// <remarks>
-        /// Permite al usuario cambiar su contraseña. Requiere que el usuario esté autenticado.
-        /// </remarks>
-        /// <returns>
-        ///  Retorna un código 200 (OK) si la actualización es exitosa.
-        ///  Retorna un código de error apropiado si la solicitud no es válida.
-        /// </returns>
-        [HttpPut("me/password")] //Endpoint para actualizar únicamente la contraseña 
+        /// <param name="updatePassword">Contraseña actual y nueva.</param>
+        /// <returns>Resultado de la operación.</returns>
+        /// <response code="200">Contraseña actualizada.</response>
+        /// <response code="400">Contraseña actual incorrecta.</response>
+        /// <response code="401">No autenticado.</response>
+        /// <response code="500">Error interno.</response>
+        [HttpPut("me/password")]
         [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateCurrentUserPassword([FromBody] UpdatePasswordDto updatePassword)
         {
-            // 1. Obtener el ID del usuario autenticado
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int currentUserId))
             {
-                _logger.LogWarning("No se pudo obtener el ID del usuario desde el token para cambiar la contraseña.");
                 return Unauthorized();
             }
 
@@ -190,7 +193,6 @@ namespace ProyectoFoo.API.Controllers
 
             try
             {
-                // 3. Llamar al servicio para actualizar la contraseña
                 var result = await _userService.UpdateUserPasswordAsync(currentUserId, updatePassword);
 
                 if (result)
@@ -202,31 +204,35 @@ namespace ProyectoFoo.API.Controllers
                     return BadRequest("Error al cambiar la contraseña. Verifica tu contraseña actual.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError("Error al cambiar la contraseña del usuario con ID {UserId}: {Error}", currentUserId, ex);
                 return StatusCode(500, "Ocurrió un error al cambiar la contraseña. Inténtalo de nuevo más tarde.");
             }
         }
 
         /// <summary>
-        /// Endpoint para que un usuario autenticado solicite cambiar su dirección de correo electrónico.
-        /// Genera y envía un código de verificación a la nueva dirección.
+        /// Solicita un cambio de correo electrónico.
         /// </summary>
-        /// <param name="changeEmailRequest">Un DTO que contiene la nueva dirección de correo electrónico.</param>
-        /// <returns>Un IActionResult que indica el resultado de la solicitud.</returns>
-        [HttpPut("me/change-email")] //Endpoint para actualizar únicamente la contraseña 
+        /// <param name="changeEmailRequest">Nuevo correo electrónico.</param>
+        /// <returns>Resultado de la solicitud.</returns>
+        /// <response code="200">Código enviado al nuevo correo.</response>
+        /// <response code="400">Correo inválido o ya en uso.</response>
+        /// <response code="401">No autenticado.</response>
+        /// <response code="500">Error interno.</response>
+        [HttpPut("me/change-email")]
         [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> RequestEmailChange([FromBody] ChangeEmailRequestDto changeEmailRequest)
         {
-            // 1. Obtener el ID del usuario autenticado
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int currentUserId))
             {
                 return Unauthorized();
             }
 
-            // 2. Validar el DTO
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -234,7 +240,6 @@ namespace ProyectoFoo.API.Controllers
 
             try
             {
-                // 3. Llamar al servicio para solicitar el cambio de correo
                 var success = await _userService.RequestEmailChangeAsync(currentUserId, changeEmailRequest.NewEmail);
 
                 if (success)
@@ -246,31 +251,35 @@ namespace ProyectoFoo.API.Controllers
                     return BadRequest("Error al solicitar el cambio de correo electrónico. Inténtalo de nuevo más tarde.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError("Error al solicitar el cambio de correo electrónico del usuario con ID {currentUserId}: {ex}", currentUserId, ex);
                 return StatusCode(500, "Ocurrió un error al solicitar el cambio de correo electrónico.");
             }
         }
 
         /// <summary>
-        /// Endpoint para que un usuario autenticado confirme el cambio de su dirección de correo electrónico
-        /// proporcionando el código de verificación recibido.
+        /// Confirma el cambio de correo electrónico.
         /// </summary>
-        /// <param name="confirmEmailChange">Un DTO que contiene el código de verificación.</param>
-        /// <returns>Un IActionResult que indica el resultado de la confirmación.</returns>
+        /// <param name="confirmEmailChange">Código de verificación y nuevo correo.</param>
+        /// <returns>Resultado de la confirmación.</returns>
+        /// <response code="200">Correo actualizado.</response>
+        /// <response code="400">Código incorrecto o expirado.</response>
+        /// <response code="401">No autenticado.</response>
+        /// <response code="500">Error interno.</response>
         [HttpPost("me/confirm-email-change")]
         [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> ConfirmEmailChange([FromBody] ConfirmEmailChangeDto confirmEmailChange)
         {
-            // 1. Obtener el ID del usuario autenticado
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int currentUserId))
             {
                 return Unauthorized();
             }
 
-            // 2. Validar el DTO
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -278,7 +287,6 @@ namespace ProyectoFoo.API.Controllers
 
             try
             {
-                // 3. Llamar al servicio para confirmar el cambio de correo, usando la NewEmail del DTO
                 var success = await _userService.ConfirmEmailChangeAsync(currentUserId, confirmEmailChange.NewEmail, confirmEmailChange.VerificationCode);
 
                 if (success)
@@ -290,9 +298,8 @@ namespace ProyectoFoo.API.Controllers
                     return BadRequest("El código de verificación es inválido o ha expirado. Inténtalo de nuevo.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError("Error al confirmar el cambio de correo electrónico del usuario con ID {currentUserId}: {ex}", currentUserId, ex);
                 return StatusCode(500, "Ocurrió un error al confirmar el cambio de correo electrónico.");
             }
         }
