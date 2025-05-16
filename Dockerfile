@@ -32,7 +32,7 @@ WORKDIR /src
 
 # Publicar la aplicación
 RUN dotnet publish "src/ProyectoFoo.API/ProyectoFoo.API.csproj" \
-    -c $BUILD_CONFIGURATION \
+    -c ${BUILD_CONFIGURATION} \
     -r linux-x64 \
     --self-contained true \
     -o /app/publish
