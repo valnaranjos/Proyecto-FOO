@@ -3,6 +3,7 @@ using MediatR;
 using System.Reflection;
 using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Application.ServiceExtension;
+using ProyectoFoo.Domain.Entities;
 
 
 namespace ProyectoFoo.Application.ServiceExtension

@@ -12,6 +12,7 @@ using ProyectoFoo.Application.Features.Patients;
 using ProyectoFoo.Application.Features.Notes;
 using ProyectoFoo.Application.Features.Notes.Queries;
 using ProyectoFoo.Application.Features.Notes.Handlers;
+using System.Security.Claims;
 
 namespace ProyectoFOO.API.Controllers
 {
@@ -65,7 +66,8 @@ namespace ProyectoFOO.API.Controllers
         {
             try
             {
-                var query = new GetAllPatientsQuery();
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+                var query = new GetAllPatientsQuery(userId);
                 var response = await _mediator.Send(query);
 
                 if (response.Success)

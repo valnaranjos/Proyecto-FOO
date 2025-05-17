@@ -101,9 +101,14 @@ namespace ProyectoFoo.Domain.Entities
         public string? PreferedContact { get; set; }
 
 
-        //Notas y materiales
+        //Relaciones con notas y materiales
         public ICollection<PatientNote> Notes { get; set; } = new List<PatientNote>();
         public ICollection<PatientMaterial> Materials { get; set; } = new List<PatientMaterial>();
+
+        //Relación con Usuario (psicologo)
+        public int UserId { get; set; }
+        public Usuario User { get; set; } = null!;
+
 
 
         //Constructor por defecto
@@ -120,6 +125,13 @@ namespace ProyectoFoo.Domain.Entities
             Phone = string.Empty;
             IsEnabled = true;
         }
+
+        // Constructor con UserId
+        public Paciente(int userId) : this()
+        {
+            UserId = userId;
+        }
+
         public string CalculateAgeRange(int age)
         {
             if (Age <= 12)

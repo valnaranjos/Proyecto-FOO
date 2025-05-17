@@ -84,7 +84,9 @@ namespace ProyectoFoo.Application.Features.Users
                 surname : request.Surname.CapitalizeFirstLetter(),
                 identification: request.Identification,
                 correo: request.Email,
-                contrasena: request.Password
+                contrasena: request.Password,
+                phone: request.Phone,
+                title: request.Title
             )
             {
                 Surname = request.Surname,

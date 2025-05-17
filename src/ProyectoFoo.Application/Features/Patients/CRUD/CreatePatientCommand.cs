@@ -90,5 +90,7 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
         public string? SessionFrequency { get; set; }
 
         public string? PreferedContact { get; set; }
+
+        public int UserId { get; set; } = 0;
     }
 }

@@ -22,7 +22,7 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
 
         public async Task<CreatePatientResponse> Handle(CreatePatientCommand request, CancellationToken cancellationToken)
         {
-            var paciente = new Paciente
+            var paciente = new Paciente(request.UserId)
             {
                 Name = request.Name.CapitalizeFirstLetter(),
                 Surname = request.Surname.CapitalizeFirstLetter(),

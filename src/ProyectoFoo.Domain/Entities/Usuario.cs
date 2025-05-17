@@ -29,11 +29,11 @@ namespace ProyectoFoo.Domain.Entities
         [StringLength(100, ErrorMessage = "El correo no puede exceder los 100 caracteres.")]
         public string Email { get; set; }
 
-        [Phone(ErrorMessage ="Número de teléfono no válido.")]
-        [Range(15, int.MaxValue, ErrorMessage = "El número de identificación debe ser positivo.")]
-        public long? Phone { get; set; }
+        [Phone(ErrorMessage = "Número de teléfono no válido.")]
+        [StringLength(20, ErrorMessage = "El número de móvil debe ser positivo.")]
+        public string? Phone { get; set; }
 
-       
+
         [StringLength(100, ErrorMessage = "El nombre no puede exceder los 100 caracteres.")]
         [RegularExpression(@"^[a-zA-ZÁÉÍÓÚáéíóúÑñ\s]+$", ErrorMessage = "El título puede contener letras y espacios.")]
         public string? Title { get; set; } = string.Empty;
@@ -68,7 +68,7 @@ namespace ProyectoFoo.Domain.Entities
         }
 
         //Constructor con telefono y especialidad (titulo), ya que son opcionales.
-        public Usuario(int id, int identification, string nombre, string surname, string correo, string contrasena, long phone, string title)
+        public Usuario(int id, int identification, string nombre, string surname, string correo, string contrasena, string? phone, string? title)
         {
             Id = id;
             Identification = identification;

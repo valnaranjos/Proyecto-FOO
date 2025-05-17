@@ -1,10 +1,5 @@
 ﻿using MediatR;
 using ProyectoFoo.Application.Contracts.Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ProyectoFoo.Domain.Common.Enums;
 using ProyectoFoo.Application.ServiceExtension;
 using ProyectoFoo.Domain.Entities;
@@ -25,7 +20,10 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
         public async Task<GetAllPatientsResponse> Handle(GetAllPatientsQuery request, CancellationToken cancellationToken)
         {
             var allPatients = await _pacienteRepository.GetAllAsync();
-            var enabledPatients = allPatients.Where(p => p.IsEnabled).ToList();
+            
+            var enabledPatients = allPatients
+                .Where(p => p.IsEnabled && p.UserId == request.UserId)
+                .ToList();
 
             if (enabledPatients != null && enabledPatients.Count != 0)
             {

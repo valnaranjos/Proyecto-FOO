@@ -24,7 +24,7 @@ namespace ProyectoFoo.Shared.Models
         public string Email { get; set; } = string.Empty;
 
         /// <summary>Número de teléfono del usuario (si tiene).</summary>
-        public long? Phone { get; set; }
+        public string? Phone { get; set; }
 
         /// <summary>Título profesional o especialidad del usuario (si tiene).</summary>
         public string? Title { get; set; }

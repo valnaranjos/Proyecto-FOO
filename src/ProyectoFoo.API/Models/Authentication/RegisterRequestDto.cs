@@ -34,6 +34,10 @@ namespace ProyectoFoo.API.Models.Authentication
          ErrorMessage = "La Contraseña debe contener al menos una minúscula, una mayúscula, un número y un carácter especial.")]
         public string Password { get; set; } = string.Empty;
 
+        [Phone(ErrorMessage = "Número de teléfono no válido.")]
+        [StringLength(20, ErrorMessage = "El número de móvil debe ser positivo.")]
+        public string? Phone { get; set; }
+
         //Campo para validar la autenticación de dos pasos.
         public bool IsVerified { get; set; } = false;
     }

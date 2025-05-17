@@ -1,7 +1,5 @@
 using MediatR;
 using ProyectoFoo.Application.Contracts.Persistence;
-using ProyectoFoo.Application.Features.Notes;
-using ProyectoFoo.Shared.Models;
 
 namespace ProyectoFoo.Application.Features.Notes.Handlers
 {
