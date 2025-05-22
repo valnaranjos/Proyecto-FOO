@@ -12,7 +12,7 @@ namespace ProyectoFoo.Shared.Models
         public int Id { get; set; }
 
         /// <summary>Número de identificación del usuario.</summary>
-        public int Identification { get; set; }
+        public string Identification { get; set; } = string.Empty;
 
         /// <summary>Nombre del usuario.</summary>
         public string Name { get; set; } = string.Empty;

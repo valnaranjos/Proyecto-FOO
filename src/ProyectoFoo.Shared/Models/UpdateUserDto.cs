@@ -5,11 +5,11 @@ namespace ProyectoFoo.Shared.Models
 {
     public class UpdateUserDto
     {
-        [StringLength(50, ErrorMessage = "El nombre no puede exceder los 50 caracteres.")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre no puede exceder los 50 caracteres.")]
         [RegularExpression(@"^[a-zA-ZÁÉÍÓÚáéíóúÑñ\s]+$", ErrorMessage = "El nombre solo puede contener letras y espacios.")] 
         public string? Name { get; set; }
 
-        [StringLength(50, ErrorMessage = "El apellido no puede exceder los 50 caracteres.")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "El apellido no puede exceder los 50 caracteres.")]
         [RegularExpression(@"^[a-zA-ZÁÉÍÓÚáéíóúÑñ\s]+$", ErrorMessage = "El nombre solo puede contener letras y espacios.")] 
         public string? Surname { get; set; }
 

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Application.ServiceExtension;
+using ProyectoFoo.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -57,7 +58,7 @@ namespace ProyectoFoo.Application.Features.Login
                 }
 
                 // Actualizar la contraseña del usuario
-                user.SetPasswordHash(user.HashPassword(request.NewPassword));
+                user.SetPasswordHash(Usuario.HashPassword(request.NewPassword));
                 await _userRepository.UpdateAsync(user);
 
                 _logger.LogInformation("La contraseña fue restablecida exitosamente para el usuario con correo {Email}.", request.Email);

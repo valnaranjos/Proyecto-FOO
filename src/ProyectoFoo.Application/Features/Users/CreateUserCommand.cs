@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using ProyectoFoo.Shared.ValidationAttributes;
 using System.ComponentModel.DataAnnotations;
 
 namespace ProyectoFoo.Application.Features.Users
@@ -6,17 +7,19 @@ namespace ProyectoFoo.Application.Features.Users
     public class CreateUserCommand : IRequest<CreateUserResponse>
     {
         [Required(ErrorMessage = "El número de identificación es obligatorio.")]
-        [Range(10, int.MaxValue, ErrorMessage = "El número de identificación debe ser positivo.")]
-        public int Identification { get; set; }
+        [StringLength(20, ErrorMessage = "La identificación no puede exceder los 20 caracteres.")] 
+        [RegularExpression(@"^[a-zA-Z0-9\-]+$", ErrorMessage = "La identificación solo puede contener letras, números y guiones.")] // Nuevo: Validar formato alfanumérico
+        public string Identification { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "El nombre es obligatorio.")]
-        [StringLength(50, ErrorMessage = "El nombre no puede exceder los 50 caracteres.")]
+
+        [NotNullOrWhitespace(ErrorMessage = "El nombre es obligatorio y no puede contener solo espacios.")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre debe tener entre 2 y 50 caracteres.")]
         [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El nombre solo permite letras, acentos, la 'ñ' y espacios.")]
         public string Name { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "El apellido es obligatorio.")]
-        [StringLength(50, ErrorMessage = "El apellido no puede exceder los 50 caracteres.")]
-        [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El Apellido solo permite letras, acentos, la 'ñ' y espacios.")]
+        [NotNullOrWhitespace(ErrorMessage = "El apellido es obligatorio y no puede contener solo espacios.")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "El apellido debe tener entre 2 y 50 caracteres.")]
+        [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El apellido solo permite letras, acentos, la 'ñ' y espacios.")]
         public string Surname { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El correo electrónico es obligatorio.")]
