@@ -43,6 +43,7 @@ namespace ProyectoFoo.Infrastructure.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("varchar(100)")
                         .UseCollation("utf8_general_ci");
 
@@ -81,7 +82,8 @@ namespace ProyectoFoo.Infrastructure.Migrations
 
                     b.Property<string>("Phone")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
 
                     b.Property<string>("PreferedContact")
                         .HasColumnType("longtext");
@@ -120,7 +122,12 @@ namespace ProyectoFoo.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Pacientes");
                 });
@@ -201,8 +208,10 @@ namespace ProyectoFoo.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
-                    b.Property<int>("Identification")
-                        .HasColumnType("int");
+                    b.Property<string>("Identification")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
 
                     b.Property<bool>("IsVerified")
                         .HasColumnType("tinyint(1)");
@@ -219,8 +228,9 @@ namespace ProyectoFoo.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<long?>("Phone")
-                        .HasColumnType("bigint");
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
 
                     b.Property<string>("Surname")
                         .IsRequired()
@@ -255,6 +265,15 @@ namespace ProyectoFoo.Infrastructure.Migrations
                     b.HasIndex("Expiry");
 
                     b.ToTable("VerificationCodes");
+                });
+
+            modelBuilder.Entity("ProyectoFoo.Domain.Entities.Paciente", b =>
+                {
+                    b.HasOne("ProyectoFoo.Domain.Entities.Usuario", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ProyectoFoo.Domain.Entities.PatientMaterial", b =>

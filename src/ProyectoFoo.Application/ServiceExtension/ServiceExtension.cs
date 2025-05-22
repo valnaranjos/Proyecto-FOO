@@ -3,6 +3,7 @@ using MediatR;
 using System.Reflection;
 using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Application.ServiceExtension;
+using ProyectoFoo.Domain.Entities;
 
 
 namespace ProyectoFoo.Application.ServiceExtension
@@ -16,6 +17,7 @@ namespace ProyectoFoo.Application.ServiceExtension
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IPatientService, PatientService>();
             services.AddSingleton<IVerificationCodeService, VerificationCodeService>();
+            services.AddScoped<IVerificationFlowService, VerificationFlowService>();
             return services;
         }
     }

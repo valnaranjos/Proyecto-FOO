@@ -98,7 +98,7 @@ namespace ProyectoFoo.Application.ServiceExtension
                 return false; // La contraseña actual es incorrecta
             }
 
-            string newPasswordHash = existingUser.HashPassword(updatePassword.NewPassword);
+            string newPasswordHash = Usuario.HashPassword(updatePassword.NewPassword);
            
             existingUser.SetPasswordHash(newPasswordHash);
 

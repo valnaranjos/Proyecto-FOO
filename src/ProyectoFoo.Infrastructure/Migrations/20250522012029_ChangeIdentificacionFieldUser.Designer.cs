@@ -11,8 +11,8 @@ using ProyectoFoo.Infrastructure.Context;
 namespace ProyectoFoo.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationContextSqlServer))]
-    [Migration("20250512213401_NewFieldsPatient")]
-    partial class NewFieldsPatient
+    [Migration("20250522012029_ChangeIdentificacionFieldUser")]
+    partial class ChangeIdentificacionFieldUser
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -123,9 +123,76 @@ namespace ProyectoFoo.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("Pacientes");
+                });
+
+            modelBuilder.Entity("ProyectoFoo.Domain.Entities.PatientMaterial", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ActualizationDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("CreationDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("PatientMaterials");
+                });
+
+            modelBuilder.Entity("ProyectoFoo.Domain.Entities.PatientNote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("PatientId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PatientId");
+
+                    b.ToTable("PatientNotes");
                 });
 
             modelBuilder.Entity("ProyectoFoo.Domain.Entities.Usuario", b =>
@@ -142,8 +209,10 @@ namespace ProyectoFoo.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
-                    b.Property<int>("Identification")
-                        .HasColumnType("int");
+                    b.Property<string>("Identification")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
 
                     b.Property<bool>("IsVerified")
                         .HasColumnType("tinyint(1)");
@@ -160,8 +229,9 @@ namespace ProyectoFoo.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<long?>("Phone")
-                        .HasColumnType("bigint");
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("varchar(20)");
 
                     b.Property<string>("Surname")
                         .IsRequired()
@@ -196,6 +266,44 @@ namespace ProyectoFoo.Infrastructure.Migrations
                     b.HasIndex("Expiry");
 
                     b.ToTable("VerificationCodes");
+                });
+
+            modelBuilder.Entity("ProyectoFoo.Domain.Entities.Paciente", b =>
+                {
+                    b.HasOne("ProyectoFoo.Domain.Entities.Usuario", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ProyectoFoo.Domain.Entities.PatientMaterial", b =>
+                {
+                    b.HasOne("ProyectoFoo.Domain.Entities.Paciente", "Patient")
+                        .WithMany("Materials")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("ProyectoFoo.Domain.Entities.PatientNote", b =>
+                {
+                    b.HasOne("ProyectoFoo.Domain.Entities.Paciente", "Patient")
+                        .WithMany("Notes")
+                        .HasForeignKey("PatientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Patient");
+                });
+
+            modelBuilder.Entity("ProyectoFoo.Domain.Entities.Paciente", b =>
+                {
+                    b.Navigation("Materials");
+
+                    b.Navigation("Notes");
                 });
 #pragma warning restore 612, 618
         }

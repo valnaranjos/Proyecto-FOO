@@ -52,6 +52,13 @@ namespace ProyectoFoo.Infrastructure.Persistence
             return await _dbContext.Set<Paciente>().Where(predicate).ToListAsync();
         }
 
+        public async Task<List<Paciente>> GetPatientsByUserIdAsync(int userId)
+        {
+            return await _dbContext.Pacientes
+                                 .Where(p => p.UserId == userId) // FILTRADO CRÍTICO
+                                 .ToListAsync();
+        }
+
         public async Task<List<Paciente>> GetByModalityAsync(string modality)
         {
             // Intentamos convertir el string a un valor del enum ModalityType

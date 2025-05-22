@@ -19,10 +19,30 @@ namespace ProyectoFoo.Application.Features.Patients.Search
 
         public async Task<GetPatientByIdResponse> Handle(GetPatientByIdQuery request, CancellationToken cancellationToken)
         {
+            try 
+            { 
+
             var patient = await _pacienteRepository.GetByIdAsync(request.PatientId);
 
-            if (patient != null)
-            {
+                if (patient == null)
+                {
+                    return new GetPatientByIdResponse
+                    {
+                        Success = false,
+                        Message = "Paciente no encontrado."
+                    };
+                }
+
+                if (patient.UserId != request.UserId)
+                {
+                    return new GetPatientByIdResponse
+                    {
+                        Success = false,
+                        Message = "Paciente no encontrado o no tienes permiso para verlo."
+                    };
+                }
+
+
                 var patientDto = new PatientDTO
                 {
                     Id = patient.Id,
@@ -61,7 +81,7 @@ namespace ProyectoFoo.Application.Features.Patients.Search
                     Success = true,
                 };
             }
-            else
+            catch (Exception)
             {
                 return new GetPatientByIdResponse
                 {

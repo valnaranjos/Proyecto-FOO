@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using ProyectoFoo.Shared.ValidationAttributes;
 
 namespace ProyectoFoo.Domain.Entities
 {
@@ -10,36 +11,39 @@ namespace ProyectoFoo.Domain.Entities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+
         [Required(ErrorMessage = "El número de identificación es obligatorio.")]
-        [Range(10, int.MaxValue, ErrorMessage = "El número de identificación debe ser positivo.")]
-        public int Identification { get; set; }
+        [StringLength(20, ErrorMessage = "La identificación no puede exceder los 20 caracteres.")]
+        [RegularExpression(@"^[a-zA-Z0-9\-]+$", ErrorMessage = "La identificación solo puede contener letras, números y guiones.")]
+        public string Identification { get; set; } = string.Empty;
 
 
-        [Required(ErrorMessage = "El nombre es obligatorio.")]
-        [StringLength(50, ErrorMessage = "El nombre no puede exceder los 50 caracteres.")]
+        [NotNullOrWhitespace(ErrorMessage = "El nombre es obligatorio y no puede contener solo espacios.")] 
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre debe tener entre 2 y 50 caracteres.")]
         [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El nombre solo permite letras, acentos, la 'ñ' y espacios.")]
         public string Name { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "El apellido es obligatorio.")]
-        [StringLength(50, ErrorMessage = "El nombre no puede exceder los 50 caracteres.")]
-        [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El Apellido solo permite letras, acentos, la 'ñ' y espacios.")]
+        [NotNullOrWhitespace(ErrorMessage = "El apellido es obligatorio y no puede contener solo espacios.")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "El apellido debe tener entre 2 y 50 caracteres.")]
+        [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El nombre solo permite letras, acentos, la 'ñ' y espacios.")]
         public string Surname { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "El correo electrónico es obligatorio.")]
         [EmailAddress(ErrorMessage = "Correo no válido.")]
         [StringLength(100, ErrorMessage = "El correo no puede exceder los 100 caracteres.")]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
-        [Phone(ErrorMessage ="Número de teléfono no válido.")]
-        [Range(15, int.MaxValue, ErrorMessage = "El número de identificación debe ser positivo.")]
-        public long? Phone { get; set; }
+        [Phone(ErrorMessage = "Número de teléfono no válido.")]
+        [StringLength(20, ErrorMessage = "El número de móvil debe ser positivo.")]
+        public string? Phone { get; set; }
 
-       
+
         [StringLength(100, ErrorMessage = "El nombre no puede exceder los 100 caracteres.")]
         [RegularExpression(@"^[a-zA-ZÁÉÍÓÚáéíóúÑñ\s]+$", ErrorMessage = "El título puede contener letras y espacios.")]
         public string? Title { get; set; } = string.Empty;
 
         [Required]
-        public string PasswordHash { get; private set; }
+        public string PasswordHash { get; set; } = string.Empty;
 
         //CALCULADOS POR EL SISTEMA
         public DateTime CreatedDate { get; set; }
@@ -52,34 +56,7 @@ namespace ProyectoFoo.Domain.Entities
         {
             Email = string.Empty;
             PasswordHash = string.Empty;
-        }
-
-        //Constructor sin telefono ni especialidad (titulo), ya que son opcionales.
-        public Usuario(int id, int identification, string nombre, string surname,  string correo, string contrasena)
-        {
-            Id = id;
-            Identification = identification;
-            Name = nombre;
-            Surname = surname;
-            Email = correo;
-            PasswordHash = HashPassword(contrasena); // Guardamos el hash de la contraseña
-            CreatedDate = DateTime.Now;
-            LastAccesDate = DateTime.Now;
-        }
-
-        //Constructor con telefono y especialidad (titulo), ya que son opcionales.
-        public Usuario(int id, int identification, string nombre, string surname, string correo, string contrasena, long phone, string title)
-        {
-            Id = id;
-            Identification = identification;
-            Name = nombre;
-            Surname = surname;
-            Email = correo;
-            Phone = phone;
-            Title = title;
-            PasswordHash = HashPassword(contrasena); // Guardamos el hash de la contraseña
-            CreatedDate = DateTime.Now;
-            LastAccesDate = DateTime.Now;
+            IsVerified = false;
         }
 
         // Método para verificar la contraseña comparando el hash
@@ -95,7 +72,7 @@ namespace ProyectoFoo.Domain.Entities
         }
 
         // Método para generar el hash de la contraseña
-        public string HashPassword(string contrasena)
+        public static string HashPassword(string contrasena)
         {
             // Por simplicidad, usaremos una combinación básica
             return BCrypt.Net.BCrypt.HashPassword(contrasena);

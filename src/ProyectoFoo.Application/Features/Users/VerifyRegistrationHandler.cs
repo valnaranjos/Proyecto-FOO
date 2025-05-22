@@ -15,14 +15,14 @@ namespace ProyectoFoo.Application.Features.Users
     public class VerifyRegistrationHandler : IRequestHandler<VerifyRegistrationCommand, VerifyRegistrationResponse>
     {
         private readonly IUserRepository _userRepository;
-        private readonly IVerificationCodeService _verificationCodeService;
         private readonly ITokenService _tokenService;
         private readonly ILogger<VerifyRegistrationHandler> _logger;
+        private readonly IVerificationFlowService _verificationFlowService;
 
-        public VerifyRegistrationHandler(IUserRepository userRepository, IVerificationCodeService verificationCodeService, ITokenService tokenService, ILogger<VerifyRegistrationHandler> logger)
+        public VerifyRegistrationHandler(IUserRepository userRepository, IVerificationFlowService verificationFlowService, ITokenService tokenService, ILogger<VerifyRegistrationHandler> logger)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _verificationCodeService = verificationCodeService ?? throw new ArgumentNullException(nameof(verificationCodeService));
+            _verificationFlowService = verificationFlowService ?? throw new ArgumentNullException(nameof(verificationFlowService));
             _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -48,8 +48,8 @@ namespace ProyectoFoo.Application.Features.Users
                     };
                 }
 
-                // Validar el código de verificación
-                if (!_verificationCodeService.ValidateCode(user.Id, "registration", request.VerificationCode))
+                // Validar y eliminar el código de verificación
+                if (!_verificationFlowService.ValidateAndRemoveCode(user.Id, "registration", request.VerificationCode))
                 {
                     _logger.LogWarning("Código de verificación inválido o expirado para el usuario con correo {Email}.", request.Email);
                     return new VerifyRegistrationResponse
@@ -63,13 +63,10 @@ namespace ProyectoFoo.Application.Features.Users
                 user.IsVerified = true;
                 await _userRepository.UpdateUsuario(user);
 
-                // Eliminar el código de verificación usado
-                _verificationCodeService.RemoveCode(user.Id, "registration");
-
+          
                 // Generar un token JWT
                 var token = _tokenService.GenerateToken(user);
 
-                _logger.LogInformation("Usuario con correo {Email} verificado exitosamente.", request.Email);
                 return new VerifyRegistrationResponse
                 {
                     Success = true,

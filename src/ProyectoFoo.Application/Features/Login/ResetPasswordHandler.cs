@@ -13,18 +13,18 @@ namespace ProyectoFoo.Application.Features.Login
     public class ResetPasswordHandler : IRequestHandler<ResetPasswordCommand, ResetPasswordResponse>
     {
         private readonly IUserRepository _userRepository;
-        private readonly IVerificationCodeService _verificationCodeService;
+        private readonly IVerificationFlowService _verificationFlowService;
         private readonly ILogger<ResetPasswordHandler> _logger;
         private readonly IEmailService _emailService;
 
 
         public ResetPasswordHandler(IUserRepository userRepository,
-           IVerificationCodeService verificationCodeService,
+           IVerificationFlowService verificationFlowService,
            IEmailService emailService,
            ILogger<ResetPasswordHandler> logger)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _verificationCodeService = verificationCodeService ?? throw new ArgumentNullException(nameof(verificationCodeService));
+            _verificationFlowService = verificationFlowService ?? throw new ArgumentNullException(nameof(verificationFlowService));
             _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -45,13 +45,11 @@ namespace ProyectoFoo.Application.Features.Login
                     };
                 }
 
-                // Generar el código de verificación y enviarlo (podrías integrar con un servicio de email o SMS)
-                var code = _verificationCodeService.GenerateCode(user.Id, "password-reset");
-
-                // Aquí envia el código por correo electrónico
+                // Generar el código de verificación y enviarlo
                 string subject = "Reestablece tu contraseña";
-                string body = $"Tu código de verificación es: {code}. Este código expirará en 15 minutos.";
-                await _emailService.SendEmailAsync(user.Email, subject, body);
+                string bodyTemplate = "Tu código de verificación es: {0}. Este código expirará en 15 minutos.";
+                await _verificationFlowService.SendVerificationCodeAsync(user.Id, user.Email, "password-reset", subject, bodyTemplate);
+
 
                 _logger.LogInformation("Código de verificación enviado al usuario con correo {Email}.", request.Email);
 
