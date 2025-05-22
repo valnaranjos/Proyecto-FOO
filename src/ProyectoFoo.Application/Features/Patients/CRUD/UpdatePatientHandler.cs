@@ -17,6 +17,7 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
 
         public async Task<UpdatePatientResponse> Handle(UpdatePatientCommand request, CancellationToken cancellationToken)
         {
+            
             var patientToUpdate = await _pacienteRepository.GetByIdAsync(request.Id);
 
             if (patientToUpdate == null)

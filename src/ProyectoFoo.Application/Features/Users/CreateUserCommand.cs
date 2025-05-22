@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using ProyectoFoo.Shared.ValidationAttributes;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProyectoFoo.Application.Features.Users
 {
@@ -26,6 +27,7 @@ namespace ProyectoFoo.Application.Features.Users
         [EmailAddress(ErrorMessage = "Correo no válido.")]
         public string Email { get; set; } = string.Empty;
 
+        [Column(TypeName = "varchar(20)")]
         [Phone(ErrorMessage = "Número de teléfono no válido.")]
         [StringLength(20, ErrorMessage = "El número de móvil debe ser positivo.")]
         public string? Phone { get; set; }

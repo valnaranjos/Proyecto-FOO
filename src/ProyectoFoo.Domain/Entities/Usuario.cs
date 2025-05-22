@@ -33,6 +33,7 @@ namespace ProyectoFoo.Domain.Entities
         [StringLength(100, ErrorMessage = "El correo no puede exceder los 100 caracteres.")]
         public string Email { get; set; } = string.Empty;
 
+        [Column(TypeName = "varchar(20)")]
         [Phone(ErrorMessage = "Número de teléfono no válido.")]
         [StringLength(20, ErrorMessage = "El número de móvil debe ser positivo.")]
         public string? Phone { get; set; }
