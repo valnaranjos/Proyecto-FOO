@@ -16,25 +16,46 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
 
         public async Task<DeletePatientResponse> Handle(DeletePatientCommand request, CancellationToken cancellationToken)
         {
-            var patientToDelete = await _pacienteRepository.GetByIdAsync(request.PatientId);
-
-            if (patientToDelete == null)
+            try
             {
+                var patientToDelete = await _pacienteRepository.GetByIdAsync(request.PatientId);
+
+                if (patientToDelete == null)
+                {
+                    return new DeletePatientResponse
+                    {
+                        PatientId = request.PatientId,
+                        Success = false,
+                        Message = $"Paciente con ID {request.PatientId} no encontrado."
+                    };
+                }
+
+                if (patientToDelete.UserId != request.UserId)
+                {
+                    return new DeletePatientResponse
+                    {
+                        Success = false,
+                        Message = "No tienes permiso para eliminar este paciente."
+                    };
+                }
+
+                await _pacienteRepository.DeleteAsync(patientToDelete);
+
                 return new DeletePatientResponse
                 {
                     PatientId = request.PatientId,
-                    Success = false,
-                    Message = $"Paciente con ID {request.PatientId} no encontrado."
+                    Success = true
                 };
             }
-
-            await _pacienteRepository.DeleteAsync(patientToDelete);
-
-            return new DeletePatientResponse
+            catch (Exception ex)
             {
-                PatientId = request.PatientId,
-                Success = true
-            };
+
+                return new DeletePatientResponse
+                {
+                    Success = false,
+                    Message = $"Error al eliminar el paciente: {ex.Message}"
+                };
+            }
         }
     }
 }

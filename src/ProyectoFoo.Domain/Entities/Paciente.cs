@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using ProyectoFoo.Domain.Common.Enums;
+using ProyectoFoo.Shared.ValidationAttributes;
 
 namespace ProyectoFoo.Domain.Entities
 {
@@ -8,47 +9,53 @@ namespace ProyectoFoo.Domain.Entities
     {
         //OBLIGATORIAS
         public int Id { get; set; }
+        
 
-        [Required]
-        [StringLength(50, ErrorMessage = "El nombre de usuario no puede exceder los 50 caracteres.")]
+
+        [NotNullOrWhitespace(ErrorMessage = "El nombre es obligatorio y no puede contener solo espacios.")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre debe tener entre 2 y 50 caracteres.")]
         [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El nombre solo permite letras, acentos, la 'ñ' y espacios.")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
-        [Required]
-        [StringLength(50, ErrorMessage = "El apellido del usuario no puede exceder los 50 caracteres.")]
-        [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El Apellido solo permite letras, acentos, la 'ñ' y espacios.")]
-        public string Surname { get; set; }
+        [NotNullOrWhitespace(ErrorMessage = "El apellido es obligatorio y no puede contener solo espacios.")]
+        [StringLength(50, MinimumLength = 2, ErrorMessage = "El apellido debe tener entre 2 y 50 caracteres.")]
+        [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El apellido solo permite letras, acentos, la 'ñ' y espacios.")]
+        public string Surname { get; set; } = string.Empty;
 
-        [Required]
+
+        [Required(ErrorMessage = "La fecha de nacimiento es obligatoria.")]
+        [NotFutureDate(ErrorMessage = "La fecha de nacimiento no puede ser en el futuro.")]
         public DateTime Birthdate { get; set; }
 
 
         [Required]
-        [StringLength(30, ErrorMessage = "La nacionalidad no puede exceder los 30 caracteres.")]
-        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "La nacionalidad solo puede contener letras y espacios.")]
+        [StringLength(30, MinimumLength = 4, ErrorMessage = "La nacionalidad debe tener entre 4 y 30 caracteres.")]
+        [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "La nacionalidad solo puede contener letras, acentos, la 'ñ' y espacios.")]
         public string Nationality { get; set; }
 
         [Required]
         [StringLength(50, ErrorMessage = "El tipo de identificación no puede exceder los 50 caracteres.")]
-        [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "El tipo de identificación solo puede contener letras y espacios.")]
+        [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El tipo de identificación solo puede contener letras, acentos, la 'ñ' y espacios.")]
         public string TypeOfIdentification { get; set; }
 
-        [Required]
-        [StringLength(20, ErrorMessage = "La identificación debe tener hasta 20 dígitos.")]
-        [RegularExpression(@"^\d+$", ErrorMessage = "La identificación solo puede contener números.")]
-        public string Identification { get; set; }
+
+        [Required(ErrorMessage = "El número de identificación es obligatorio.")]
+        [StringLength(20, MinimumLength = 9, ErrorMessage = "La identificación debe tener entre 9 y 20 caracteres.")]
+        [RegularExpression(@"^[a-zA-Z0-9\-]+$", ErrorMessage = "La identificación solo puede contener letras, números y guiones.")]
+        public string Identification { get; set; } = string.Empty;
 
 
         [Required]
         public SexType Sex { get; set; }
 
 
-        [Required]
-        [EmailAddress(ErrorMessage = "Formato de correo electrónico no válido.")]
+        [Required(ErrorMessage = "El correo electrónico del paciente es obligatorio.")]
+        [EmailAddress(ErrorMessage = "Correo no válido.")]
         public string Email { get; set; }
 
-        [Required]
-        [Phone(ErrorMessage = "Formato de número de teléfono no válido.")]
+        [Required(ErrorMessage = "El número móvil del paciente es obligatorio.")]
+        [Phone(ErrorMessage = "Número de teléfono no válido.")]
+        [StringLength(20, MinimumLength =6, ErrorMessage = "El número de móvil no puede exceder los 20 caracteres, ni ser menor a 6 caracteres.")]
         public string Phone { get; set; }
 
         //CALCULADAS O AUTOMÁTICAS
@@ -102,8 +109,8 @@ namespace ProyectoFoo.Domain.Entities
 
 
         //Relaciones con notas y materiales
-        public ICollection<PatientNote> Notes { get; set; } = new List<PatientNote>();
-        public ICollection<PatientMaterial> Materials { get; set; } = new List<PatientMaterial>();
+        public ICollection<PatientNote> Notes { get; set; } = [];
+        public ICollection<PatientMaterial> Materials { get; set; } = [];
 
 
         //Relación con Usuario (psicologo)

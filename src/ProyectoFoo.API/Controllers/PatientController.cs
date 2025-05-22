@@ -144,6 +144,7 @@ namespace ProyectoFOO.API.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<CreatePatientResponse>> CreatePaciente([FromBody] CreatePatientCommand command)
         {
+
             var currentUserId = this.GetCurrentUserId();
             if (!currentUserId.HasValue)
             {
@@ -213,6 +214,14 @@ namespace ProyectoFOO.API.Controllers
         {
             try
             {
+                var userId = this.GetCurrentUserId();
+
+                if (!userId.HasValue)
+                {
+                    return Unauthorized("ID de usuario no encontrado o inválido en los claims.");
+                }
+
+
                 var query = new GetPatientByIdQuery(id);
                 var response = await _mediator.Send(query);
 
@@ -266,6 +275,12 @@ namespace ProyectoFOO.API.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdatePatient(int id, [FromBody] UpdatePatientCommand command)
         {
+            var userId = this.GetCurrentUserId(); // Usando la extensión, devuelve int?
+            if (!userId.HasValue)
+            {
+                return Unauthorized("ID de usuario no encontrado o inválido en los claims.");
+            }
+
             if (!ModelState.IsValid)
             {
                 return ValidationProblem(ModelState);
@@ -315,10 +330,18 @@ namespace ProyectoFOO.API.Controllers
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeletePatient(int id)
         {
-            var command = new DeletePatientCommand { PatientId = id };
 
             try
             {
+                var userId = this.GetCurrentUserId();
+
+                if (!userId.HasValue)
+                {
+                    return Unauthorized("ID de usuario no encontrado o inválido en los claims.");
+                }
+
+                var command = new DeletePatientCommand { PatientId = id };
+
                 var response = await _mediator.Send(command);
 
                 if (response.Success)

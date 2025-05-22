@@ -11,23 +11,41 @@ using System.Threading.Tasks;
 using ProyectoFoo.Domain.Common.Enums;
 namespace ProyectoFoo.Application.Features.Patients.CRUD
 {
-    public class CreatePatientHandler : IRequestHandler<CreatePatientCommand, CreatePatientResponse>
+    public class CreatePatientHandler(IPatientRepository pacienteRepository) : IRequestHandler<CreatePatientCommand, CreatePatientResponse>
     {
-        private readonly IPatientRepository _pacienteRepository;
-
-        public CreatePatientHandler(IPatientRepository pacienteRepository)
-        {
-            _pacienteRepository = pacienteRepository ?? throw new ArgumentNullException(nameof(pacienteRepository));
-        }
+        private readonly IPatientRepository _patientRepository = pacienteRepository ?? throw new ArgumentNullException(nameof(pacienteRepository));
 
         public async Task<CreatePatientResponse> Handle(CreatePatientCommand request, CancellationToken cancellationToken)
         {
+            var existingPatientByIdentification = await _patientRepository.GetByIdentificationAsync(request.Identification);
+            if (existingPatientByIdentification != null)
+            {
+              
+                return new CreatePatientResponse
+                {
+                    Success = false,
+                    Message = $"Ya existe un paciente con la identificación {request.Identification}."
+                };
+            }
+
+            
+            var existingPatientByEmail = await _patientRepository.GetByEmailAsync(request.Email);
+            if (existingPatientByEmail != null)
+            {
+              
+                return new CreatePatientResponse
+                {
+                    Success = false,
+                    Message = $"Ya existe un paciente registrado con el correo electrónico {request.Email}."
+                };
+            }
+
             var paciente = new Paciente(request.UserId)
             {
                 Name = request.Name.CapitalizeFirstLetter(),
                 Surname = request.Surname.CapitalizeFirstLetter(),
                 Birthdate = request.Birthdate,
-                TypeOfIdentification = request.TypeOfIdentification.ToUpper(),                
+                TypeOfIdentification = request.TypeOfIdentification.ToUpper(),
                 Identification = request.Identification,
                 Sex = request.Sex,
                 Email = request.Email,
@@ -48,15 +66,14 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
                 SessionFrequency = request.SessionFrequency,
                 PreferedContact = request.PreferedContact,
                 UserId = request.UserId,
+                AdmissionDate = DateTime.UtcNow
             };
-
-            paciente.AdmissionDate = DateTime.UtcNow;
             paciente.Age = paciente.CalculateAge(paciente.Birthdate);
             paciente.AgeRange = paciente.CalculateAgeRange(paciente.Age);
 
             try
             {
-                var newPaciente = await _pacienteRepository.AddAsync(paciente);
+                var newPaciente = await _patientRepository.AddAsync(paciente);
 
                 var patientDto = new PatientDTO
                 {

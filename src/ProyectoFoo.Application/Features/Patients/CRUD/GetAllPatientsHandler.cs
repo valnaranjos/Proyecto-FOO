@@ -19,15 +19,11 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
 
         public async Task<GetAllPatientsResponse> Handle(GetAllPatientsQuery request, CancellationToken cancellationToken)
         {
-            var allPatients = await _pacienteRepository.GetAllAsync();
-            
-            var enabledPatients = allPatients
-                .Where(p => p.IsEnabled && p.UserId == request.UserId)
-                .ToList();
-
-            if (enabledPatients != null && enabledPatients.Count != 0)
+            try
             {
-                var patientsDto = enabledPatients.Select(patient => new PatientDTO
+                var allPatients = await _pacienteRepository.GetPatientsByUserIdAsync(request.UserId);
+            
+                var patientsDto = allPatients.Select(patient  => new PatientDTO
                {
                     Id = patient.Id,
                     Name = patient.Name.CapitalizeFirstLetter(),
@@ -64,7 +60,7 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
                     Success = true
                 };
             }
-            else
+            catch (Exception)
             {
                 return new GetAllPatientsResponse
                 {

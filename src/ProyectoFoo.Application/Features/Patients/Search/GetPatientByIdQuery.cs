@@ -10,6 +10,7 @@ namespace ProyectoFoo.Application.Features.Patients.Search
     public class GetPatientByIdQuery : IRequest<GetPatientByIdResponse>
     {
         public int PatientId { get; set; }
+        public int UserId { get; set; }
 
         public string? TypeOfIdentification { get; set; }
 

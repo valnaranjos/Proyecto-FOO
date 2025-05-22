@@ -24,7 +24,6 @@ namespace ProyectoFoo.Application.Features.Users
 
         [Required(ErrorMessage = "El correo electrónico es obligatorio.")]
         [EmailAddress(ErrorMessage = "Correo no válido.")]
-        [StringLength(100, ErrorMessage = "El correo no puede exceder los 100 caracteres.")]
         public string Email { get; set; } = string.Empty;
 
         [Phone(ErrorMessage = "Número de teléfono no válido.")]
