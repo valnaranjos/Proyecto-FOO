@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProyectoFoo.Shared.Models
 {
@@ -17,6 +18,7 @@ namespace ProyectoFoo.Shared.Models
         [StringLength(100, ErrorMessage = "El correo no puede exceder los 100 caracteres.")]
         public string? Email { get; set; }
 
+        [Column(TypeName = "varchar(20)")]
         [Phone(ErrorMessage = "Número de teléfono no válido.")]
         [StringLength(20, ErrorMessage = "El número de móvil debe ser positivo.")]
         public string? Phone { get; set; }
