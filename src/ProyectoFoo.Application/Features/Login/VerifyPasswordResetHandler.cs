@@ -17,16 +17,16 @@ namespace ProyectoFoo.Application.Features.Login
     public class VerifyPasswordResetHandler : IRequestHandler<VerifyPasswordResetCommand, VerifyPasswordResponse>
     {
         private readonly IUserRepository _userRepository;
-        private readonly IVerificationCodeService _verificationCodeService;
+        private readonly IVerificationFlowService _verificationFlowService;
         private readonly ILogger<VerifyPasswordResetHandler> _logger;
 
         public VerifyPasswordResetHandler(
             IUserRepository userRepository,
-            IVerificationCodeService verificationCodeService,
+             IVerificationFlowService verificationFlowService,
             ILogger<VerifyPasswordResetHandler> logger)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
-            _verificationCodeService = verificationCodeService ?? throw new ArgumentNullException(nameof(verificationCodeService));
+            _verificationFlowService = verificationFlowService ?? throw new ArgumentNullException(nameof(verificationFlowService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -47,7 +47,7 @@ namespace ProyectoFoo.Application.Features.Login
                 }
 
                 // Validar el código de verificación
-                if (!_verificationCodeService.ValidateCode(user.Id, "password-reset", request.Code))
+                if (!_verificationFlowService.ValidateAndRemoveCode(user.Id, "password-reset", request.Code))
                 {
                     return new VerifyPasswordResponse
                     {
@@ -59,9 +59,6 @@ namespace ProyectoFoo.Application.Features.Login
                 // Actualizar la contraseña del usuario
                 user.SetPasswordHash(user.HashPassword(request.NewPassword));
                 await _userRepository.UpdateAsync(user);
-
-                // Eliminar el código de verificación usado
-                _verificationCodeService.RemoveCode(user.Id, "password-reset");
 
                 _logger.LogInformation("La contraseña fue restablecida exitosamente para el usuario con correo {Email}.", request.Email);
                 return new VerifyPasswordResponse

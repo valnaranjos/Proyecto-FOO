@@ -120,7 +120,7 @@ namespace ProyectoFoo.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
-                    b.Property<int>("UserId")
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -267,9 +267,7 @@ namespace ProyectoFoo.Infrastructure.Migrations
                 {
                     b.HasOne("ProyectoFoo.Domain.Entities.Usuario", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });

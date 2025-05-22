@@ -47,6 +47,7 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
                 SessionDuration = request.SessionDuration,
                 SessionFrequency = request.SessionFrequency,
                 PreferedContact = request.PreferedContact,
+                UserId = request.UserId,
             };
 
             paciente.AdmissionDate = DateTime.UtcNow;

@@ -33,7 +33,7 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
         [Required(ErrorMessage = "El tipo de identifiación es obligatorio.")]
         [StringLength(50, ErrorMessage = "El tipo de identificación no puede exceder los 50 caracteres.")]
         [RegularExpression(@"^[a-zA-Z\s]+$", ErrorMessage = "El tipo de identificación solo puede contener letras y espacios.")]
-        public string TypeOfIdentification {get; set;} = string.Empty;
+        public string TypeOfIdentification { get; set; } = string.Empty;
 
         [Required]
         [StringLength(20, ErrorMessage = "La identificación debe tener hasta 20 dígitos.")]
@@ -44,7 +44,7 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
         [Required(ErrorMessage = "El sexo es obligatorio.")]
         public SexType Sex { get; set; } = SexType.Masculino;
 
-       
+
         [Required(ErrorMessage = "El correo electrónico es obligatorio.")]
         [EmailAddress(ErrorMessage = "Formato de correo electrónico no válido.")]
         public string Email { get; set; } = string.Empty;
@@ -91,6 +91,8 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
 
         public string? PreferedContact { get; set; }
 
-        public int UserId { get; set; } = 0;
+        // **NUEVA PROPIEDAD: Para el UserId del psicólogo autenticado**
+        // Este valor NO viene del JSON, sino del controlador
+        public int UserId { get; set; } 
     }
 }

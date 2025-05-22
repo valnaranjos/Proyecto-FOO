@@ -105,8 +105,9 @@ namespace ProyectoFoo.Domain.Entities
         public ICollection<PatientNote> Notes { get; set; } = new List<PatientNote>();
         public ICollection<PatientMaterial> Materials { get; set; } = new List<PatientMaterial>();
 
+
         //Relación con Usuario (psicologo)
-        public int UserId { get; set; }
+        public int? UserId { get; set; }
         public Usuario User { get; set; } = null!;
 
 

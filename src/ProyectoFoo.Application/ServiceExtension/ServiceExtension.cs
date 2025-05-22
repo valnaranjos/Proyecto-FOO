@@ -17,6 +17,7 @@ namespace ProyectoFoo.Application.ServiceExtension
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IPatientService, PatientService>();
             services.AddSingleton<IVerificationCodeService, VerificationCodeService>();
+            services.AddScoped<IVerificationFlowService, VerificationFlowService>();
             return services;
         }
     }

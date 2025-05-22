@@ -13,6 +13,7 @@ using ProyectoFoo.Application.Features.Notes;
 using ProyectoFoo.Application.Features.Notes.Queries;
 using ProyectoFoo.Application.Features.Notes.Handlers;
 using System.Security.Claims;
+using ProyectoFoo.API.Helpers;
 
 namespace ProyectoFOO.API.Controllers
 {
@@ -58,16 +59,29 @@ namespace ProyectoFOO.API.Controllers
         /// </remarks>
         ///  /// <returns>Un objeto <see cref="GetAllPatientsResponse"/> que contiene la lista de pacientes y el estado de la operación.</returns>
         /// <response code="200">Devuelve la lista de pacientes y el estado de la operación.</response>
+        /// <response code="401">Usuario no autenticado o ID de usuario no disponible.</response>
         /// <response code="500">Se produjo un error inesperado en el servidor al intentar obtener los pacientes.</response>     
         [HttpGet("pacientes")]
         [ProducesResponseType(typeof(GetAllPatientsResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<GetAllPatientsResponse>> GetPacientes()
         {
             try
             {
-                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-                var query = new GetAllPatientsQuery(userId);
+                var currentUserId = this.GetCurrentUserId();
+
+                if (!currentUserId.HasValue)
+                {
+                    return Unauthorized(new ProblemDetails
+                    {
+                        Title = "No autorizado",
+                        Detail = "El ID del usuario no pudo ser extraído del token de autenticación. Asegúrese de que su token es válido y contiene un ID de usuario numérico.",
+                        Status = StatusCodes.Status401Unauthorized
+                    });
+                }
+
+                var query = new GetAllPatientsQuery(currentUserId.Value);
                 var response = await _mediator.Send(query);
 
                 if (response.Success)
@@ -76,7 +90,12 @@ namespace ProyectoFOO.API.Controllers
                 }
                 else
                 {
-                    return StatusCode(500, response.Message ?? "Error al obtener todos los pacientes.");
+                    return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
+                    {
+                        Title = "Error al obtener pacientes",
+                        Detail = response.Message ?? "Se produjo un error al procesar la solicitud.",
+                        Status = StatusCodes.Status500InternalServerError
+                    });
                 }
             }
             catch (Exception)
@@ -114,16 +133,29 @@ namespace ProyectoFOO.API.Controllers
         /// /// <returns>Una respuesta <see cref="CreatePatientResponse"/> que incluye el ID del paciente creado si la operación fue exitosa.</returns>
         /// <response code="201">Paciente creado exitosamente. Devuelve la ubicación del nuevo recurso y <see cref="CreatePatientResponse"/>.</response>
         /// <response code="400">La solicitud es incorrecta (ej. datos de validación fallidos). Ver <see cref="ValidationProblemDetails"/> o <see cref="ProblemDetails"/>.</response>
+        /// <response code="401">Usuario no autenticado o ID de usuario no disponible.</response>
         /// <response code="409">Ya existe un paciente con el número de identificación proporcionado. Ver <see cref="ProblemDetails"/>.</response>
         /// <response code="500">Error interno del servidor. Ver <see cref="ProblemDetails"/>.</response>
         [HttpPost]
         [ProducesResponseType(typeof(CreatePatientResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<CreatePatientResponse>> CreatePaciente([FromBody] CreatePatientCommand command)
         {
-            var response = await _mediator.Send(command);
+            var currentUserId = this.GetCurrentUserId();
+            if (!currentUserId.HasValue)
+            {
+                return Unauthorized(new ProblemDetails
+                {
+                    Title = "No autorizado",
+                    Detail = "El ID del usuario no pudo ser extraído del token de autenticación. Asegúrese de que su token es válido y contiene un ID de usuario numérico.",
+                    Status = StatusCodes.Status401Unauthorized
+                });
+            }
+
+            command.UserId = currentUserId.Value;
 
             if (!ModelState.IsValid)
             {
@@ -132,6 +164,7 @@ namespace ProyectoFOO.API.Controllers
 
             try
             {
+                var response = await _mediator.Send(command);
                 if (response.Success)
                 {
                     return CreatedAtAction(nameof(GetPatientById), new { id = response.PatientId }, response);
