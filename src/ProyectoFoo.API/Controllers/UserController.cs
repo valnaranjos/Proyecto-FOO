@@ -33,7 +33,7 @@ namespace ProyectoFoo.API.Controllers
         /// <response code="400">Error de validación o usuario ya existente.</response>
         /// <response code="500">Error interno del servidor.</response>
         [HttpPost("register")]
-        [ProducesResponseType(typeof(RegisterRequestDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(CreateUserResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(string), StatusCodes.Status500InternalServerError)]
         
@@ -52,8 +52,8 @@ namespace ProyectoFoo.API.Controllers
 
                 if (response.Success)
                 {
-                  
-                    return Ok(response.User);
+
+                    return StatusCode(StatusCodes.Status201Created, response.User);
                 }
                 else
                 {

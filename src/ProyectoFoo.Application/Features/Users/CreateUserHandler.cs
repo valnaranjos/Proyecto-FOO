@@ -10,29 +10,20 @@ namespace ProyectoFoo.Application.Features.Users
     /// <summary>
     /// Manejador para el comando de creación de usuario.
     /// </summary>
-    public class CreateUserHandler : IRequestHandler<CreateUserCommand, CreateUserResponse>
+    /// <remarks>
+    /// Constructor del manejador de creación de usuario.
+    /// </remarks>
+    /// <param name="usuarioRepository">Repositorio para la entidad Usuario.</param>
+    /// <param name="emailService">Servicio para el envío de correos electrónicos.</param>
+    /// <param name="verificationCodeRepository">Repositorio para la entidad VerificationCode.</param>
+    ///  <param name="logger">Servicio de logging.</param>
+    public class CreateUserHandler(IUserRepository usuarioRepository, IEmailService emailService,
+       IVerificationCodeService verificationCodeService, ILogger<CreateUserHandler> logger) : IRequestHandler<CreateUserCommand, CreateUserResponse>
     {
-        private readonly IUserRepository _usuarioRepository;
-        private readonly IVerificationCodeService _verificationCodeService;
-        private readonly IEmailService _emailService;
-        private readonly ILogger<CreateUserHandler> _logger;
-
-
-        /// <summary>
-        /// Constructor del manejador de creación de usuario.
-        /// </summary>
-        /// <param name="usuarioRepository">Repositorio para la entidad Usuario.</param>
-        /// <param name="emailService">Servicio para el envío de correos electrónicos.</param>
-        /// <param name="verificationCodeRepository">Repositorio para la entidad VerificationCode.</param>
-        ///  <param name="logger">Servicio de logging.</param>
-        public CreateUserHandler(IUserRepository usuarioRepository, IEmailService emailService,
-           IVerificationCodeService verificationCodeService, ILogger<CreateUserHandler> logger)
-        {
-            _usuarioRepository = usuarioRepository ?? throw new ArgumentNullException(nameof(usuarioRepository));
-            _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
-            _verificationCodeService = verificationCodeService ?? throw new ArgumentNullException(nameof(verificationCodeService));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+        private readonly IUserRepository _usuarioRepository = usuarioRepository ?? throw new ArgumentNullException(nameof(usuarioRepository));
+        private readonly IVerificationCodeService _verificationCodeService = verificationCodeService ?? throw new ArgumentNullException(nameof(verificationCodeService));
+        private readonly IEmailService _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
+        private readonly ILogger<CreateUserHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         /// <summary>
         /// Maneja el comando de creación de usuario.
@@ -51,7 +42,6 @@ namespace ProyectoFoo.Application.Features.Users
                     // El usuario existe pero no está verificado, generar un nuevo código
                     string newVerificationCode = _verificationCodeService.GenerateCode(existingUserWithEmail.Id, "registration");
 
-                    // Enviar correo electrónico de verificación
                     string subject = "Reenvío de verificación de registro";
                     string body = $"Tu código de verificación es: {newVerificationCode}. Este código expirará en 15 minutos.";
 
@@ -80,7 +70,7 @@ namespace ProyectoFoo.Application.Features.Users
 
             
             var existingUserWithIdentification = await _usuarioRepository.GetByIdentificationAsync(request.Identification);
-            if (existingUserWithIdentification != null)
+            if (existingUserWithIdentification != null && existingUserWithIdentification.IsVerified)
             {
                 return new CreateUserResponse
                 {
@@ -105,7 +95,6 @@ namespace ProyectoFoo.Application.Features.Users
                 IsVerified = false
             };
 
-            // Agregar el nuevo usuario a la base de datos
             var createdUser = await _usuarioRepository.AddAsync(newUser);
 
             if (createdUser == null)
@@ -113,22 +102,18 @@ namespace ProyectoFoo.Application.Features.Users
                 return new CreateUserResponse { Success = false, Message = "Error al registrar el usuario." };
             }
 
-            // Generar código de verificación
             string verificationCode = _verificationCodeService.GenerateCode(createdUser.Id, "registration");
 
             try
             {
-                // Enviar correo electrónico de verificación
                 string subject = "Verificación de registro";
                 string body = $"Tu código de verificación es: {verificationCode}. Este código expirará en 15 minutos.";
                 await _emailService.SendEmailAsync(createdUser.Email, subject, body);
                 _logger.LogInformation("Correo de verificación enviado a {email}", createdUser.Email);
                 return new CreateUserResponse { Success = true, Message = "Cuenta creada. Por favor, verifica tu correo electrónico." };
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError(ex, "Error al enviar el correo de verificación al usuario con ID {createdUser.Id} y correo {createdUser.Email}.", createdUser.Id, createdUser.Email);
-                // Revertir la creación del usuario
                 try
                 {
                     await _usuarioRepository.DeleteAsync(createdUser);
