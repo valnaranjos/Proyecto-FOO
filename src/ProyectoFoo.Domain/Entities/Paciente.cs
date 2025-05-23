@@ -98,7 +98,7 @@ namespace ProyectoFoo.Domain.Entities
 
         //Organizacion y seguimiento
 
-        public DateTime? SessionDay { get; set; }
+        public string? SessionDay { get; set; }
 
         public ModalityType? Modality { get; set; }
         public int? SessionDuration { get; set; }

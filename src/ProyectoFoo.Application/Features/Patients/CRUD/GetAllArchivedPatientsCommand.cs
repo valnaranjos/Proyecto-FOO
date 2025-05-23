@@ -9,6 +9,11 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
 {
     public class GetAllArchivedPatientsCommand : IRequest<List<PatientDTO>>
     {
+        public int UserId { get; }
 
+        public GetAllArchivedPatientsCommand(int userId)
+        {
+            UserId = userId;
+        }
     }
 }

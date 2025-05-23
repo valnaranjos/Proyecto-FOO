@@ -9,18 +9,13 @@ using System.Threading.Tasks;
 
 namespace ProyectoFoo.Application.Features.Patients.CRUD
 {
-    public  class GetAllArchivedPatientsHandler : IRequestHandler<GetAllArchivedPatientsCommand, List<PatientDTO>>
+    public  class GetAllArchivedPatientsHandler(IPatientRepository patientRepository) : IRequestHandler<GetAllArchivedPatientsCommand, List<PatientDTO>>
     {
-        private readonly IPatientRepository _patientRepository;
-
-        public GetAllArchivedPatientsHandler(IPatientRepository patientRepository)
-        {
-            _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
-        }
+        private readonly IPatientRepository _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
 
         public async Task<List<PatientDTO>> Handle(GetAllArchivedPatientsCommand request, CancellationToken cancellationToken)
         {
-            var allPatients = await _patientRepository.GetAllAsync();
+            var allPatients = await _patientRepository.GetPatientsByUserIdAsync(request.UserId);
             var disabledPatients = allPatients.Where(p => !p.IsEnabled).ToList();
 
             return disabledPatients.Select(patientEntity => new PatientDTO

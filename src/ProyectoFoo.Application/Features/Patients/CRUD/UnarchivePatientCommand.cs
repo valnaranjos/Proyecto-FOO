@@ -10,10 +10,12 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
     public class UnarchivePatientCommand : IRequest<UnarchivePatientResponse>
     {
         public int PatientId { get; }
+        public int UserId { get; set; }
 
-        public UnarchivePatientCommand(int patientId)
+        public UnarchivePatientCommand(int patientId, int userId)
         {
             PatientId = patientId;
+            UserId = userId;
         }
     }
 }

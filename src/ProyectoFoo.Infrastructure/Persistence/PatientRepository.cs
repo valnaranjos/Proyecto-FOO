@@ -41,7 +41,7 @@ namespace ProyectoFoo.Infrastructure.Persistence
         public async Task<List<Paciente>> GetByNationalityAsync(string nationality)
         {
             string nacionalidadBuscada = nationality.Trim();
-            var pacientes = await  _dbContext.Pacientes
+            var pacientes = await _dbContext.Pacientes
                 .Where(p => EF.Functions.Like(p.Nationality, nacionalidadBuscada))
                 .ToListAsync();
             return pacientes;
@@ -55,13 +55,17 @@ namespace ProyectoFoo.Infrastructure.Persistence
         public async Task<List<Paciente>> GetPatientsByUserIdAsync(int userId)
         {
             return await _dbContext.Pacientes
-                                 .Where(p => p.UserId == userId) // FILTRADO CRÍTICO
+                                 .Where(p => p.UserId == userId)
                                  .ToListAsync();
         }
 
+        public async Task<Paciente?> GetByIdAndUserAsync(int patientId, int userId)
+        {
+            return await _dbContext.Pacientes
+                            .FirstOrDefaultAsync(p => p.Id == patientId && p.UserId == userId);
+        }
         public async Task<List<Paciente>> GetByModalityAsync(string modality)
         {
-            // Intentamos convertir el string a un valor del enum ModalityType
             if (!Enum.TryParse(modality, true, out ModalityType parsedModality))
             {
                 throw new ArgumentException("La modalidad proporcionada no es válida.");

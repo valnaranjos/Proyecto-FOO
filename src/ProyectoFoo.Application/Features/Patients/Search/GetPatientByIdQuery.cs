@@ -14,9 +14,10 @@ namespace ProyectoFoo.Application.Features.Patients.Search
 
         public string? TypeOfIdentification { get; set; }
 
-        public GetPatientByIdQuery(int patientId)
+        public GetPatientByIdQuery(int patientId, int userId)
         {
             PatientId = patientId;
+            UserId = userId;
         }
     }
 }

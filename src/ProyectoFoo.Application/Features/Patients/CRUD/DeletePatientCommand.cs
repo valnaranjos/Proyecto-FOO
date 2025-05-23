@@ -8,5 +8,9 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
         [Required(ErrorMessage = "El ID del paciente es obligatorio para la eliminación.")]
         public int PatientId { get; set; }
         public int UserId { get; set; }
+
+        public DeletePatientCommand()
+        {
+        }
     }
 }

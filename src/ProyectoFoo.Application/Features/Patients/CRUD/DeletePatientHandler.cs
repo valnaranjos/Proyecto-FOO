@@ -18,7 +18,7 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
         {
             try
             {
-                var patientToDelete = await _pacienteRepository.GetByIdAsync(request.PatientId);
+                var patientToDelete = await _pacienteRepository.GetByIdAndUserAsync(request.PatientId, request.UserId);
 
                 if (patientToDelete == null)
                 {

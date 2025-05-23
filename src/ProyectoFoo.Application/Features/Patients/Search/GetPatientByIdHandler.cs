@@ -22,7 +22,7 @@ namespace ProyectoFoo.Application.Features.Patients.Search
             try 
             { 
 
-            var patient = await _pacienteRepository.GetByIdAsync(request.PatientId);
+            var patient = await _pacienteRepository.GetByIdAndUserAsync(request.PatientId, request.UserId);
 
                 if (patient == null)
                 {

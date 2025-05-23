@@ -10,10 +10,12 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
     public class ArchivePatientCommand : IRequest<ArchivePatientResponse>
     {
         public int Id { get; set; }
+        public int UserId { get; set; }
 
-        public ArchivePatientCommand(int id)
+        public ArchivePatientCommand(int id, int userId)
         {
             Id = id;
+            UserId = userId;
         }
     }
 }

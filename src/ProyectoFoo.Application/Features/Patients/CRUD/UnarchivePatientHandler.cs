@@ -20,7 +20,7 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
 
         public async Task<UnarchivePatientResponse> Handle(UnarchivePatientCommand request, CancellationToken cancellationToken)
         {
-            var patient = await _patientRepository.GetByIdAsync(request.PatientId);
+            var patient = await _patientRepository.GetByIdAndUserAsync(request.PatientId, request.UserId);
 
             if (patient == null)
             {

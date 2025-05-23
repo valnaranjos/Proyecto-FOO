@@ -6,26 +6,21 @@ using System.Threading.Tasks;
 
 namespace ProyectoFoo.Application.Features.Patients.CRUD
 {
-    public class UpdatePatientHandler : IRequestHandler<UpdatePatientCommand, UpdatePatientResponse>
+    public class UpdatePatientHandler(IPatientRepository pacienteRepository) : IRequestHandler<UpdatePatientCommand, UpdatePatientResponse>
     {
-        private readonly IPatientRepository _pacienteRepository;
-
-        public UpdatePatientHandler(IPatientRepository pacienteRepository)
-        {
-            _pacienteRepository = pacienteRepository ?? throw new ArgumentNullException(nameof(pacienteRepository));
-        }
+        private readonly IPatientRepository _pacienteRepository = pacienteRepository ?? throw new ArgumentNullException(nameof(pacienteRepository));
 
         public async Task<UpdatePatientResponse> Handle(UpdatePatientCommand request, CancellationToken cancellationToken)
         {
             
-            var patientToUpdate = await _pacienteRepository.GetByIdAsync(request.Id);
+            var patientToUpdate = await _pacienteRepository.GetByIdAndUserAsync(request.Id, request.UserId);
 
             if (patientToUpdate == null)
             {
                 return new UpdatePatientResponse
                 {
                     Success = false,
-                    Message = $"Paciente con ID {request.Id} no encontrado."
+                    Message = $"Paciente con ID {request.Id} no encontrado o no tienes permiso para editarlo."
                 };
             }
 
@@ -61,7 +56,7 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD
             if (!string.IsNullOrEmpty(request.PatientEvolution)) patientToUpdate.PatientEvolution = request.PatientEvolution;
 
             //Organización y seguimiento
-            if (request.SessionDay.HasValue) patientToUpdate.SessionDay = request.SessionDay.Value;
+            if (!string.IsNullOrEmpty(request.SessionDay)) patientToUpdate.SessionDay = request.SessionDay;
             if (request.Modality.HasValue) patientToUpdate.Modality = request.Modality.Value;
             if (request.SessionDuration.HasValue) patientToUpdate.SessionDuration = request.SessionDuration.Value;
             if (!string.IsNullOrEmpty(request.SessionFrequency)) patientToUpdate.SessionFrequency = request.SessionFrequency;

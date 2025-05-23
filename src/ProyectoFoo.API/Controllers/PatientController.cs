@@ -222,7 +222,7 @@ namespace ProyectoFOO.API.Controllers
                 }
 
 
-                var query = new GetPatientByIdQuery(id);
+                var query = new GetPatientByIdQuery(id, userId.Value);
                 var response = await _mediator.Send(query);
 
                 if (response.Success && response.Patient != null)
@@ -275,7 +275,7 @@ namespace ProyectoFOO.API.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdatePatient(int id, [FromBody] UpdatePatientCommand command)
         {
-            var userId = this.GetCurrentUserId(); // Usando la extensión, devuelve int?
+            var userId = this.GetCurrentUserId();
             if (!userId.HasValue)
             {
                 return Unauthorized("ID de usuario no encontrado o inválido en los claims.");
@@ -287,6 +287,7 @@ namespace ProyectoFOO.API.Controllers
             }
 
             command.Id = id;
+            command.UserId = userId.Value;
 
             try
             {
@@ -340,7 +341,7 @@ namespace ProyectoFOO.API.Controllers
                     return Unauthorized("ID de usuario no encontrado o inválido en los claims.");
                 }
 
-                var command = new DeletePatientCommand { PatientId = id };
+                var command = new DeletePatientCommand { PatientId = id, UserId = userId.Value };
 
                 var response = await _mediator.Send(command);
 
@@ -389,7 +390,14 @@ namespace ProyectoFOO.API.Controllers
         {
             try
             {
-                var command = new ArchivePatientCommand(id);
+                var userId = this.GetCurrentUserId();
+
+                if (!userId.HasValue)
+                {
+                    return Unauthorized("ID de usuario no encontrado o inválido en los claims.");
+                }
+
+                var command = new ArchivePatientCommand(id, userId.Value);
                 var response = await _mediator.Send(command);
 
                 if (response.Success)
@@ -423,7 +431,13 @@ namespace ProyectoFOO.API.Controllers
         {
             try
             {
-                var command = new UnarchivePatientCommand(id);
+                var userId = this.GetCurrentUserId();
+
+                if (!userId.HasValue)
+                {
+                    return Unauthorized("ID de usuario no encontrado o inválido en los claims.");
+                }
+                var command = new UnarchivePatientCommand(id, userId.Value);
                 var response = await _mediator.Send(command);
 
                 if (response.Success)
@@ -458,7 +472,14 @@ namespace ProyectoFOO.API.Controllers
         {
             try
             {
-                var query = new GetAllArchivedPatientsCommand();
+                var userId = this.GetCurrentUserId();
+
+                if (!userId.HasValue)
+                {
+                    return Unauthorized("ID de usuario no encontrado o inválido en los claims.");
+                }
+
+                var query = new GetAllArchivedPatientsCommand(userId.Value);
                 var response = await _mediator.Send(query);
                 return Ok(response);
             }
@@ -529,7 +550,7 @@ namespace ProyectoFOO.API.Controllers
         }
 
 
-
+        /*
         /// <summary>
         /// Obtiene todo el material asociado a un paciente específico.
         /// </summary>
@@ -554,7 +575,7 @@ namespace ProyectoFOO.API.Controllers
                     return Ok(response);
                 }
 
-                var patientExists = await _mediator.Send(new GetPatientByIdQuery(patientId));
+                var patientExists = await _mediator.Send(new GetPatientByIdQuery(patientId, ));
                 if (patientExists == null)
                 {
                     return NotFound($"No se encontró el paciente con ID: {patientId}");
@@ -567,7 +588,7 @@ namespace ProyectoFOO.API.Controllers
                 return Problem(detail: "Error inesperado al obtener los materiales del paciente.", statusCode: StatusCodes.Status500InternalServerError, title: "Error Interno");
             }
         }
-
+        */
 
         /// <summary>
         /// Obtiene un material específico por su ID para un paciente específico.
