@@ -34,13 +34,11 @@ namespace ProyectoFoo.Application.Features.Users
         {
             var user = await _userRepository.GetByIdAsync(request.UserId);
 
-            if (user == null)
-                throw new Exception("Usuario no encontrado.");
-
-            return new UserInfoDto
+            return user == null
+                ? throw new Exception("Usuario no encontrado.")
+                : new UserInfoDto
             {
                 Id = user.Id,
-                Identification = user.Identification,
                 Name = user.Name,
                 Surname = user.Surname,
                 Email = user.Email,

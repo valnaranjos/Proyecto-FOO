@@ -21,19 +21,10 @@ namespace ProyectoFoo.Infrastructure.Persistence
         {
             return await _dbContext.Usuarios.FindAsync(id);
         }
-        public async Task<bool> ExistsAsync(string identification)
-        {
-            return await _dbContext.Usuarios.AnyAsync(u => u.Identification == identification);
-        }
-
+       
         public async Task UpdateUsuario(Usuario usuario)
         {
             await UpdateAsync(usuario);
-        }
-
-        public async Task<Usuario?> GetByIdentificationAsync(string identification)
-        {
-            return await _dbContext.Usuarios.FirstOrDefaultAsync(u => u.Identification == identification);
-        }
+        }        
     }
 }

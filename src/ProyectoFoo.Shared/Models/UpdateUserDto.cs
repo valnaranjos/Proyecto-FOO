@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using ProyectoFoo.Shared.ValidationAttributes;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -19,7 +20,7 @@ namespace ProyectoFoo.Shared.Models
         public string? Email { get; set; }
 
         [Column(TypeName = "varchar(20)")]
-        [Phone(ErrorMessage = "Número de teléfono no válido.")]
+        [OptionalPhone(ErrorMessage = "Número de móvil no válido.")]
         [StringLength(20, ErrorMessage = "El número de móvil debe ser positivo.")]
         public string? Phone { get; set; }
 

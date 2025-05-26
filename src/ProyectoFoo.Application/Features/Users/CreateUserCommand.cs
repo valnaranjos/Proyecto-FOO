@@ -7,17 +7,13 @@ namespace ProyectoFoo.Application.Features.Users
 {
     public class CreateUserCommand : IRequest<CreateUserResponse>
     {
-        [Required(ErrorMessage = "El número de identificación es obligatorio.")]
-        [StringLength(20, ErrorMessage = "La identificación no puede exceder los 20 caracteres.")] 
-        [RegularExpression(@"^[a-zA-Z0-9\-]+$", ErrorMessage = "La identificación solo puede contener letras, números y guiones.")] // Nuevo: Validar formato alfanumérico
-        public string Identification { get; set; } = string.Empty;
-
-
+        [Required(ErrorMessage = "El nombre es obligatorio.")]
         [NotNullOrWhitespace(ErrorMessage = "El nombre es obligatorio y no puede contener solo espacios.")]
         [StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre debe tener entre 2 y 50 caracteres.")]
         [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El nombre solo permite letras, acentos, la 'ñ' y espacios.")]
         public string Name { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "El appelido es obligatorio.")]
         [NotNullOrWhitespace(ErrorMessage = "El apellido es obligatorio y no puede contener solo espacios.")]
         [StringLength(50, MinimumLength = 2, ErrorMessage = "El apellido debe tener entre 2 y 50 caracteres.")]
         [RegularExpression(@"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$", ErrorMessage = "El apellido solo permite letras, acentos, la 'ñ' y espacios.")]
@@ -28,7 +24,7 @@ namespace ProyectoFoo.Application.Features.Users
         public string Email { get; set; } = string.Empty;
 
         [Column(TypeName = "varchar(20)")]
-        [Phone(ErrorMessage = "Número de teléfono no válido.")]
+        [OptionalPhone(ErrorMessage = "Número de móvil no válido.")]
         [StringLength(20, ErrorMessage = "El número de móvil debe ser positivo.")]
         public string? Phone { get; set; }
 

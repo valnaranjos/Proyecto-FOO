@@ -68,28 +68,16 @@ namespace ProyectoFoo.Application.Features.Users
                 }
             }
 
-            
-            var existingUserWithIdentification = await _usuarioRepository.GetByIdentificationAsync(request.Identification);
-            if (existingUserWithIdentification != null && existingUserWithIdentification.IsVerified)
-            {
-                return new CreateUserResponse
-                {
-                    Success = false,
-                    Message = $"Ya existe un usuario con la identificación {request.Identification}. Por favor, usa una identificación diferente."
-                };
-            }
+           
 
-
-            // Si no existe un usuario con ese correo ni identificacion, proceder con la creación normal
+            // Si no existe un usuario con ese correo proceder con la creación normal
             var newUser = new Usuario
             {
                 Name = request.Name.CapitalizeFirstLetter(),
                 Surname = request.Surname.CapitalizeFirstLetter(),
-                Identification = request.Identification,
                 Email = request.Email,
                 PasswordHash = Usuario.HashPassword(request.Password),
                 Phone = request.Phone,
-                Title = request.Title,
                 CreatedDate = DateTime.UtcNow,
                 LastAccesDate = DateTime.UtcNow,
                 IsVerified = false
