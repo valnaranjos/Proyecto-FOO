@@ -1,13 +1,13 @@
 ﻿using MediatR;
 using ProyectoFoo.Application.Contracts.Persistence;
-using ProyectoFoo.Shared.Models;
+using ProyectoFoo.Shared.Models.PatientMaterial;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProyectoFoo.Application.Features.PatientMaterials
+namespace ProyectoFoo.Application.Features.PatientMaterials.Read
 {
     public class GetPatientMaterialByIdHandler(IPatientMaterialRepository pacienteMaterialRepository, IPatientRepository pacienteRepository) : IRequestHandler<GetPatientMaterialByIdQuery, PatientMaterialDto>
     {
@@ -34,8 +34,8 @@ namespace ProyectoFoo.Application.Features.PatientMaterials
             {
                 Id = material.Id,
                 Title = material.Title,
-                Date = material.Date,
-                Content = material.Content
+                CreationDate = material.Date,
+                Content = material.Content ?? string.Empty
             };
 
             return materialDto;

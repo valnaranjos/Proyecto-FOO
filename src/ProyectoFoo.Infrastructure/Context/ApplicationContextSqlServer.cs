@@ -14,7 +14,6 @@ namespace ProyectoFoo.Infrastructure.Context
         {
         }
 
-        //Entidades
         public DbSet<Paciente> Pacientes { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<VerificationCode> VerificationCodes { get; set; }
@@ -23,11 +22,8 @@ namespace ProyectoFoo.Infrastructure.Context
 
         public DbSet<PatientNote> PatientNotes { get; set; }
 
-
-        //Modelo a crear
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //Aquí se puede mappear las entidades a la base de datos a gusto...
 
             base.OnModelCreating(modelBuilder);
 
@@ -35,29 +31,28 @@ namespace ProyectoFoo.Infrastructure.Context
             {
                 entity.Property(e => e.Email)
                       .HasColumnType("varchar(100)")
-                      .UseCollation("utf8_general_ci");  //Case-INSENSITIVE para busquedas por email.
+                      .UseCollation("utf8_general_ci");
             });
 
             modelBuilder.Entity<VerificationCode>()
-            .HasKey(vc => new { vc.UserId, vc.Code, vc.Purpose }); // Clave primaria compuesta del codigo de verificación (necesaria, ya que no tiene ID como las otras entidades)
+            .HasKey(vc => new { vc.UserId, vc.Code, vc.Purpose });
 
             modelBuilder.Entity<VerificationCode>()
             .HasIndex(vc => vc.Expiry);
 
             modelBuilder.Entity<PatientMaterial>()
-            .HasOne(n => n.Patient)
-            .WithMany(p => p.Materials)
-            .HasForeignKey(n => n.PatientId)
-            .OnDelete(DeleteBehavior.Cascade); // Elimina los materiales si se elimina el paciente
+            .HasOne(p => p.Patient)
+            .WithMany(m => m.Materials)
+            .HasForeignKey(p => p.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<PatientNote>()
-            .HasOne(n => n.Patient)
-            .WithMany(p => p.Notes)
-            .HasForeignKey(n => n.PatientId)
-            .OnDelete(DeleteBehavior.Cascade); // Elimina las notas si se elimina el paciente
+            .HasOne(p => p.Patient)
+            .WithMany(n => n.Notes)
+            .HasForeignKey(p => p.PatientId)
+            .OnDelete(DeleteBehavior.Cascade);
         }
 
-        //Configuracion de la base de datos
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);

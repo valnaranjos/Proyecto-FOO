@@ -6,7 +6,6 @@ using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Application.Features.Patients.Search;
 using ProyectoFoo.Application.Features.Patients.Filters;
 using ProyectoFoo.Application.Features.Patients.CRUD;
-using ProyectoFoo.Shared.Models;
 using ProyectoFoo.Application.Features.PatientMaterials;
 using ProyectoFoo.Application.Features.Patients;
 using ProyectoFoo.Application.Features.Notes;
@@ -14,6 +13,16 @@ using ProyectoFoo.Application.Features.Notes.Queries;
 using ProyectoFoo.Application.Features.Notes.Handlers;
 using System.Security.Claims;
 using ProyectoFoo.API.Helpers;
+using ProyectoFoo.Shared.Models.PatientMaterial;
+using ProyectoFoo.Application.Features.PatientMaterials.Create;
+using ProyectoFoo.Application.Features.PatientMaterials.Update;
+using ProyectoFoo.Application.Features.Patients.CRUD.Create;
+using ProyectoFoo.Application.Features.Patients.CRUD.Update;
+using ProyectoFoo.Application.Features.Patients.Archive;
+using ProyectoFoo.Application.Features.Patients.CRUD.Delete;
+using ProyectoFoo.Application.Features.Patients.Unarchive;
+using ProyectoFoo.Application.Features.PatientMaterials.Delete;
+using ProyectoFoo.Application.Features.Patients.CRUD.Read;
 
 namespace ProyectoFOO.API.Controllers
 {
@@ -498,41 +507,38 @@ namespace ProyectoFOO.API.Controllers
         /// Crea un nuevo material para un paciente específico.
         /// </summary>
         /// <param name="patientId">Identificador único del paciente.</param>
-        /// <param name="createPacienteMaterialDto">Datos para la creación del material.</param>
+        /// <param name="command">Datos para la creación del material.</param>
         /// <returns>Un ActionResult que indica el resultado de la creación.</returns>
         /// <response code="201">Retorna el material recién creado.</response>
         /// <response code="400">Si la petición no es válida.</response>
         /// <response code="404">Si el paciente especificado no existe.</response>
-        ///  /// <response code="500">Error interno del servidor.</response>
+        /// <response code="500">Error interno del servidor.</response>
         [HttpPost("{patientId}/materials")]
-        [ProducesResponseType(typeof(CreatePatientMaterialResponse), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(PatientMaterialDto), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<CreatePatientMaterialResponse>> CreatePatientMaterial(
+        public async Task<ActionResult<PatientMaterialDto>> CreatePatientMaterial(
             [FromRoute] int patientId,
-            [FromBody] CreatePatientMaterialDto createPacienteMaterialDto)
+            [FromBody] CreatePatientMaterialCommand command)
         {
-            if (createPacienteMaterialDto == null || !ModelState.IsValid)
+
+            if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return ValidationProblem(ModelState);
             }
 
             try
             {
-                var command = new CreatePatientMaterialCommand
-                {
-                    PatientId = patientId,
-                    Material = createPacienteMaterialDto
-                };
+                command.PatientId = patientId;
 
                 var response = await _mediator.Send(command);
 
                 if (response.Success)
                 {
                     return CreatedAtAction(nameof(GetPatientMaterialById),
-                        new { patientId, materialId = response.PatientMaterial.Id },
-                        response);
+                 new { patientId = response.Material.PatientId, patientMaterialId = response.Material.Id },
+                response.Material); 
                 }
 
                 if (response.Message.Contains("No se encontró el paciente"))
@@ -544,13 +550,12 @@ namespace ProyectoFOO.API.Controllers
             }
             catch (Exception)
             {
-                // Loggear ex
                 return Problem(detail: "Error inesperado al crear material para el paciente.", statusCode: StatusCodes.Status500InternalServerError, title: "Error Interno");
             }
         }
 
 
-        /*
+        
         /// <summary>
         /// Obtiene todo el material asociado a un paciente específico.
         /// </summary>
@@ -563,23 +568,36 @@ namespace ProyectoFOO.API.Controllers
         [ProducesResponseType(typeof(List<PatientMaterialDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<List<PatientMaterialDto>>> GetAllPatientMaterials([FromRoute] int patientId)
+        public async Task<ActionResult<List<PatientMaterialDto>>> GetAllPatientMaterials(
+            [FromRoute] int patientId)
         {
             try
             {
-                var query = new GetAllPatientMaterialsCommand { PatientId = patientId };
+                var currentUserId = this.GetCurrentUserId();
+
+                if (!currentUserId.HasValue)
+                {
+                    return Unauthorized(new ProblemDetails
+                    {
+                        Title = "No autorizado",
+                        Detail = "El ID del usuario no pudo ser extraído del token de autenticación. Asegúrese de que su token es válido y contiene un ID de usuario numérico.",
+                        Status = StatusCodes.Status401Unauthorized
+                    });
+                }
+
+                var patientExists = await _mediator.Send(new GetPatientByIdQuery(patientId, currentUserId.Value));
+                if (patientExists == null)
+                {
+                    return NotFound($"No se encontró el paciente con ID: {patientId}");
+                }
+
+                var query = new GetAllPatientMaterialsQuery { PatientId = patientId };
                 var response = await _mediator.Send(query);
 
                 if (response != null && response.Count > 0)
                 {
                     return Ok(response);
-                }
-
-                var patientExists = await _mediator.Send(new GetPatientByIdQuery(patientId, ));
-                if (patientExists == null)
-                {
-                    return NotFound($"No se encontró el paciente con ID: {patientId}");
-                }
+                }               
 
                 return Ok(new List<PatientMaterialDto>());
             }
@@ -588,7 +606,6 @@ namespace ProyectoFOO.API.Controllers
                 return Problem(detail: "Error inesperado al obtener los materiales del paciente.", statusCode: StatusCodes.Status500InternalServerError, title: "Error Interno");
             }
         }
-        */
 
         /// <summary>
         /// Obtiene un material específico por su ID para un paciente específico.
@@ -603,7 +620,9 @@ namespace ProyectoFOO.API.Controllers
         [ProducesResponseType(typeof(PatientMaterialDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<PatientMaterialDto>> GetPatientMaterialById([FromRoute] int patientId, [FromRoute] int materialId)
+        public async Task<ActionResult<PatientMaterialDto>> GetPatientMaterialById(
+            [FromRoute] int patientId, 
+            [FromRoute] int materialId)
         {
             try
             {
@@ -693,11 +712,13 @@ namespace ProyectoFOO.API.Controllers
         /// <param name="materialId">Identificador único del material a eliminar.</param>
         /// <returns>No devuelve contenido en caso de éxito.</returns>
         /// <response code="204">Si el material fue eliminado exitosamente.</response>
+        /// <response code="401">Si el usuario no está autorizado.</response>
         /// <response code="404">Si el paciente o el material no existen.</response>
         /// <response code="500">Error interno del servidor.</response>
         [HttpDelete("{patientId}/materials/{materialId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> DeletePatientMaterial(
         [FromRoute] int patientId,
@@ -705,6 +726,18 @@ namespace ProyectoFOO.API.Controllers
         {
             try
             {
+                var currentUserId = this.GetCurrentUserId();
+
+                if (!currentUserId.HasValue)
+                {
+                    return Unauthorized(new ProblemDetails
+                    {
+                        Title = "No autorizado",
+                        Detail = "El ID del usuario no pudo ser extraído del token de autenticación.",
+                        Status = StatusCodes.Status401Unauthorized
+                    });
+                }
+
                 var command = new DeletePatientMaterialCommand
                 {
                     PatientId = patientId,
@@ -938,6 +971,9 @@ namespace ProyectoFOO.API.Controllers
                 return BadRequest(response.Message);
             }
         }
+
+
+        /*
         /// <summary>
         /// Crea una nueva nota para un paciente.
         /// </summary>
@@ -1063,5 +1099,6 @@ namespace ProyectoFOO.API.Controllers
 
             return NoContent();
         }
+        */
     }
 }
