@@ -93,12 +93,11 @@ options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
 // Configurar CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
+    options.AddPolicy("FrontendOrigins", policy =>
     {
         policy.WithOrigins(
             "http://localhost:3000",
-            "https://insight-twya.onrender.com",
-            "https://insight-three-ruddy.vercel.app/"
+            "https://insight-twya.onrender.com"
         )
         .AllowAnyMethod()
         .AllowAnyHeader()
@@ -124,11 +123,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 var app = builder.Build();
 
 
+// Habilitar Swagger en todos los entornos
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Insight API");
-    c.RoutePrefix = string.Empty;
+    c.RoutePrefix = string.Empty; // Para mostrar Swagger en la raíz
 });
 
 
@@ -151,8 +151,8 @@ catch (Exception ex)
 // Middleware
 app.UseCors("FrontendOrigins");
 app.UseHttpsRedirection();
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseAuthentication(); // Agrega autenticación
+app.UseAuthorization(); // Agrega JWT Bearer
 app.MapControllers(); 
 
 app.Run();
