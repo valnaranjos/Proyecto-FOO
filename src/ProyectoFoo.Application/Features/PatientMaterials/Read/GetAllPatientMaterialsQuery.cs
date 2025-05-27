@@ -1,10 +1,5 @@
 ﻿using MediatR;
-using ProyectoFoo.Shared.Models.PatientMaterial;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using ProyectoFoo.Shared.Models;
 
 namespace ProyectoFoo.Application.Features.PatientMaterials.Read
 {

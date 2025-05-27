@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using System.ComponentModel.DataAnnotations;
 
-namespace ProyectoFoo.Application.Features.Patients.CRUD
+namespace ProyectoFoo.Application.Features.Patients.CRUD.Delete
 {
     public class DeletePatientCommand : IRequest<DeletePatientResponse>
     {

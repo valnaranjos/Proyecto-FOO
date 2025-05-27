@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProyectoFoo.Application.Features.Users
+namespace ProyectoFoo.Application.Features.Users.CRUD
 {
     /// <summary>
     /// DTO para recibir la información necesaria para actualizar la contraseña de un usuario.

@@ -1,4 +1,4 @@
-﻿using ProyectoFoo.Shared.Models.PatientMaterial;
+﻿using ProyectoFoo.Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ namespace ProyectoFoo.Application.Features.PatientMaterials.Create
         public bool Success { get; set; }
         public string Message { get; set; } = string.Empty;
         public int PatientMaterialId { get; set; }
-        public required PatientMaterialDto Material { get; set; }
+        public  PatientMaterialDto? Material { get; set; }
 
     }
 }

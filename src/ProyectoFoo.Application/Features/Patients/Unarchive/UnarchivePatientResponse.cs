@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProyectoFoo.Application.Features.Patients.CRUD
+namespace ProyectoFoo.Application.Features.Patients.Unarchive
 {
     public class UnarchivePatientResponse
     {

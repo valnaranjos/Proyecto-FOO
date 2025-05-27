@@ -1,12 +1,7 @@
 ﻿using MediatR;
 using ProyectoFoo.Application.Contracts.Persistence;
-using ProyectoFoo.Domain;
-using ProyectoFoo.Shared;
 using ProyectoFoo.Shared.Models;
-using System;
-using ProyectoFoo.Application.Features.Patients.CRUD;
 using ProyectoFoo.Domain.Entities;
-using ProyectoFoo.Shared.Models.PatientMaterial;
 
 namespace ProyectoFoo.Application.Features.PatientMaterials.Create
 {
@@ -36,6 +31,7 @@ namespace ProyectoFoo.Application.Features.PatientMaterials.Create
                     };
                 }
 
+                /*
                 // Validar la fecha de la sesión (no anterior a la actual)
                 if (request.Date < DateTime.UtcNow.Date)
                 {
@@ -44,7 +40,7 @@ namespace ProyectoFoo.Application.Features.PatientMaterials.Create
                         Success = false,
                         Message = "La fecha de la sesión no puede ser anterior a la fecha actual."
                     };
-                }
+                }*/
 
                 var patientMaterialEntity = new PatientMaterial
                 {
@@ -76,7 +72,7 @@ namespace ProyectoFoo.Application.Features.PatientMaterials.Create
                             Id = newPacienteMaterialEntity.Id,
                             PatientId = newPacienteMaterialEntity.PatientId,
                             Title = newPacienteMaterialEntity.Title,
-                            Content = newPacienteMaterialEntity.Content,
+                            Content = newPacienteMaterialEntity.Content ?? string.Empty,
                             CreationDate = newPacienteMaterialEntity.CreationDate
                         }
                     };

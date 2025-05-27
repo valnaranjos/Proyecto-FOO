@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Domain.Services;
-using ProyectoFoo.Shared.Models;
 using ProyectoFoo.API.Models.Authentication;
+using ProyectoFoo.Shared.Models.User;
+using ProyectoFoo.Application.Features.Users.CRUD;
 
 
 namespace ProyectoFoo.API.Controllers

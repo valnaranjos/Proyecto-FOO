@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using ProyectoFoo.Domain.Common.Enums;
-namespace ProyectoFoo.Application.Features.Patients.CRUD
+namespace ProyectoFoo.Application.Features.Patients.CRUD.Create
 {
     public class CreatePatientHandler(IPatientRepository pacienteRepository) : IRequestHandler<CreatePatientCommand, CreatePatientResponse>
     {

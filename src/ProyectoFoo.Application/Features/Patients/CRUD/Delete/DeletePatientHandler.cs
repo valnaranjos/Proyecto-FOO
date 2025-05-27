@@ -3,7 +3,7 @@ using ProyectoFoo.Application.Contracts.Persistence;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ProyectoFoo.Application.Features.Patients.CRUD
+namespace ProyectoFoo.Application.Features.Patients.CRUD.Delete
 {
     public class DeletePatientHandler : IRequestHandler<DeletePatientCommand, DeletePatientResponse>
     {

@@ -1,13 +1,13 @@
 ﻿using MediatR;
 using ProyectoFoo.Application.Contracts.Persistence;
-using ProyectoFoo.Shared.Models;
+using ProyectoFoo.Shared.Models.User;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ProyectoFoo.Application.Features.Users
+namespace ProyectoFoo.Application.Features.Users.CRUD
 {
     public class GetCurrentUserHandler : IRequestHandler<GetCurrentUserCommand, UserInfoDto>
     {

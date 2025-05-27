@@ -3,7 +3,7 @@ using ProyectoFoo.Shared.ValidationAttributes;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ProyectoFoo.Application.Features.Users
+namespace ProyectoFoo.Application.Features.Users.CRUD
 {
     public class CreateUserCommand : IRequest<CreateUserResponse>
     {

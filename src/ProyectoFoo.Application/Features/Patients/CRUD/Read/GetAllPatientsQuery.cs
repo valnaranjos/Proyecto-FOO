@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using System.Collections.Generic;
 
-namespace ProyectoFoo.Application.Features.Patients.CRUD
+namespace ProyectoFoo.Application.Features.Patients.CRUD.Read
 {
     public class GetAllPatientsQuery : IRequest<GetAllPatientsResponse>
     {

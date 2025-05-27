@@ -1,6 +1,6 @@
 ﻿using ProyectoFoo.Domain.Entities;
 
-namespace ProyectoFoo.Application.Features.Users
+namespace ProyectoFoo.Application.Features.Users.CRUD
 {
     public class CreateUserResponse
     {

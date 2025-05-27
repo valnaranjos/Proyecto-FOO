@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using ProyectoFoo.Application.Contracts.Persistence;
+using ProyectoFoo.Application.Features.Notes.Delete;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,15 +42,19 @@ namespace ProyectoFoo.Application.Features.PatientMaterials.Delete
             try
             {
                 await _patientMaterialRepository.DeleteAsync(existingMaterial);
-                response.Success = true;
+                return new DeletePatientMaterialResponse
+                {
+                    Success = true,
+                    Message = "Nota eliminada correctamente."
+                };
             }
             catch (Exception ex)
             {
-                response.Success = false;
-                response.Message = $"Error al eliminar el material del paciente: {ex.Message}";
+                return new DeletePatientMaterialResponse {
+                    Success = false,
+                    Message = $"Error al eliminar el material del paciente: {ex.Message}",
+                };
             }
-
-            return response;
         }
     }
 }

@@ -5,7 +5,7 @@ using ProyectoFoo.Application.ServiceExtension;
 using ProyectoFoo.Domain.Entities;
 using System.Xml.Linq;
 
-namespace ProyectoFoo.Application.Features.Users
+namespace ProyectoFoo.Application.Features.Users.CRUD
 {
     /// <summary>
     /// Manejador para el comando de creación de usuario.

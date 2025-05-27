@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using ProyectoFoo.Application.Contracts.Persistence;
-using ProyectoFoo.Application.Features.Users;
+using ProyectoFoo.Application.Features.Users.CRUD;
 using ProyectoFoo.Domain.Entities;
-using ProyectoFoo.Shared.Models;
+using ProyectoFoo.Shared.Models.User;
 
 namespace ProyectoFoo.Application.ServiceExtension
 {
@@ -49,10 +49,9 @@ namespace ProyectoFoo.Application.ServiceExtension
 
             if (existingUser is null)
             {
-                return null; // El usuario no existe
+                return null; 
             }
 
-            // Actualizar solo las propiedades permitidas desde el DTO, si no son nulos.
             if (updateUser.Name != null)
             {
                 existingUser.Name = updateUser.Name.CapitalizeFirstLetter();

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 using ProyectoFoo.Domain.Common.Enums;
 using ProyectoFoo.Shared.ValidationAttributes;
-namespace ProyectoFoo.Application.Features.Patients.CRUD
+namespace ProyectoFoo.Application.Features.Patients.CRUD.Create
 {
     public class CreatePatientCommand : IRequest<CreatePatientResponse>
     {

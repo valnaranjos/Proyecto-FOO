@@ -6,7 +6,7 @@ using ProyectoFoo.Domain.Entities;
 
 
 
-namespace ProyectoFoo.Application.Features.Patients.CRUD
+namespace ProyectoFoo.Application.Features.Patients.CRUD.Read
 {
     public class GetAllPatientsHandler : IRequestHandler<GetAllPatientsQuery, GetAllPatientsResponse>
     {
