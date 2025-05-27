@@ -125,8 +125,8 @@ namespace ProyectoFoo.Domain.Entities
             Name = string.Empty;
             Surname = string.Empty;
             Nationality = string.Empty;
-            Sex = SexType.Masculino; // Valor por defecto
-            Modality = ModalityType.Presencial; // Valor por defecto
+            Sex = SexType.Masculino;
+            Modality = ModalityType.Presencial;
             Identification = string.Empty;
             TypeOfIdentification = string.Empty;
             Email = string.Empty;

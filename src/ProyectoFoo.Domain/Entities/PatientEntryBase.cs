@@ -16,7 +16,7 @@ namespace ProyectoFoo.Domain.Entities
 
         [ForeignKey("Patient")]
         public int PatientId { get; set; }
-        public required Paciente Patient { get; set; }
+        public  Paciente? Patient { get; set; }
 
         [Required(ErrorMessage = "El título del material es obligatorio.")]
         [StringLength(200, ErrorMessage = "El título del material no puede exceder los 200 caracteres.")]
