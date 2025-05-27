@@ -149,7 +149,7 @@ catch (Exception ex)
 
 
 // Middleware
-app.UseCors("AllowFrontend");
+app.UseCors("FrontendOrigins");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
