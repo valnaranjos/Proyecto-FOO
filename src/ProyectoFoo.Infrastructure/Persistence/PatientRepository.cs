@@ -5,18 +5,48 @@ using ProyectoFoo.Domain.Common.Enums;
 using ProyectoFoo.Domain.Entities;
 using ProyectoFoo.Infrastructure.Context;
 using System.Linq.Expressions;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ProyectoFoo.Infrastructure.Persistence
 {
-    public class PatientRepository : BaseRepository<Paciente>, IPatientRepository
+    public class PatientRepository(ApplicationContextSqlServer dbContext) : BaseRepository<Paciente>(dbContext), IPatientRepository
     {
 
         //Como hereda de BaseRepository, no es necesario implementar los métodos dque hereda, los demás sí.
 
-        private new readonly ApplicationContextSqlServer _dbContext;
+        private new readonly ApplicationContextSqlServer _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
 
+        public async Task<List<Paciente>> SearchAsync(
+        string? fullName,
+        string? identification,
+        string? email,
+        string? nationality,
+        SexType? sexType,
+        ModalityType? modality,
+        string? ageRange
+  )
+        {
+            IQueryable<Paciente> query = _dbContext.Pacientes;
 
-        public PatientRepository(ApplicationContextSqlServer dbContext) : base(dbContext) => _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            if (!string.IsNullOrWhiteSpace(fullName))
+                query = query.Where(p =>
+                    (p.Name + " " + p.Surname).Contains(fullName, StringComparison.CurrentCultureIgnoreCase));
+            if (!string.IsNullOrWhiteSpace(identification))
+                query = query.Where(p => p.Identification.Contains(identification));
+            if (!string.IsNullOrWhiteSpace(email))
+                query = query.Where(p => p.Email.Contains(email));
+            if (!string.IsNullOrWhiteSpace(nationality))
+                query = query.Where(p => p.Nationality.Contains(nationality));
+            if (sexType.HasValue)
+                query = query.Where(p => p.Sex == sexType.Value);
+            if (modality.HasValue)
+                query = query.Where(p => p.Modality == modality.Value);
+
+            if (!string.IsNullOrWhiteSpace(ageRange))
+                query = query.Where(p => p.AgeRange == ageRange);
+
+            return await query.ToListAsync();
+        }
 
         public async Task<Paciente?> GetByEmailAsync(string email)
         {

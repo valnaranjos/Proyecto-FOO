@@ -77,7 +77,7 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD.Create
 
         public string? FailedActs { get; set; }
 
-        public string? Interconsulation { get; set; }
+        public string? Interconsultation { get; set; }
 
         public string? PatientEvolution { get; set; }
 

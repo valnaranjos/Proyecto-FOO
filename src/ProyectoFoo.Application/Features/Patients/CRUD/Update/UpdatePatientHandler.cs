@@ -52,7 +52,7 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD.Update
             if (!string.IsNullOrEmpty(request.ProfesionalObservations)) patientToUpdate.ProfesionalObservations = request.ProfesionalObservations;
             if (!string.IsNullOrEmpty(request.KeyWords)) patientToUpdate.KeyWords = request.KeyWords;
             if (!string.IsNullOrEmpty(request.FailedActs)) patientToUpdate.FailedActs = request.FailedActs;
-            if (!string.IsNullOrEmpty(request.Interconsulation)) patientToUpdate.Interconsulation = request.Interconsulation;
+            if (!string.IsNullOrEmpty(request.Interconsulation)) patientToUpdate.Interconsultation = request.Interconsulation;
             if (!string.IsNullOrEmpty(request.PatientEvolution)) patientToUpdate.PatientEvolution = request.PatientEvolution;
 
             //Organización y seguimiento

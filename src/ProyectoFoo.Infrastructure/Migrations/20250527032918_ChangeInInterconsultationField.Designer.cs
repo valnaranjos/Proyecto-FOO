@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ProyectoFoo.Infrastructure.Context;
 
@@ -10,9 +11,11 @@ using ProyectoFoo.Infrastructure.Context;
 namespace ProyectoFoo.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationContextSqlServer))]
-    partial class ApplicationContextSqlServerModelSnapshot : ModelSnapshot
+    [Migration("20250527032918_ChangeInInterconsultationField")]
+    partial class ChangeInInterconsultationField
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

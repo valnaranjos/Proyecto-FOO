@@ -45,7 +45,7 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD.Read
                     ProfesionalObservations = patient.ProfesionalObservations,
                     KeyWords = patient.KeyWords,
                     FailedActs = patient.FailedActs,
-                    Interconsulation = patient.Interconsulation,
+                    Interconsulation = patient.Interconsultation,
                     PatientEvolution = patient.PatientEvolution,
                     SessionDay = patient.SessionDay,
                     Modality = patient.Modality,

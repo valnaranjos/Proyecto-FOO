@@ -23,6 +23,16 @@ namespace ProyectoFoo.Application.Contracts.Persistence
 
 
         //BUSQUEDAS
+
+        Task<List<Paciente>> SearchAsync(
+        string? fullName,
+        string? identification,
+        string? email,
+        string? nationality,
+        SexType? sexType,
+        ModalityType? modality,
+        string? ageRange
+        );
         Task<Paciente?> GetByEmailAsync(string email);
 
         Task<Paciente?> GetByIdentificationAsync(string identification);

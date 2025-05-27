@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authorization;
 using MediatR;
 using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Application.Features.Patients.Search;
-using ProyectoFoo.Application.Features.Patients.Filters;
 using ProyectoFoo.Application.Features.Patients;
 using ProyectoFoo.API.Helpers;
 using ProyectoFoo.Application.Features.PatientMaterials.Create;
@@ -22,6 +21,7 @@ using ProyectoFoo.Application.Features.Notes.Create;
 using ProyectoFoo.Application.Features.Notes.Read;
 using ProyectoFoo.Application.Features.Notes.Update;
 using ProyectoFoo.Application.Features.Notes.Delete;
+using ProyectoFoo.Domain.Common.Enums;
 
 namespace ProyectoFOO.API.Controllers
 {
@@ -183,7 +183,7 @@ namespace ProyectoFOO.API.Controllers
                     return BadRequest(new ProblemDetails { Title = "Error al crear el paciente", Detail = response.Message });
                 }
             }
-            catch (DbUpdateException) // Captura excepciones relacionadas con la base de datos
+            catch (DbUpdateException)
             {
                 return Conflict(new ProblemDetails
                 {
@@ -432,7 +432,7 @@ namespace ProyectoFOO.API.Controllers
         /// <response code="404">No se encontró el paciente o no estaba archivado.</response>
         /// <response code="500">Error interno del servidor.</response>
         [HttpPut("pacientes/{id}/unarchive")]
-        [ProducesResponseType(typeof(ArchivePatientResponse), StatusCodes.Status200OK)] // Asumiendo que Unarchive usa el mismo tipo de respuesta
+        [ProducesResponseType(typeof(ArchivePatientResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ArchivePatientResponse>> UnarchivePaciente(int id)
@@ -536,7 +536,7 @@ namespace ProyectoFOO.API.Controllers
                 if (response.Success)
                 {
                     return CreatedAtAction(nameof(GetPatientMaterialById),
-                 new { patientId = response.Material.PatientId, patientMaterialId = response.Material.Id },
+                 new { patientId = response.Material.PatientId, MaterialId = response.Material.Id },
                 response.Material);
                 }
 
@@ -791,7 +791,7 @@ namespace ProyectoFOO.API.Controllers
                 if (response.Success)
                 {
                     return CreatedAtAction(nameof(GetPatientNoteById),
-                     new { patientId = response.Note.PatientId, patientNoteId = response.Note.Id },
+                     new { patientId = response.Note.PatientId, noteId = response.Note.Id },
                     response.Note);
                 }
 
@@ -862,7 +862,7 @@ namespace ProyectoFOO.API.Controllers
         [ProducesResponseType(typeof(List<PatientNoteDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<List<PatientNoteDto>>> GetAlPatientNotes(
+        public async Task<ActionResult<List<PatientNoteDto>>> GetAllPatientNotes(
             [FromRoute] int patientId)
         {
             try
@@ -1014,216 +1014,49 @@ namespace ProyectoFOO.API.Controllers
 
 
 
-        //ENDPOINTS DE BUSQUEDA 
+        //ENDPOINT DE BUSQUEDA 
 
         /// <summary>
-        /// Busca un paciente por su correo electrónico.
-        /// </summary>
-        /// <param name="email">Correo electrónico del paciente.</param>
-        /// <returns>Información del paciente si se encuentra.</returns>
-        /// <response code="200">Paciente encontrado exitosamente.</response>
-        /// <response code="404">No se encontró un paciente con el correo electrónico proporcionado.</response>
-        /// <response code="500">Error interno del servidor.</response>
-        [HttpGet("search-by-email")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetPatientByEmail(string email)
-        {
-            var paciente = await _patientService.GetPatientByEmailAsync(email);
-            if (paciente == null)
-            {
-                return NotFound($"No se encontró un paciente con el email: {email}.");
-            }
-            return Ok(paciente);
-        }
-
-
-        /// <summary>
-        /// Busca un paciente por su número de identificación.
+        /// Búsqueda y filtro de pacientes según necesidad.
         /// </summary>
         /// <param name="identification">Número de identificación del paciente a buscar (como parámetro de consulta).</param>
-        /// <returns>Respuesta HTTP con la información del paciente encontrado o NotFound si no existe.</returns>
+        /// <param name="fullName">Nombre del paciente a buscar (como parámetro de consulta).</param>
+        /// <param name="email">Email del paciente a buscar (como parámetro de consulta).</param>
+        /// <param name="nationality">Nacionalidad a filtrar (como parámetro de consulta).</param>
+        /// <param name="sexType">Tipo de sexo a filtrar (como parámetro de consulta).</param>
+        /// <param name="modality">Tipo de modalidad del paciente a filtrar (como parámetro de consulta).</param>
+        /// <param name="ageRange">Rango etario del paciente a buscar (como parámetro de consulta).</param>>
+        /// <returns>Un <see cref="PatientDTO"/> que indica el resultado.</returns>
         /// <response code="200">Paciente encontrado exitosamente.</response>
         /// <response code="400">Error en la solicitud.</response>
         /// <response code="404">No se encontró ningún paciente con el número de identificación proporcionado.</response>
         /// <response code="500">Error interno del servidor.</response>
-        [HttpGet("search-by-identification")]
+
+        [HttpGet("search")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<GetPatientByIdResponse>> GetPatientByIdentification([FromQuery] string identification)
+        public async Task<IActionResult> Search(
+         [FromQuery] string? fullName,
+        [FromQuery] string? identification,
+        [FromQuery] string? email,
+        [FromQuery] string? nationality,
+        [FromQuery] SexType? sexType,
+        [FromQuery] ModalityType? modality,
+        [FromQuery] string? ageRange)
         {
-            var query = new GetPatientByIdentificationCommand(identification);
-            var response = await _mediator.Send(query);
-
-            if (response.Success && response.Patient != null)
-            {
-                return Ok(response.Patient);
-            }
-            else if (response.Success)
-            {
-                return NotFound($"No se encontró ningún paciente con la identificación: {identification}.");
-            }
-            else
-            {
-                return BadRequest(response.Message);
-            }
-        }
-
-        /// <summary>
-        /// Busca un paciente por su nacionalidad.
-        /// </summary>
-        /// <param name="nationality"> String nacionalidad del paciente(como parámetro de consulta).</param>
-        /// <returns>Lista de pacientes con la nacionalidad especificada.</returns>
-        /// <response code="200">Pacientes encontrados exitosamente.</response>
-        /// <response code="400">Error en la solicitud.</response>
-        /// <response code="404">No se encontró ningún paciente con la nacionalidad proporcionado.</response>
-        /// <response code="500">Error interno del servidor.</response>
-        [HttpGet("search-by-nationality")]
-        public async Task<ActionResult<GetPatientsByNationalityResponse>> GetPatientsByNationality([FromQuery] string nationality)
-        {
-            var query = new GetPatientsByNationalityCommand(nationality);
-            var response = await _mediator.Send(query);
-
-            if (response.Success && response.Patients != null)
-            {
-                return Ok(response.Patients);
-            }
-            else if (response.Success)
-            {
-                return NotFound($"No se encontraron pacientes con nacionalidad: {nationality}.");
-            }
-            else
-            {
-                return BadRequest(response.Message);
-            }
-        }
-
-        /// <summary>
-        /// Busca un paciente por su nombre.
-        /// </summary>
-        /// <param name="fullname"> String nombre del paciente(como parámetro de consulta).</param>
-        /// <returns>Lista de pacientes que coinciden con el nombre completo.</returns>
-        /// <response code="200">Paciente encontrado exitosamente.</response>
-        /// <response code="400">Error en la solicitud.</response>
-        /// <response code="404">No se encontró ningún paciente con la nacionalidad proporcionado.</response>
-        /// <response code="500">Error interno del servidor.</response>
-        [HttpGet("search-by-fullname")]
-        public async Task<ActionResult<GetPatientsByNationalityResponse>> GetPatientsByFullName([FromQuery] string fullname)
-        {
-            if (string.IsNullOrWhiteSpace(fullname))
-            {
-                return BadRequest("El nombre completo no puede estar vacío.");
-            }
-
-            var query = new GetPatientsByFullNameCommand(fullname.Trim());
-            var response = await _mediator.Send(query);
-
-            if (response.Success && response.Patients != null && response.Patients.Count != 0)
-            {
-                return Ok(response.Patients);
-            }
-            else
-            {
-                return NotFound($"No se encontraron pacientes con el nombre completo: {fullname.Trim()}");
-            }
-        }
-
-        //FILTROS 
-
-        /// <summary>
-        /// Filtra los pacientes por tipo de sexo.
-        /// </summary>
-        /// <param name="sex">Tipo de sexo del paciente.</param>
-        /// <returns>Lista de pacientes filtrados por tipo de sexo.</returns>
-        /// <returns>Respuesta HTTP con la lista de pacientes que coinciden con la el tipo de sexo proporcionada o NotFound si no existe ninguno.</returns>
-        /// <response code="200">Lista de pacientes filtrados exitosamente.</response>
-        /// <response code="400">Error en la solicitud.</response>
-        /// <response code="404">No se encontraron pacientes con el tipo de sexo proporcionado.</response>
-        /// <response code="500">Error interno del servidor.</response>
-        [HttpGet("filter-by-sexType")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<GetPatientsBySexTypeResponse>> GetPatientsBySex([FromQuery] string sex)
-        {
-            var query = new GetPatientsBySexTypeCommand(sex);
-            var response = await _mediator.Send(query);
-
-            if (response.Success && response.Patients != null)
-            {
-                return Ok(response.Patients);
-            }
-            else if (response.Success)
-            {
-                return NotFound($"No se encontraron pacientes con tipo de sexo {sex}");
-            }
-            else
-            {
-                return BadRequest(response.Message);
-            }
-        }
-
-        /// <summary>
-        /// Filtra los pacientes por modalidad.
-        /// </summary>
-        /// <param name="modality">Modalidad del paciente.</param>
-        /// <returns>Lista de pacientes filtrados por modalidad.</returns>
-        ///  <returns>Respuesta HTTP con la lista de pacientes que coinciden con la modalidad proporcionada o NotFound si no existe ninguno.</returns>
-        /// <response code="200">Lista de pacientes filtrados exitosamente.</response>
-        /// <response code="400">Error en la solicitud.</response>
-        /// <response code="404">No se encontraron pacientes con la modalidad proporcionado.</response>
-        /// <response code="500">Error interno del servidor.</response>
-        [HttpGet("filter-by-modality")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetPatientByModality(string modality)
-        {
-            var patients = await _patientService.GetPacientesByModalityAsync(modality);
-            if (patients == null || patients.Count == 0)
-            {
-                return NotFound("No se encontraron pacientes con esa modalidad.");
-            }
-            return Ok(patients);
-        }
-
-
-        /// <summary>
-        /// Filtra pacientes por rango etario.
-        /// </summary>
-        /// <param name="ageRange">Rango etario de los pacientes a filtrar (como parámetro de consulta).</param>
-        /// <returns>Respuesta HTTP con la lista de pacientes que coinciden con el rango etario proporcionado o NotFound si no existe ninguno.</returns>
-        /// <response code="200">Lista de pacientes filtrados exitosamente.</response>
-        /// <response code="400">Error en la solicitud.</response>
-        /// <response code="404">No se encontraron pacientes en el rango etario proporcionado.</response>
-        /// <response code="500">Error interno del servidor.</response>
-        [HttpGet("filter-by-age-range")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<GetPatientsByAgeRangeResponse>> GetPatientsByAgeRange([FromQuery] string ageRange)
-        {
-            var query = new GetPatientsByAgeRangeCommand(ageRange);
-            var response = await _mediator.Send(query);
-
-            if (response.Success && response.Patients != null)
-            {
-                return Ok(response.Patients);
-            }
-            else if (response.Success)
-            {
-                return NotFound($"No se encontraron pacientes {ageRange} de rango etario.");
-            }
-            else
-            {
-                return BadRequest(response.Message);
-            }
+            var query = new SearchPatientsQuery(
+            fullName,
+            identification,
+            email,
+            nationality,
+            sexType,
+            modality,
+            ageRange
+        );
+            var result = await _mediator.Send(query);
+            return Ok(result);
         }
     }
 }

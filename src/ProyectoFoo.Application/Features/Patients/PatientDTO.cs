@@ -16,6 +16,8 @@ namespace ProyectoFoo.Application.Features.Patients
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Surname { get; set; } = string.Empty;
+        
+        public string? FullName { get; set; }
         public DateTime Birthdate { get; set; }
 
         public string TypeOfIdentification { get; set; } = string.Empty;

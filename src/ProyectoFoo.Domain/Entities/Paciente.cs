@@ -8,8 +8,7 @@ namespace ProyectoFoo.Domain.Entities
     public class Paciente
     {
         //OBLIGATORIAS
-        public int Id { get; set; }
-        
+        public int Id { get; set; }        
 
 
         [NotNullOrWhitespace(ErrorMessage = "El nombre es obligatorio y no puede contener solo espacios.")]
@@ -89,7 +88,7 @@ namespace ProyectoFoo.Domain.Entities
 
         public string? FailedActs { get; set; }
 
-        public string? Interconsulation { get; set; }
+        public string? Interconsultation { get; set; }
 
         public string? PatientEvolution { get; set; }
 
