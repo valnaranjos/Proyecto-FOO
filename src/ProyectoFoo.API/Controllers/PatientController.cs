@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using MediatR;
+using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Application.Features.Patients.Search;
 using ProyectoFoo.Application.Features.Patients;
 using ProyectoFoo.API.Helpers;
@@ -30,10 +31,11 @@ namespace ProyectoFOO.API.Controllers
     [Authorize] // Requiere autenticación para todas las acciones en este controlador
     [Route("api/[controller]")]
     [ApiController]
-    public class PatientController(IMediator mediator) : ControllerBase
+    public class PatientController(IMediator mediator, IPatientService patientService) : ControllerBase
     {
 
         private readonly IMediator _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        private readonly IPatientService _patientService = patientService ?? throw new ArgumentNullException(nameof(patientService));
 
 
 
@@ -56,18 +58,17 @@ namespace ProyectoFOO.API.Controllers
         ///             "email": "userrr@example.com",
         ///             "phone": "234566", 
         ///             "age": 20,
-        ///             "admissionDate: "2025-05-01T00:00:00"
+        ///             "admissionDate: "2025-05-01T00:00:00",
         ///             "ageRange": "Adulto",
         ///             "nationality": "Colombiano",
         ///             // ... otros campos opcionales del PatientDTO
         ///         },
         ///     ]
         /// </remarks>
-        /// <returns>Un objeto <see cref="GetAllPatientsResponse"/> que contiene la lista de pacientes y el estado de la operación.</returns>
+        ///  /// <returns>Un objeto <see cref="GetAllPatientsResponse"/> que contiene la lista de pacientes y el estado de la operación.</returns>
         /// <response code="200">Devuelve la lista de pacientes y el estado de la operación.</response>
         /// <response code="401">Usuario no autenticado o ID de usuario no disponible.</response>
         /// <response code="500">Se produjo un error inesperado en el servidor al intentar obtener los pacientes.</response>     
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
         [HttpGet("pacientes")]
         [ProducesResponseType(typeof(GetAllPatientsResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -137,13 +138,12 @@ namespace ProyectoFOO.API.Controllers
         ///             // ... otros campos requeridos u opcionales según CreatePatientCommand
         ///         }
         /// </remarks>
-        /// <returns>Una respuesta <see cref="CreatePatientResponse"/> que incluye el ID del paciente creado si la operación fue exitosa.</returns>
+        /// /// <returns>Una respuesta <see cref="CreatePatientResponse"/> que incluye el ID del paciente creado si la operación fue exitosa.</returns>
         /// <response code="201">Paciente creado exitosamente. Devuelve la ubicación del nuevo recurso y <see cref="CreatePatientResponse"/>.</response>
         /// <response code="400">La solicitud es incorrecta (ej. datos de validación fallidos). Ver <see cref="ValidationProblemDetails"/> o <see cref="ProblemDetails"/>.</response>
         /// <response code="401">Usuario no autenticado o ID de usuario no disponible.</response>
         /// <response code="409">Ya existe un paciente con el número de identificación proporcionado. Ver <see cref="ProblemDetails"/>.</response>
         /// <response code="500">Error interno del servidor. Ver <see cref="ProblemDetails"/>.</response>
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Post))]
         [HttpPost]
         [ProducesResponseType(typeof(CreatePatientResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -214,12 +214,11 @@ namespace ProyectoFOO.API.Controllers
         /// <response code="200">Devuelve los datos del paciente encontrado (ej. `PatientDTO`).</response>
         /// <response code="404">Paciente no encontrado.</response>
         /// <response code="500">Error interno del servidor.</response> 
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(PatientDTO), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(PatientDTO), StatusCodes.Status200OK)] // Asumiendo que response.Patient es de tipo PatientDTO
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<PatientDTO>> GetPatientById(int id)
+        public async Task<ActionResult<GetPatientByIdResponse>> GetPatientById(int id)
         {
             try
             {
@@ -270,14 +269,14 @@ namespace ProyectoFOO.API.Controllers
         /// El ID del paciente se especifica en la URL y debe coincidir con el command.Id si este último existe.
         /// Solo dejar los campos que van a ser cambiados.
         /// </remarks>
-        /// <returns>Una respuesta <see cref="UpdatePatientResponse"/> o <see cref="NoContentResult"/> en caso de éxito.</returns>
+        /// /// <returns>Una respuesta <see cref="UpdatePatientResponse"/> o <see cref="NoContentResult"/> en caso de éxito.</returns>
         /// <response code="200">Paciente actualizado exitosamente. Devuelve <see cref="UpdatePatientResponse"/>.</response>
         /// <response code="204">Paciente actualizado exitosamente (si no se devuelve contenido).</response>
         /// <response code="400">Solicitud incorrecta (ej. datos inválidos).</response>
         /// <response code="404">Paciente no encontrado.</response>
         /// <response code="500">Error interno del servidor.</response>
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
-        [ProducesResponseType(typeof(UpdatePatientResponse), StatusCodes.Status200OK)]               
+        /// [ProducesResponseType(typeof(UpdatePatientResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
@@ -334,7 +333,6 @@ namespace ProyectoFOO.API.Controllers
         /// <response code="204">Paciente eliminado exitosamente.</response>
         /// <response code="404">Paciente no encontrado.</response>
         /// <response code="500">Error interno del servidor.</response>
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Delete))]
         [HttpDelete("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -474,7 +472,6 @@ namespace ProyectoFOO.API.Controllers
         /// <returns>Una lista de <see cref="PatientDTO"/> de pacientes archivados.</returns>
         /// <response code="200">Retorna la lista de pacientes archivados.</response>
         /// <response code="500">Error interno del servidor.</response>
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
         [HttpGet("patients/archived")]
         [ProducesResponseType(typeof(List<PatientDTO>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
@@ -515,7 +512,6 @@ namespace ProyectoFOO.API.Controllers
         /// <response code="400">Si la petición no es válida.</response>
         /// <response code="404">Si el paciente especificado no existe.</response>
         /// <response code="500">Error interno del servidor.</response>
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Post))]
         [HttpPost("{patientId}/materials")]
         [ProducesResponseType(typeof(PatientMaterialDto), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -567,7 +563,6 @@ namespace ProyectoFOO.API.Controllers
         /// <response code="200">Retorna la lista de materiales del paciente. Puede ser una lista vacía si no tiene materiales.</response>
         /// <response code="404">Si el paciente especificado no existe (esto debería ser manejado por el comando idealmente).</response>
         /// <response code="500">Error interno del servidor.</response>
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
         [HttpGet("{patientId}/materials")]
         [ProducesResponseType(typeof(List<PatientMaterialDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -620,7 +615,6 @@ namespace ProyectoFOO.API.Controllers
         /// <response code="200">Retorna el material solicitado.</response>
         /// <response code="404">Si el paciente o el material no existen.</response>
         /// <response code="500">Error interno del servidor.</response>
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
         [HttpGet("{patientId}/materials/{materialId}")]
         [ProducesResponseType(typeof(PatientMaterialDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -664,7 +658,6 @@ namespace ProyectoFOO.API.Controllers
         /// <response code="400">Si la petición no es válida (ej. datos faltantes).</response>
         /// <response code="404">Si el paciente o el material no existen.</response>
         /// <response code="500">Error interno del servidor.</response>
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Put))]
         [HttpPut("{patientId}/materials/{materialId}")]
         [ProducesResponseType(typeof(UpdatePatientMaterialResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -721,7 +714,6 @@ namespace ProyectoFOO.API.Controllers
         /// <response code="401">Si el usuario no está autorizado.</response>
         /// <response code="404">Si el paciente o el material no existen.</response>
         /// <response code="500">Error interno del servidor.</response>
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Delete))]
         [HttpDelete("{patientId}/materials/{materialId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -779,7 +771,6 @@ namespace ProyectoFOO.API.Controllers
         /// <returns>La nota recién creada.</returns>
         /// <response code="201">Nota creada exitosamente.</response>
         /// <response code="400">Datos inválidos.</response>
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Post))]
         [HttpPost("{patientId}/notes")]
         [ProducesResponseType(typeof(PatientNoteDto), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -826,7 +817,6 @@ namespace ProyectoFOO.API.Controllers
         /// <response code="200">Retorna la nota solicitado.</response>
         /// <response code="404">Si el paciente o la nota no existen.</response>
         /// <response code="500">Error interno del servidor.</response>
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
         [HttpGet("{patientId}/notes/{noteId}")]
         [ProducesResponseType(typeof(PatientNoteDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -868,7 +858,6 @@ namespace ProyectoFOO.API.Controllers
         /// <response code="200">Retorna la lista de notas del paciente. Puede ser una lista vacía si no tiene materiales.</response>
         /// <response code="404">Si el paciente especificado no existe.</response>
         /// <response code="500">Error interno del servidor.</response>
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
         [HttpGet("{patientId}/notes")]
         [ProducesResponseType(typeof(List<PatientNoteDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -924,7 +913,6 @@ namespace ProyectoFOO.API.Controllers
         /// <response code="400">Si la petición no es válida (ej. datos faltantes).</response>
         /// <response code="404">Si el paciente o la nota no existen.</response>
         /// <response code="500">Error interno del servidor.</response>
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Put))]
         [HttpPut("{patientId}/notes/{noteId}")]
         [ProducesResponseType(typeof(UpdatePatientNoteResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -978,7 +966,6 @@ namespace ProyectoFOO.API.Controllers
         /// <response code="401">Si el usuario no está autorizado.</response>
         /// <response code="404">Si el paciente o el material no existen.</response>
         /// <response code="500">Error interno del servidor.</response>
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Delete))]
         [HttpDelete("{patientId}/notes/{noteId}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
@@ -1044,7 +1031,7 @@ namespace ProyectoFOO.API.Controllers
         /// <response code="400">Error en la solicitud.</response>
         /// <response code="404">No se encontró ningún paciente con el número de identificación proporcionado.</response>
         /// <response code="500">Error interno del servidor.</response>
-        [ApiConventionMethod(typeof(DefaultApiConventions), nameof(DefaultApiConventions.Get))]
+
         [HttpGet("search")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

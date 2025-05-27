@@ -8,7 +8,7 @@ namespace ProyectoFoo.Application.Contracts.Persistence
     /// <summary>
     /// Define las operaciones relacionadas con la gestión de usuarios.
     /// </summary>
-    /// <summary>
+    /// /// <summary>
     public interface IUserService
     {
         /// Obtiene un usuario por su ID de forma asíncrona.
