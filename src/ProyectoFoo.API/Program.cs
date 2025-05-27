@@ -93,17 +93,26 @@ options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
 // Configurar CORS
 builder.Services.AddCors(options =>
 {
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy
+           .SetIsOriginAllowed(_ => true)
+           .AllowAnyMethod()
+           .AllowAnyHeader()
+           .AllowCredentials();
+    });
+
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins(
-            "http://localhost:3000",
-            "https://insight-twya.onrender.com",
-            "https://insight-three-ruddy.vercel.app/"
+            "https://insight-three-ruddy.vercel.app",
+            "https://insight-tywa.onrender.com"
         )
-        .AllowAnyMethod()
         .AllowAnyHeader()
+        .AllowAnyMethod()
         .AllowCredentials();
     });
+
 });
 
 // Agregar autenticación JWT 
@@ -147,15 +156,15 @@ catch (Exception ex)
 }
 
 
+app.UseCors("AllowAll");
 
-// Middleware
-app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapControllers(); 
+app.MapControllers();
+
+app.MapFallbackToFile("index.html");
 
 app.Run();
 
 
-app.MapFallbackToFile("index.html");
