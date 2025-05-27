@@ -18,16 +18,17 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddInfrastructureServices();
-builder.Services.AddApplicationServices();
+builder.Services.AddEndpointsApiExplorer(); // Agregar explorador de endpoints
+builder.Services.AddInfrastructureServices(); // Extensión para la capa de Infraestructure
+builder.Services.AddApplicationServices(); // Extensión para la capa de Application
 
 
-
+// Leer la clave secreta desde variables de entorno
 var secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
 
 if (string.IsNullOrEmpty(secretKey))
 {
+    // Manejo de error si la variable de entorno no está configurada.
     var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
     var logger = loggerFactory.CreateLogger("Program");
     logger.LogError("La variable de entorno JWT_SECRET_KEY no está configurada. La aplicación no puede iniciar correctamente.");
@@ -35,6 +36,7 @@ if (string.IsNullOrEmpty(secretKey))
 }
 else
 {
+    // Registra el TokenService como singleton, pasando la clave secreta desde la variable de entorno.
     builder.Services.AddSingleton<ITokenService, TokenService>(sp => new TokenService(secretKey, sp.GetRequiredService<IConfiguration>()));
 }
 
@@ -93,15 +95,11 @@ options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
 // Configurar CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("FrontendOrigins", policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins(
-            "http://localhost:3000",
-            "https://insight-twya.onrender.com"
-        )
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials();
+        policy.AllowAnyOrigin() // Permite cualquier origen
+              .AllowAnyMethod() // Permite cualquier método (GET, POST, etc.)
+              .AllowAnyHeader(); // Permite cualquier encabezado
     });
 });
 
@@ -149,13 +147,13 @@ catch (Exception ex)
 
 
 // Middleware
-app.UseCors("FrontendOrigins");
+app.UseCors("AllowAll");
 app.UseHttpsRedirection();
-app.UseAuthentication(); // Agrega autenticación
+app.UseAuthentication(); // Agrega el middleware de autenticación
 app.UseAuthorization(); // Agrega JWT Bearer
 app.MapControllers(); 
 
 app.Run();
 
-
-app.MapFallbackToFile("index.html");
+// Catch-all para SPA
+app.MapFallbackToFile("index.html"); // 👈 Redirige cualquier ruta desconocida al index
