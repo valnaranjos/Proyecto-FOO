@@ -85,7 +85,7 @@ namespace ProyectoFoo.Infrastructure.Persistence
         public async Task<List<Paciente>> GetPatientsByUserIdAsync(int userId)
         {
             return await _dbContext.Pacientes
-                                 .Where(p => p.UserId == userId)
+                                 .Where(p => p.UserId == userId && p.IsEnabled)
                                  .ToListAsync();
         }
 
