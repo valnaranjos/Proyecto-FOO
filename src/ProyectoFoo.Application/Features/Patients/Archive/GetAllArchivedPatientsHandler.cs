@@ -15,7 +15,7 @@ namespace ProyectoFoo.Application.Features.Patients.Archive
 
         public async Task<List<PatientDTO>> Handle(GetAllArchivedPatientsCommand request, CancellationToken cancellationToken)
         {
-            var allPatients = await _patientRepository.GetPatientsByUserIdAsync(request.UserId);
+            var allPatients = await _patientRepository.GetArchivedPatientsByUserIdAsync(request.UserId);
             var disabledPatients = allPatients.Where(p => !p.IsEnabled).ToList();
 
             return disabledPatients.Select(patientEntity => new PatientDTO

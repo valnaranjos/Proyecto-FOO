@@ -19,6 +19,7 @@ namespace ProyectoFoo.Application.Contracts.Persistence
 
         Task<List<Paciente>> ListPatientsAsync(Expression<Func<Paciente, bool>> predicate);
         Task<List<Paciente>> GetPatientsByUserIdAsync(int userId);
+        Task<List<Paciente>> GetArchivedPatientsByUserIdAsync(int userId);
         Task<Paciente?> GetByIdAndUserAsync(int patientId, int userId);
 
 

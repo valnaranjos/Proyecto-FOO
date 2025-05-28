@@ -89,6 +89,13 @@ namespace ProyectoFoo.Infrastructure.Persistence
                                  .ToListAsync();
         }
 
+        public async Task<List<Paciente>> GetArchivedPatientsByUserIdAsync(int userId)
+        {
+            return await _dbContext.Pacientes
+                                  .Where(p => p.UserId == userId && !p.IsEnabled) 
+                                  .ToListAsync();
+        }
+
         public async Task<Paciente?> GetByIdAndUserAsync(int patientId, int userId)
         {
             return await _dbContext.Pacientes
