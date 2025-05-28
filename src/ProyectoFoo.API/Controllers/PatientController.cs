@@ -22,6 +22,7 @@ using ProyectoFoo.Application.Features.Notes.Read;
 using ProyectoFoo.Application.Features.Notes.Update;
 using ProyectoFoo.Application.Features.Notes.Delete;
 using ProyectoFoo.Domain.Common.Enums;
+using ProyectoFoo.Application.Features.PatientMaterials;
 
 namespace ProyectoFOO.API.Controllers
 {
@@ -215,7 +216,7 @@ namespace ProyectoFOO.API.Controllers
         /// <response code="404">Paciente no encontrado.</response>
         /// <response code="500">Error interno del servidor.</response> 
         [HttpGet("{id}")]
-        [ProducesResponseType(typeof(PatientDTO), StatusCodes.Status200OK)] // Asumiendo que response.Patient es de tipo PatientDTO
+        [ProducesResponseType(typeof(PatientDTO), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<GetPatientByIdResponse>> GetPatientById(int id)
@@ -275,8 +276,7 @@ namespace ProyectoFOO.API.Controllers
         /// <response code="400">Solicitud incorrecta (ej. datos inválidos).</response>
         /// <response code="404">Paciente no encontrado.</response>
         /// <response code="500">Error interno del servidor.</response>
-        /// [ProducesResponseType(typeof(UpdatePatientResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(UpdatePatientResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
@@ -325,8 +325,7 @@ namespace ProyectoFOO.API.Controllers
         /// Elimina un paciente existente por su ID.
         /// </summary>
         /// <remarks>
-        /// Esta operación elimina permanentemente (o lógicamente, según implementación) al paciente.
-        ///
+        /// Esta operación elimina permanentemente al paciente.
         /// Ejemplo de solicitud: `DELETE /api/Patient/5`
         /// </remarks>
         /// <returns>No devuelve contenido en caso de éxito.</returns>
@@ -390,7 +389,7 @@ namespace ProyectoFOO.API.Controllers
         /// <response code="200">El paciente fue archivado correctamente. Devuelve <see cref="ArchivePatientResponse"/>.</response>
         /// <response code="404">No se encontró el paciente o ya estaba archivado.</response>
         /// <response code="500">Error interno del servidor.</response>
-        ///  [ProducesResponseType(typeof(ArchivePatientResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ArchivePatientResponse), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
         [HttpPut("pacientes/{id}/archive")]
@@ -757,6 +756,66 @@ namespace ProyectoFOO.API.Controllers
                 return Problem(detail: "Error inesperado al eliminar el material del paciente.", statusCode: StatusCodes.Status500InternalServerError, title: "Error Interno");
             }
         }
+
+
+        /// <summary>
+        /// Envía un material específico de un paciente por correo electrónico.
+        /// </summary>
+        /// <param name="patientId">Identificador único del paciente.</param>
+        /// <param name="materialId">Identificador único del material a enviar.</param>
+        /// <returns>Un ActionResult que indica el resultado del envío.</returns>
+        /// <response code="200">El correo electrónico fue enviado exitosamente.</response>
+        /// <response code="400">Si la petición no es válida o el paciente no tiene email.</response>
+        /// <response code="401">Usuario no autenticado o ID de usuario no disponible.</response>
+        /// <response code="404">Si el paciente o el material especificado no existe.</response>
+        /// <response code="500">Error interno del servidor.</response>
+        [HttpPost("{patientId}/materials/{materialId}/send-email")]
+        [ProducesResponseType(typeof(SendPatientMaterialEmailResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<SendPatientMaterialEmailResponse>> SendPatientMaterialEmail(
+            [FromRoute] int patientId,
+            [FromRoute] int materialId)
+        {
+            var currentUserId = this.GetCurrentUserId();
+            if (!currentUserId.HasValue)
+            {
+                return Unauthorized(new ProblemDetails
+                {
+                    Title = "No autorizado",
+                    Detail = "El ID del usuario no pudo ser extraído del token de autenticación. Asegúrese de que su token es válido y contiene un ID de usuario numérico.",
+                    Status = StatusCodes.Status401Unauthorized
+                });
+            }
+
+            var command = new SendPatientMaterialEmailCommand
+            {
+                PatientId = patientId,
+                MaterialId = materialId,
+                UserId = currentUserId.Value,
+            };
+
+            var response = await _mediator.Send(command);
+
+            if (response.Success)
+            {
+                return Ok(response);
+            }
+
+            if (response.Message.Contains("No se encontró el paciente") || response.Message.Contains("No se encontró el material"))
+            {
+                return NotFound(new ProblemDetails { Title = "Recurso no encontrado", Detail = response.Message });
+            }
+            if (response.Message.Contains("no tiene una dirección de correo electrónico"))
+            {
+                return BadRequest(new ProblemDetails { Title = "Email no disponible", Detail = response.Message });
+            }
+
+            return Problem(detail: response.Message, statusCode: StatusCodes.Status500InternalServerError, title: "Error al enviar email");
+        }
+
 
 
         //RELACIONADO A NOTAS DE PACIENTE

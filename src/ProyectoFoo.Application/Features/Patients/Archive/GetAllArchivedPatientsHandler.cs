@@ -18,7 +18,7 @@ namespace ProyectoFoo.Application.Features.Patients.Archive
             var allPatients = await _patientRepository.GetArchivedPatientsByUserIdAsync(request.UserId);
             var disabledPatients = allPatients.Where(p => !p.IsEnabled).ToList();
 
-            return disabledPatients.Select(patientEntity => new PatientDTO
+            return [.. disabledPatients.Select(patientEntity => new PatientDTO
             {
                 Id = patientEntity.Id,
                 Name = patientEntity.Name.CapitalizeFirstLetter(),
@@ -47,7 +47,7 @@ namespace ProyectoFoo.Application.Features.Patients.Archive
                 SessionDuration = patientEntity.SessionDuration,
                 SessionFrequency = patientEntity.SessionFrequency,
                 PreferedContact = patientEntity.PreferedContact,
-            }).ToList();
+            })];
         }
     }
 }
