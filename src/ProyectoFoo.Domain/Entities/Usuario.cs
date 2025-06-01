@@ -45,7 +45,7 @@ namespace ProyectoFoo.Domain.Entities
 
         //CALCULADOS POR EL SISTEMA
         public DateTime CreatedDate { get; set; }
-        public DateTime LastAccesDate { get; set; }
+        public DateTime? LastAccessDate { get; set; }
         public bool IsVerified { get; set; }
 
 
@@ -64,9 +64,9 @@ namespace ProyectoFoo.Domain.Entities
         }
 
         //Método para actualizar el ultimo acceso.
-        public void ActualizeLastAcces()
+        public void ActualizeLastAccess()
         {
-            LastAccesDate = DateTime.Now;
+            LastAccessDate = DateTime.Now;
         }
 
         // Método para generar el hash de la contraseña

@@ -8,14 +8,9 @@ using ProyectoFoo.Domain.Entities;
 
 namespace ProyectoFoo.Application.Features.Patients.CRUD.Read
 {
-    public class GetAllPatientsHandler : IRequestHandler<GetAllPatientsQuery, GetAllPatientsResponse>
+    public class GetAllPatientsHandler(IPatientRepository pacienteRepository) : IRequestHandler<GetAllPatientsQuery, GetAllPatientsResponse>
     {
-        private readonly IPatientRepository _pacienteRepository;
-
-        public GetAllPatientsHandler(IPatientRepository pacienteRepository)
-        {
-            _pacienteRepository = pacienteRepository ?? throw new ArgumentNullException(nameof(pacienteRepository));
-        }
+        private readonly IPatientRepository _pacienteRepository = pacienteRepository ?? throw new ArgumentNullException(nameof(pacienteRepository));
 
         public async Task<GetAllPatientsResponse> Handle(GetAllPatientsQuery request, CancellationToken cancellationToken)
         {
@@ -45,7 +40,7 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD.Read
                     ProfesionalObservations = patient.ProfesionalObservations,
                     KeyWords = patient.KeyWords,
                     FailedActs = patient.FailedActs,
-                    Interconsulation = patient.Interconsultation,
+                    Interconsultation = patient.Interconsultation,
                     PatientEvolution = patient.PatientEvolution,
                     SessionDay = patient.SessionDay,
                     Modality = patient.Modality,

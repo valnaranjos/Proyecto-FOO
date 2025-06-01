@@ -5,16 +5,10 @@ using ProyectoFoo.Domain.Entities;
 
 namespace ProyectoFoo.Application.Features.PatientMaterials.Create
 {
-    public class CreatePatientMaterialHandler : IRequestHandler<CreatePatientMaterialCommand, CreatePatientMaterialResponse>
+    public class CreatePatientMaterialHandler(IPatientMaterialRepository patientMaterialRepository, IPatientRepository patientRepository) : IRequestHandler<CreatePatientMaterialCommand, CreatePatientMaterialResponse>
     {
-        private readonly IPatientMaterialRepository _patientMaterialRepository;
-        private readonly IPatientRepository _patientRepository;
-
-        public CreatePatientMaterialHandler(IPatientMaterialRepository patientMaterialRepository, IPatientRepository patientRepository)
-        {
-            _patientMaterialRepository = patientMaterialRepository ?? throw new ArgumentNullException(nameof(patientMaterialRepository));
-            _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
-        }
+        private readonly IPatientMaterialRepository _patientMaterialRepository = patientMaterialRepository ?? throw new ArgumentNullException(nameof(patientMaterialRepository));
+        private readonly IPatientRepository _patientRepository = patientRepository ?? throw new ArgumentNullException(nameof(patientRepository));
 
         public async Task<CreatePatientMaterialResponse> Handle(CreatePatientMaterialCommand request, CancellationToken cancellationToken)
         {
@@ -72,6 +66,7 @@ namespace ProyectoFoo.Application.Features.PatientMaterials.Create
                             Id = newPacienteMaterialEntity.Id,
                             PatientId = newPacienteMaterialEntity.PatientId,
                             Title = newPacienteMaterialEntity.Title,
+                            SessionDate = newPacienteMaterialEntity.Date,
                             Content = newPacienteMaterialEntity.Content ?? string.Empty,
                             CreationDate = newPacienteMaterialEntity.CreationDate
                         }

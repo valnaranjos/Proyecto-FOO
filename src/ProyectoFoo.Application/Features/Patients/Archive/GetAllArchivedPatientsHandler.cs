@@ -41,7 +41,7 @@ namespace ProyectoFoo.Application.Features.Patients.Archive
                 ProfesionalObservations = patientEntity.ProfesionalObservations,
                 KeyWords = patientEntity.KeyWords,
                 FailedActs = patientEntity.FailedActs,
-                Interconsulation = patientEntity.Interconsultation,
+                Interconsultation = patientEntity.Interconsultation,
                 PatientEvolution = patientEntity.PatientEvolution,
                 SessionDay = patientEntity.SessionDay,
                 SessionDuration = patientEntity.SessionDuration,

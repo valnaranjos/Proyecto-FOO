@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Domain.Services;
-using ProyectoFoo.API.Models.Authentication;
 using ProyectoFoo.Shared.Models.User;
 using ProyectoFoo.Application.Features.Users.CRUD;
 
@@ -17,13 +16,11 @@ namespace ProyectoFoo.API.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController(IMediator mediator, ILogger<UserController> logger, IUserService userService, IEmailService emailService, ITokenService tokenService) : ControllerBase
+    public class UserController(IMediator mediator, ILogger<UserController> logger, IUserService userService) : ControllerBase
     {
         private readonly IMediator _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         private readonly IUserService _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         private readonly ILogger<UserController> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        private readonly IEmailService _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));       
-        private readonly ITokenService _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
 
         /// <summary>
         /// Crea un nuevo usuario.
@@ -126,7 +123,7 @@ namespace ProyectoFoo.API.Controllers
         /// <response code="500">Error interno.</response>
 
         [HttpPut("me/edit")] // Usamos "me" para indicar que el usuario actual actualiza su propio perfil
-        [Authorize] // Requiere que el usuario esté autenticado
+        [Authorize]
         [ProducesResponseType(typeof(UpdateUserDto), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

@@ -94,8 +94,7 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD.Create
 
         public string? PreferedContact { get; set; }
 
-        // **NUEVA PROPIEDAD: Para el UserId del psicólogo autenticado**
-        // Este valor NO viene del JSON, sino del controlador
+       
         public int UserId { get; set; } 
     }
 }

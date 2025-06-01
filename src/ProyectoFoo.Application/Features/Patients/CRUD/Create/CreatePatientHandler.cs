@@ -2,13 +2,7 @@
 using ProyectoFoo.Application.Contracts.Persistence;
 using ProyectoFoo.Domain.Entities;
 using ProyectoFoo.Application.ServiceExtension;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-using ProyectoFoo.Domain.Common.Enums;
 namespace ProyectoFoo.Application.Features.Patients.CRUD.Create
 {
     public class CreatePatientHandler(IPatientRepository pacienteRepository) : IRequestHandler<CreatePatientCommand, CreatePatientResponse>
@@ -98,7 +92,7 @@ namespace ProyectoFoo.Application.Features.Patients.CRUD.Create
                     ProfesionalObservations = newPaciente.ProfesionalObservations,
                     KeyWords = newPaciente.KeyWords,
                     FailedActs = newPaciente.FailedActs,
-                    Interconsulation = newPaciente.Interconsultation,
+                    Interconsultation = newPaciente.Interconsultation,
                     PatientEvolution = newPaciente.PatientEvolution,
                     SessionDay = newPaciente.SessionDay,
                     SessionDuration = newPaciente.SessionDuration,

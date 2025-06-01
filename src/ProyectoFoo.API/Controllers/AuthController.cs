@@ -14,18 +14,11 @@ namespace ProyectoFoo.API.Controllers
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthController : ControllerBase
+    public class AuthController(IUserRepository usuarioRepository, ITokenService tokenService, IMediator mediator) : ControllerBase
     {
-        private readonly IUserRepository _usuarioRepository;
-        private readonly ITokenService _tokenService;
-        private readonly IMediator _mediator;
-
-        public AuthController(IUserRepository usuarioRepository, ITokenService tokenService, IMediator mediator)
-        {
-            _usuarioRepository = usuarioRepository ?? throw new ArgumentNullException(nameof(usuarioRepository));
-            _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
-            _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-        }
+        private readonly IUserRepository _usuarioRepository = usuarioRepository ?? throw new ArgumentNullException(nameof(usuarioRepository));
+        private readonly ITokenService _tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
+        private readonly IMediator _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
 
         /// <summary>
         /// Autentica a un usuario y devuelve un token JWT si las credenciales son válidas.
@@ -51,12 +44,11 @@ namespace ProyectoFoo.API.Controllers
                 return Unauthorized("Cuenta no verificada. Por favor, verifica tu correo electrónico.");
             }
 
-            // Generar el token utilizando el TokenService
-            var token = _tokenService.GenerateToken(usuario);
-
-            // Actualizar la fecha del último acceso
-            usuario.ActualizeLastAcces();
+            
+            usuario.ActualizeLastAccess();
             await _usuarioRepository.UpdateAsync(usuario);
+
+            var token = _tokenService.GenerateToken(usuario);
 
             return Ok(new { Token = token });
         }
@@ -126,8 +118,6 @@ namespace ProyectoFoo.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public IActionResult Logout()
         {
-            // La responsabilidad de dejar de usar el token recae en el frontend.
-
             return Ok(new { message = "Sesión cerrada exitosamente." });
         }
     }    

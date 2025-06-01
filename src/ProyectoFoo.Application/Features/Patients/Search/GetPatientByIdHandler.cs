@@ -8,14 +8,9 @@ using System.Threading.Tasks;
 
 namespace ProyectoFoo.Application.Features.Patients.Search
 {
-    public class GetPatientByIdHandler : IRequestHandler<GetPatientByIdQuery, GetPatientByIdResponse>
+    public class GetPatientByIdHandler(IPatientRepository pacienteRepository) : IRequestHandler<GetPatientByIdQuery, GetPatientByIdResponse>
     {
-        private readonly IPatientRepository _pacienteRepository;
-
-        public GetPatientByIdHandler(IPatientRepository pacienteRepository)
-        {
-            _pacienteRepository = pacienteRepository ?? throw new ArgumentNullException(nameof(pacienteRepository));
-        }
+        private readonly IPatientRepository _pacienteRepository = pacienteRepository ?? throw new ArgumentNullException(nameof(pacienteRepository));
 
         public async Task<GetPatientByIdResponse> Handle(GetPatientByIdQuery request, CancellationToken cancellationToken)
         {
@@ -66,7 +61,7 @@ namespace ProyectoFoo.Application.Features.Patients.Search
                     ProfesionalObservations = patient.ProfesionalObservations,
                     KeyWords = patient.KeyWords,
                     FailedActs = patient.FailedActs,
-                    Interconsulation = patient.Interconsultation,
+                    Interconsultation = patient.Interconsultation,
                     PatientEvolution = patient.PatientEvolution,
                     SessionDay = patient.SessionDay,
                     Modality = patient.Modality,

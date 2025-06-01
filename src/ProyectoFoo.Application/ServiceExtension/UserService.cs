@@ -73,7 +73,7 @@ namespace ProyectoFoo.Application.ServiceExtension
                 existingUser.Title = updateUser.Title.CapitalizeFirstLetter();
             }
 
-            existingUser.LastAccesDate = DateTime.UtcNow;
+            existingUser.LastAccessDate = DateTime.UtcNow;
 
             await _userRepository.UpdateUsuario(existingUser);
 

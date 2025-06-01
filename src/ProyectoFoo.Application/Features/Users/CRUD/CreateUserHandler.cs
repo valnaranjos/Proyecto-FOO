@@ -79,7 +79,6 @@ namespace ProyectoFoo.Application.Features.Users.CRUD
                 PasswordHash = Usuario.HashPassword(request.Password),
                 Phone = request.Phone,
                 CreatedDate = DateTime.UtcNow,
-                LastAccesDate = DateTime.UtcNow,
                 IsVerified = false
             };
 

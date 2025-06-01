@@ -65,6 +65,7 @@ namespace ProyectoFoo.Application.Features.Notes.Create
                             PatientId = newPatientNoteEntity.PatientId,
                             Title = newPatientNoteEntity.Title,
                             Content = newPatientNoteEntity.Content ?? string.Empty,
+                            SessionDate = newPatientNoteEntity.Date,
                             CreationDate = newPatientNoteEntity.CreationDate
                         }
                     };
